@@ -1,0 +1,9 @@
+<#if licenseFirst??>
+${licenseFirst}
+</#if>
+${licensePrefix}Groupe IAThinkers - Di Martino Thomas, Lambin Jérémy, Combadière Kamyar, Dupuch Cédric
+${licensePrefix}Nous sommes 4 étudiants en 1ère année de cycle ingénieur spécialité informatique à l'EISTI.
+${licensePrefix}Ce projet est réalisé par nous-même de A à Z.
+<#if licenseLast??>
+${licenseLast}
+</#if>

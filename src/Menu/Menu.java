@@ -31,17 +31,17 @@ public class Menu extends Parent{
      */
     public Menu(int height, int width, Scene[] sceneTab, Stage primaryStage) {
         
-        Button buttonPlan = new Button("CREATION PLAN DE MAISON");
+        Button buttonPlan = new Button("HOUSE PLAN CREATION");
         buttonPlan.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
                 primaryStage.setScene(sceneTab[1]);
             }
         });
-        Button buttonTrace = new Button("CREATION TRACE A MAIN LEVEE");
-        Button buttonObjet = new Button("CREATION OBJET");
-        Button buttonStats = new Button("DONNEES STATISTIQUES");
-        Button buttonSql = new Button("PARAMETRES SQL");
+        Button buttonTrace = new Button("FREEHAND PATH CREATION");
+        Button buttonObjet = new Button("OBJECT CREATION");
+        Button buttonStats = new Button("STATISTICS");
+        Button buttonSql = new Button("SQL SETTINGS");
         buttonSql.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {

@@ -66,25 +66,25 @@ public class Parametres extends Parent{
         grid.setVgap(10);
         grid.setPadding(new Insets(25, 25, 25, 25));
         
-        Text scenetitle = new Text("Bienvenue !\nMerci d'entrez vos identifiants MySQL afin d' effectuer les manipulations\nnécessaires pour le bon fonctionnment de cette application");
+        Text scenetitle = new Text("Welcome !\nPlease enter your MySQL credentials for the good functioning of this app");
         scenetitle.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
         grid.add(scenetitle, 0, 0, 2, 1);
         
-        Label adresseLbl = new Label("Adresse serveur MYSQL:");
+        Label adresseLbl = new Label("MySQL Server Address:");
         grid.add(adresseLbl, 0, 1);
         
         TextField adresseTextField = new TextField();
         adresseTextField.setId("addTxt");
         grid.add(adresseTextField, 1, 1);
         
-        Label usernameLbl = new Label("Identifiant:");
+        Label usernameLbl = new Label("Identifier:");
         grid.add(usernameLbl, 0, 2);
 
         TextField userTextField = new TextField();
         userTextField.setId("usrTxt");
         grid.add(userTextField, 1, 2);
 
-        Label pwLbl = new Label("Mot de passe:");
+        Label pwLbl = new Label("Password:");
         grid.add(pwLbl, 0, 3);
 
         PasswordField pwBox = new PasswordField();
@@ -96,7 +96,7 @@ public class Parametres extends Parent{
         infoConnexion.setId("infoConnexion");
         grid.add(infoConnexion, 0, 6);
         
-        Button btn = new Button("Connexion !");
+        Button btn = new Button("Connection");
         btn.setOnAction(new EventHandler<ActionEvent>(){
             @Override
             public void handle(ActionEvent event) {
@@ -127,7 +127,7 @@ public class Parametres extends Parent{
         hbBtn.getChildren().add(btn);
         grid.add(hbBtn, 1, 5);
         
-        Button btnRetour = new Button("Retour");
+        Button btnRetour = new Button("Back..");
         btnRetour.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
