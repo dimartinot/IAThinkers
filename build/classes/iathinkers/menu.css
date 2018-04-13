@@ -1,0 +1,47 @@
+
+#pane {
+    -fx-background-image: url("https://www.planwallpaper.com/static/images/blurry_abstract-2560x1600.jpg");
+    -fx-background-repeat: stretch;   
+    -fx-background-position: center center;
+    -fx-effect: dropshadow(three-pass-box, black, 30, 0.5, 0, 0); 
+}
+
+.button-menu {
+    -fx-pref-width: 800;
+    -fx-pref-height: 120;
+}
+
+#button-first {
+    -fx-background-color: #00204A;
+    -fx-font: 22 arial;
+    -fx-text-fill: white;
+    -fx-background-radius: 0;
+}
+
+#button-second {
+    -fx-background-color: #303F9F;
+    -fx-font: 22 arial;
+    -fx-text-fill: white;
+    -fx-background-radius: 0;
+}
+
+#button-third {
+    -fx-background-color: #3F51B5;
+    -fx-font: 22 arial;
+    -fx-text-fill: white;
+    -fx-background-radius: 0;
+}
+
+#button-forth {
+    -fx-background-color: #6699CC;
+    -fx-font: 22 arial;
+    -fx-text-fill: white;
+    -fx-background-radius: 0;
+}
+
+#button-fifth {
+    -fx-background-color: #C5CAE9;
+    -fx-font: 22 arial;
+    -fx-text-fill: white;
+    -fx-background-radius: 0;
+}
