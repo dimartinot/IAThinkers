@@ -47,7 +47,7 @@ public class Wall {
     }
     
     public String toString() {
-        return "Door("+this.getHeight()+", "+this.getWidth()+", "+this.getPosX()+", "+this.getPosY()+")";
+        return "Wall("+this.getHeight()+", "+this.getWidth()+", "+this.getPosX()+", "+this.getPosY()+")";
     }
 
 }

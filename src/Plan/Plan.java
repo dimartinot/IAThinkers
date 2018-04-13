@@ -87,6 +87,7 @@ public class Plan extends Parent{
         ComboBox<String> orientation = new ComboBox();
         orientation.getItems().add("Horizontal");
         orientation.getItems().add("Vertical");
+        orientation.setId("orientation");
         Label orientationLbl = new Label("Orientation");
         
         

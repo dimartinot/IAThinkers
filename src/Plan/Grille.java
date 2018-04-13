@@ -93,7 +93,7 @@ public class Grille extends Parent{
                                         if ((cellule.getY() + i)<= n && (cellule.getX() + j)<= m) {
                                             try {
                                                 Rectangle rectangle = (Rectangle) scene.lookup("#"+(cellule.getX() + j)+"-"+(cellule.getY() + i));
-                                                if (rectangle.getFill() == Color.RED) {
+                                                if (rectangle.getFill() == Color.RED || rectangle.getFill() == Color.GREEN) {
                                                     fits = false;
                                                 }
                                             } catch (NullPointerException e) {
@@ -123,7 +123,40 @@ public class Grille extends Parent{
                             } catch (NumberFormatException e) {
                                 e.printStackTrace();
                             }
-                        }    
+                        } else {
+                                ComboBox orientation = (ComboBox) scene.lookup("#orientation");
+                                try {
+                                    if (orientation.getSelectionModel().getSelectedItem()=="Vertical") {
+                                        if ((cellule.getY()-1)>0 && (cellule.getY()+1)<m-1) {
+                                            try {
+                                                    Rectangle rectangle = (Rectangle) scene.lookup("#"+(cellule.getX())+"-"+(cellule.getY()));
+                                                    if (rectangle.getFill() != Color.RED && rectangle.getFill() != Color.GREEN) {
+                                                        rectangle.setFill(Color.GREEN);
+                                                        Objet.Door door = new Objet.Door(1, 1, cellule.getX(), cellule.getY(), true);
+                                                        listObjects.add(door);
+                                                        objectList.getItems().add(door.toString());                                                    }  
+                                                } catch (NullPointerException e) {
+
+                                                }
+                                        }
+                                    } else {
+                                       if ((cellule.getX()-1)>0 && (cellule.getX()+1)<n-1) {
+                                            try {
+                                                    Rectangle rectangle = (Rectangle) scene.lookup("#"+(cellule.getX())+"-"+(cellule.getY()));
+                                                    if (rectangle.getFill() != Color.RED && rectangle.getFill() != Color.GREEN) {
+                                                        rectangle.setFill(Color.GREEN);
+                                                        Objet.Door door = new Objet.Door(1, 1, cellule.getX(), cellule.getY(), false);
+                                                        listObjects.add(door);
+                                                        objectList.getItems().add(door.toString());  
+                                                    }  
+                                                } catch (NullPointerException e) {
+
+                                                }
+                                        } 
+                                    }
+                                } catch (NumberFormatException e) {
+                                    //e.printStackTrace();
+                                }                            }   
                     }
                 });
                         

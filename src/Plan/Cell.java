@@ -155,10 +155,10 @@ public class Cell extends StackPane {
                 for (int i = 0; i < height; i++) {
                     for (int j = 0; j < width; j++) {
                         
-                        if ((this.getY() + i)<= this.getGridHeight() && (this.getX() + j)<= this.getGridWidth()) {
+                        if ((this.getY() + i)< this.getGridHeight() && (this.getX() + j)< this.getGridWidth()) {
                             try {
                                 Rectangle rectangle = (Rectangle) scene.lookup("#"+(this.getX() + j)+"-"+(this.getY() + i));
-                                if (rectangle.getFill() != Color.RED) {
+                                if (rectangle.getFill() != Color.RED && rectangle.getFill() != Color.GREEN) {
                                   rectangle.setFill(color);
                                 }  
                             } catch (NullPointerException e) {
@@ -170,6 +170,35 @@ public class Cell extends StackPane {
             } catch (NumberFormatException e) {
                 //e.printStackTrace();
             }    
-        }    
+        } else {
+            ComboBox orientation = (ComboBox) scene.lookup("#orientation");
+            try {
+                if (orientation.getSelectionModel().getSelectedItem()=="Vertical") {
+                    if ((this.getY()-1)>0 && (this.getY()+1)<this.getGridHeight()-1) {
+                        try {
+                                Rectangle rectangle = (Rectangle) scene.lookup("#"+(this.getX())+"-"+(this.getY()));
+                                if (rectangle.getFill() != Color.RED && rectangle.getFill() != Color.GREEN) {
+                                  rectangle.setFill(color);
+                                }  
+                            } catch (NullPointerException e) {
+                                
+                            }
+                    }
+                } else {
+                   if ((this.getX()-1)>0 && (this.getX()+1)<this.getGridWidth()-1) {
+                        try {
+                                Rectangle rectangle = (Rectangle) scene.lookup("#"+(this.getX())+"-"+(this.getY()));
+                                if (rectangle.getFill() != Color.RED && rectangle.getFill() != Color.GREEN) {
+                                  rectangle.setFill(color);
+                                }  
+                            } catch (NullPointerException e) {
+                                
+                            }
+                    } 
+                }
+            } catch (NumberFormatException e) {
+                //e.printStackTrace();
+            }    
+        }
     }
 }
