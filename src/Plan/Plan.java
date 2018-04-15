@@ -6,6 +6,7 @@
 package Plan;
 
 import Menu.Menu;
+import java.util.StringTokenizer;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -20,6 +21,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
@@ -161,9 +164,80 @@ public class Plan extends Parent{
         
         ComboBox<String> objectList = new ComboBox();
         objectList.setId("objectlist");
-        /*for (Object o : objetGrid.getListObjects()) {
-            objectList.getItems().add(o.toString());
-        }*/
+        //Initialisation of the delete Button
+        Button deleteButton = new Button("Delete");
+            //When we attempt to delete an object, we will have to get the data out of the selected option of the ComboBox
+            deleteButton.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent event) {
+                    try {
+                        String selectedObject = objectList.getSelectionModel().getSelectedItem();
+                        StringTokenizer splitObject = new StringTokenizer(selectedObject, "(");
+                        String type = splitObject.nextElement().toString();
+                        String data = splitObject.nextElement().toString();
+                        switch (type) {
+                            case "Wall":
+                                String wallData[] = data.split(", ");
+                                try {
+                                        int height = Integer.parseInt(wallData[0]);
+                                        int width = Integer.parseInt(wallData[1]);
+                                        int posX = Integer.parseInt(wallData[2]);
+                                        StringTokenizer st = new StringTokenizer(wallData[3], ")");
+                                        int posY = Integer.parseInt(st.nextElement().toString());//The last cell may contain a closing parenthesis, so we have to use split one again to make sure it is gone before calling parseInt
+                                        for (int i = 0; i < width; i++) {
+                                            for (int j = 0; j < height; j++) {
+                                                Rectangle rectangle = (Rectangle) sceneTab[1].lookup("#"+(posX + i)+"-"+(posY+ j));
+                                                if (rectangle.getFill() == Color.THISTLE) {
+                                                    rectangle.setFill(Color.ALICEBLUE);
+                                                }
+                                            }
+                                        }
+                                        if (objetGrid.deleteWall(height, width, posX, posY)) {
+                                            System.out.println("Wall correctly deleted");
+                                            objectList.getItems().removeAll(selectedObject);
+                                        } else {
+                                            System.out.println("Error ! Wall not found");
+                                        }
+                                    } catch (NumberFormatException e) {
+
+                                    }    
+                                break;
+                            case "Door":
+                                String doorData[] = data.split(", ");
+                                try {
+                                        int height = Integer.parseInt(doorData[0]);
+                                        int width = Integer.parseInt(doorData[1]);
+                                        int posX = Integer.parseInt(doorData[2]);
+                                        int posY = Integer.parseInt(doorData[3]);
+                                        for (int i = 0; i < width; i++) {
+                                            for (int j = 0; j < height; j++) {
+                                                Rectangle rectangle = (Rectangle) sceneTab[1].lookup("#"+(posX + i)+"-"+(posY+ j));
+                                                if (rectangle.getFill() == Color.ANTIQUEWHITE) {
+                                                    rectangle.setFill(Color.ALICEBLUE);
+                                                }
+                                            }
+                                        }
+                                        if (objetGrid.deleteDoor(height, width, posX, posY)) {
+                                            System.out.println("Door correctly deleted");
+                                            objectList.getItems().removeAll(selectedObject);
+                                        } else {
+                                            System.out.println("Error ! Door not found");
+                                        }
+                                    } catch (NumberFormatException e) {
+
+                                    }    
+                                break;
+                            }
+                    } catch (NullPointerException e) {
+                
+                    }
+                }       
+            });
+        objectList.setOnAction((e) -> {
+            grid.getChildren().remove(deleteButton);
+            grid.getChildren().add(deleteButton);
+        });
+        GridPane.setConstraints(deleteButton,1,10);
         GridPane.setConstraints(objectList,1,9);
         
         

@@ -58,7 +58,7 @@ public class Cell extends StackPane {
         Rectangle rectangle = new Rectangle(width, height);
         rectangle.setId(x+"-"+y);
         rectangle.setFill(Color.ALICEBLUE);
-        rectangle.setStroke(Color.BLACK);
+        //rectangle.setStroke(Color.BLACK);
         
         //defini sa position avec x et y
         setTranslateX(posX);
@@ -158,7 +158,7 @@ public class Cell extends StackPane {
                         if ((this.getY() + i)< this.getGridHeight() && (this.getX() + j)< this.getGridWidth()) {
                             try {
                                 Rectangle rectangle = (Rectangle) scene.lookup("#"+(this.getX() + j)+"-"+(this.getY() + i));
-                                if (rectangle.getFill() != Color.RED && rectangle.getFill() != Color.GREEN) {
+                                if (rectangle.getFill() != Color.THISTLE && rectangle.getFill() != Color.ANTIQUEWHITE) {
                                   rectangle.setFill(color);
                                 }  
                             } catch (NullPointerException e) {
@@ -170,16 +170,19 @@ public class Cell extends StackPane {
             } catch (NumberFormatException e) {
                 //e.printStackTrace();
             }    
-        } else {
+        } else if (choix.getSelectionModel().getSelectedItem()=="Door") {
             ComboBox orientation = (ComboBox) scene.lookup("#orientation");
             try {
+                boolean fits = true;
                 if (orientation.getSelectionModel().getSelectedItem()=="Vertical") {
                     if ((this.getY()-1)>0 && (this.getY()+1)<this.getGridHeight()-1) {
                         try {
-                                Rectangle rectangle = (Rectangle) scene.lookup("#"+(this.getX())+"-"+(this.getY()));
-                                if (rectangle.getFill() != Color.RED && rectangle.getFill() != Color.GREEN) {
-                                  rectangle.setFill(color);
+                            for (int i = 0; i < 3; i++) {
+                                Rectangle rectangle = (Rectangle) scene.lookup("#"+(this.getX())+"-"+(this.getY()-1+i));
+                                if (rectangle.getFill() == Color.THISTLE || rectangle.getFill() == Color.ANTIQUEWHITE) {
+                                    fits = false;
                                 }  
+                            }
                             } catch (NullPointerException e) {
                                 
                             }
@@ -187,18 +190,26 @@ public class Cell extends StackPane {
                 } else {
                    if ((this.getX()-1)>0 && (this.getX()+1)<this.getGridWidth()-1) {
                         try {
-                                Rectangle rectangle = (Rectangle) scene.lookup("#"+(this.getX())+"-"+(this.getY()));
-                                if (rectangle.getFill() != Color.RED && rectangle.getFill() != Color.GREEN) {
-                                  rectangle.setFill(color);
+                            for (int i = 0; i < 3; i++) {
+                                Rectangle rectangle = (Rectangle) scene.lookup("#"+(this.getX()-1+i)+"-"+(this.getY()));
+                                if (rectangle.getFill() == Color.THISTLE || rectangle.getFill() == Color.ANTIQUEWHITE) {
+                                    fits = false;
                                 }  
-                            } catch (NullPointerException e) {
-                                
                             }
+                        } catch (NullPointerException e) {
+                                
+                        }
                     } 
+                }
+                if (fits) {
+                    Rectangle rectangle = (Rectangle) scene.lookup("#"+(this.getX())+"-"+(this.getY()));
+                    rectangle.setFill(color);
                 }
             } catch (NumberFormatException e) {
                 //e.printStackTrace();
             }    
+        } else {
+            //When no option is selected
         }
     }
 }
