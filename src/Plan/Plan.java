@@ -54,6 +54,8 @@ public class Plan extends Parent{
         ComboBox<String> choix = new ComboBox();
         choix.getItems().add("Wall");
         choix.getItems().add("Door");
+        choix.getItems().add("Starting Point");
+        choix.getItems().add("Ending Point");
 
         //Défini les TextField d'option de chacun des choix de l'utilisateur à la pose d'un Wall
         TextField height = new TextField();
@@ -136,6 +138,22 @@ public class Plan extends Parent{
                     grid.getChildren().add(orientation);
                     grid.getChildren().add(orientationLbl);
                     break;
+                 case "Starting Point":
+                 case "Ending Point":
+                    GridPane.clearConstraints(height);
+                    GridPane.clearConstraints(width);
+                    GridPane.clearConstraints(heightLbl);
+                    GridPane.clearConstraints(widthLbl);
+                    grid.getChildren().remove(height);
+                    grid.getChildren().remove(width);
+                    grid.getChildren().remove(heightLbl);
+                    grid.getChildren().remove(widthLbl);
+                    
+                    GridPane.clearConstraints(orientation);
+                    GridPane.clearConstraints(orientationLbl);
+                    grid.getChildren().remove(orientation);
+                    grid.getChildren().remove(orientationLbl);
+                break;    
                  default:
                     break;
              }
@@ -226,6 +244,47 @@ public class Plan extends Parent{
                                     } catch (NumberFormatException e) {
 
                                     }    
+                                break;
+                            case "PointA":
+                                String pointAData[] = data.split(", ");
+                                System.out.println(data);
+                                try {
+                                        int posX = Integer.parseInt(pointAData[0]);
+                                        StringTokenizer st = new StringTokenizer(pointAData[1], ")");
+                                        int posY = Integer.parseInt(st.nextElement().toString());
+                                        Rectangle rectangle = (Rectangle) sceneTab[1].lookup("#"+posX+"-"+posY);
+                                        if (rectangle.getFill() == Color.BROWN) {
+                                                rectangle.setFill(Color.ALICEBLUE);
+                                        }
+                                        if (objetGrid.deletePointA(posX,posY)) {
+                                            System.out.println("Starting point correctly deleted");
+                                            objectList.getItems().removeAll(selectedObject);
+                                        } else {
+                                            System.out.println("Error ! Starting Point not found");
+                                        }
+                                    } catch (NumberFormatException e) {
+                                        e.printStackTrace();
+                                    }  
+                                break;
+                            case "PointB":
+                                String pointBData[] = data.split(", ");
+                                try {
+                                        int posX = Integer.parseInt(pointBData[0]);
+                                        StringTokenizer st = new StringTokenizer(pointBData[1], ")");
+                                        int posY = Integer.parseInt(st.nextElement().toString());
+                                        Rectangle rectangle = (Rectangle) sceneTab[1].lookup("#"+posX+"-"+posY);
+                                        if (rectangle.getFill() == Color.TEAL) {
+                                                rectangle.setFill(Color.ALICEBLUE);
+                                        }
+                                        if (objetGrid.deletePointB(posX,posY)) {
+                                            System.out.println("Ending point correctly deleted");
+                                            objectList.getItems().removeAll(selectedObject);
+                                        } else {
+                                            System.out.println("Error ! Ending Point not found");
+                                        }
+                                    } catch (NumberFormatException e) {
+                                        e.printStackTrace();
+                                    }
                                 break;
                             }
                     } catch (NullPointerException e) {

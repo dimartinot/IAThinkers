@@ -158,7 +158,7 @@ public class Cell extends StackPane {
                         if ((this.getY() + i)< this.getGridHeight() && (this.getX() + j)< this.getGridWidth()) {
                             try {
                                 Rectangle rectangle = (Rectangle) scene.lookup("#"+(this.getX() + j)+"-"+(this.getY() + i));
-                                if (rectangle.getFill() != Color.THISTLE && rectangle.getFill() != Color.ANTIQUEWHITE) {
+                                if (rectangle.getFill() != Color.THISTLE && rectangle.getFill() != Color.ANTIQUEWHITE && rectangle.getFill() != Color.TEAL &&rectangle.getFill() != Color.BROWN) {
                                   rectangle.setFill(color);
                                 }  
                             } catch (NullPointerException e) {
@@ -179,7 +179,7 @@ public class Cell extends StackPane {
                         try {
                             for (int i = 0; i < 3; i++) {
                                 Rectangle rectangle = (Rectangle) scene.lookup("#"+(this.getX())+"-"+(this.getY()-1+i));
-                                if (rectangle.getFill() == Color.THISTLE || rectangle.getFill() == Color.ANTIQUEWHITE) {
+                                if (rectangle.getFill() == Color.THISTLE || rectangle.getFill() == Color.ANTIQUEWHITE && rectangle.getFill() != Color.TEAL &&rectangle.getFill() != Color.BROWN) {
                                     fits = false;
                                 }  
                             }
@@ -187,12 +187,12 @@ public class Cell extends StackPane {
                                 
                             }
                     }
-                } else {
+                } else if (orientation.getSelectionModel().getSelectedItem()=="Horizontal") {
                    if ((this.getX()-1)>0 && (this.getX()+1)<this.getGridWidth()-1) {
                         try {
                             for (int i = 0; i < 3; i++) {
                                 Rectangle rectangle = (Rectangle) scene.lookup("#"+(this.getX()-1+i)+"-"+(this.getY()));
-                                if (rectangle.getFill() == Color.THISTLE || rectangle.getFill() == Color.ANTIQUEWHITE) {
+                                if (rectangle.getFill() == Color.THISTLE || rectangle.getFill() == Color.ANTIQUEWHITE && rectangle.getFill() != Color.TEAL &&rectangle.getFill() != Color.BROWN) {
                                     fits = false;
                                 }  
                             }
@@ -200,6 +200,8 @@ public class Cell extends StackPane {
                                 
                         }
                     } 
+                } else {
+                    fits = false;
                 }
                 if (fits) {
                     Rectangle rectangle = (Rectangle) scene.lookup("#"+(this.getX())+"-"+(this.getY()));
@@ -208,7 +210,12 @@ public class Cell extends StackPane {
             } catch (NumberFormatException e) {
                 //e.printStackTrace();
             }    
-        } else {
+        } else if (choix.getSelectionModel().getSelectedItem()=="Starting Point" || choix.getSelectionModel().getSelectedItem()=="Ending Point") {
+            Rectangle rectangle = (Rectangle) scene.lookup("#"+(this.getX())+"-"+(this.getY()));
+            if (rectangle.getFill() != Color.THISTLE && rectangle.getFill() != Color.ANTIQUEWHITE && rectangle.getFill() != Color.TEAL &&rectangle.getFill() != Color.BROWN) {
+                rectangle.setFill(color);
+            } 
+        } else  {
             //When no option is selected
         }
     }

@@ -5,6 +5,7 @@
  */
 package Plan;
 
+import Objet.PointType;
 import java.util.LinkedList;
 import javafx.scene.Group;
 import javafx.scene.Parent;
@@ -42,6 +43,10 @@ public class Grille extends Parent{
     public int j;
     
     public LinkedList<Object> listObjects;
+    
+    //Defines if both the starting and ending point are defined
+    private boolean pointAIsSet = false;
+    private boolean pointBIsSet = false;
 
     /**
      * Tailles en largeur et longueur de chacunes des cases
@@ -93,7 +98,7 @@ public class Grille extends Parent{
                                         if ((cellule.getY() + i)< n && (cellule.getX() + j)< m) {
                                             try {
                                                 Rectangle rectangle = (Rectangle) scene.lookup("#"+(cellule.getX() + j)+"-"+(cellule.getY() + i));
-                                                if (rectangle.getFill() == Color.THISTLE || rectangle.getFill() == Color.ANTIQUEWHITE) {
+                                                if (rectangle.getFill() == Color.THISTLE || rectangle.getFill() == Color.ANTIQUEWHITE || rectangle.getFill() == Color.TEAL || rectangle.getFill() == Color.BROWN) {
                                                     fits = false;
                                                 }
                                             } catch (NullPointerException e) {
@@ -125,7 +130,7 @@ public class Grille extends Parent{
                             } catch (NumberFormatException e) {
                                 //e.printStackTrace();
                             }
-                        } else {
+                        } else if (choix.getSelectionModel().getSelectedItem()=="Door") {
                                 boolean fits= true;
                                 ComboBox orientation = (ComboBox) scene.lookup("#orientation");
                                 try {
@@ -134,7 +139,28 @@ public class Grille extends Parent{
                                             try {
                                                 for (int i =0; i< 3; i++) {
                                                     Rectangle rectangle = (Rectangle) scene.lookup("#"+(cellule.getX())+"-"+(cellule.getY()+i-1));
-                                                    if (rectangle.getFill() == Color.THISTLE || rectangle.getFill() == Color.ANTIQUEWHITE) {
+                                                    if (rectangle.getFill() == Color.THISTLE || rectangle.getFill() == Color.ANTIQUEWHITE || rectangle.getFill() == Color.TEAL || rectangle.getFill() == Color.BROWN) {
+                                                        fits = false;
+                                                    } 
+                                                }
+
+                                            } catch (NullPointerException e) {
+
+                                            }
+                                        }
+                                        if (fits) {
+                                            Rectangle rectangle = (Rectangle) scene.lookup("#"+(cellule.getX())+"-"+(cellule.getY()));
+                                            rectangle.setFill(Color.ANTIQUEWHITE);
+                                            Objet.Door door = new Objet.Door(1, 1, cellule.getX(), cellule.getY(), true);
+                                            listObjects.add(door);
+                                            objectList.getItems().add(door.toString());
+                                        }
+                                    } else if (orientation.getSelectionModel().getSelectedItem()=="Horizontal") {
+                                       if ((cellule.getY()-1)>0 && (cellule.getY()+1)<m-1) {
+                                            try {
+                                                for (int i =0; i< 3; i++) {
+                                                    Rectangle rectangle = (Rectangle) scene.lookup("#"+(cellule.getX()+i-1)+"-"+(cellule.getY()));
+                                                    if (rectangle.getFill() == Color.THISTLE || rectangle.getFill() == Color.ANTIQUEWHITE || rectangle.getFill() == Color.TEAL || rectangle.getFill() == Color.BROWN) {
                                                         fits = false;
                                                     } 
                                                 }
@@ -151,31 +177,36 @@ public class Grille extends Parent{
                                             objectList.getItems().add(door.toString());
                                         }
                                     } else {
-                                       if ((cellule.getY()-1)>0 && (cellule.getY()+1)<m-1) {
-                                            try {
-                                                for (int i =0; i< 3; i++) {
-                                                    Rectangle rectangle = (Rectangle) scene.lookup("#"+(cellule.getX()+i-1)+"-"+(cellule.getY()));
-                                                    if (rectangle.getFill() == Color.THISTLE || rectangle.getFill() == Color.ANTIQUEWHITE) {
-                                                        fits = false;
-                                                    } 
-                                                }
-
-                                            } catch (NullPointerException e) {
-
-                                            }
-                                        }
-                                        if (fits) {
-                                            Rectangle rectangle = (Rectangle) scene.lookup("#"+(cellule.getX())+"-"+(cellule.getY()));
-                                            rectangle.setFill(Color.ANTIQUEWHITE);
-                                            Objet.Door door = new Objet.Door(1, 1, cellule.getX(), cellule.getY(), true);
-                                            listObjects.add(door);
-                                            objectList.getItems().add(door.toString());
-                                        }
+                                        
                                     }
                             } catch (NumberFormatException e) {
                                 //e.printStackTrace();
                             }
-                        }   
+                        } else if (choix.getSelectionModel().getSelectedItem()=="Starting Point") {
+                            if (isPointAIsSet()==false) {
+                                Rectangle rectangle = (Rectangle) scene.lookup("#"+(cellule.getX())+"-"+(cellule.getY()));
+                                if (rectangle.getFill() != Color.THISTLE && rectangle.getFill() != Color.ANTIQUEWHITE && rectangle.getFill() != Color.TEAL) {
+                                    rectangle.setFill(Color.BROWN);
+                                    Objet.Point pointA = new Objet.Point(Objet.PointType.POINTA,cellule.getX(),cellule.getY());
+                                    listObjects.add(pointA);
+                                    objectList.getItems().add(pointA.toString());
+                                    setPointAIsSet(true);
+                                }    
+                            }
+                        } else if (choix.getSelectionModel().getSelectedItem()=="Ending Point") {
+                            if (isPointBIsSet()==false) {
+                                Rectangle rectangle = (Rectangle) scene.lookup("#"+(cellule.getX())+"-"+(cellule.getY()));
+                                if (rectangle.getFill() != Color.THISTLE && rectangle.getFill() != Color.ANTIQUEWHITE && rectangle.getFill() != Color.BROWN) {
+                                    rectangle.setFill(Color.TEAL);
+                                    Objet.Point pointB = new Objet.Point(Objet.PointType.POINTB,cellule.getX(),cellule.getY());
+                                    listObjects.add(pointB);
+                                    objectList.getItems().add(pointB.toString());
+                                    setPointBIsSet(true);
+                                }
+                            }
+                        } else {
+                            
+                        }
                     }
                 });
                 grille.getChildren().add(cellule);
@@ -193,6 +224,22 @@ public class Grille extends Parent{
         return this.gridHeight;
     }
 
+    public boolean isPointAIsSet() {
+        return pointAIsSet;
+    }
+
+    public boolean isPointBIsSet() {
+        return pointBIsSet;
+    }
+
+    public void setPointAIsSet(boolean pointAIsSet) {
+        this.pointAIsSet = pointAIsSet;
+    }
+
+    public void setPointBIsSet(boolean pointBIsSet) {
+        this.pointBIsSet = pointBIsSet;
+    }
+    
     public LinkedList<Object> getListObjects() {
         return listObjects;
     }
@@ -216,6 +263,34 @@ public class Grille extends Parent{
                 Objet.Door d = (Objet.Door) o;
                 if (d.getHeight() == height && d.getWidth() == width && d.getPosX() == posX && d.getPosY() == posY) {
                     listObjects.remove(listObjects.indexOf(d));
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    public boolean deletePointA(int posX, int posY) {
+        for (Object o : this.listObjects) {
+            if (o instanceof Objet.Point) {
+                Objet.Point p = (Objet.Point) o;
+                if (p.getPosX() == posX && p.getPosY() == posY && p.getType() == PointType.POINTA) {
+                    listObjects.remove(listObjects.indexOf(p));
+                    setPointAIsSet(false);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    public boolean deletePointB(int posX, int posY) {
+        for (Object o : this.listObjects) {
+            if (o instanceof Objet.Point) {
+                Objet.Point p = (Objet.Point) o;
+                if (p.getPosX() == posX && p.getPosY() == posY && p.getType() == PointType.POINTB) {
+                    listObjects.remove(listObjects.indexOf(p));
+                    setPointBIsSet(false);
                     return true;
                 }
             }
