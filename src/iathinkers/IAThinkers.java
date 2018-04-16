@@ -6,7 +6,7 @@
 package iathinkers;
 
 //Import les classes du projet
-import Menu.Menu;
+import Menu.MainMenu;
 import Parametres.Parametres;
 import Plan.Plan;
 //
@@ -22,7 +22,7 @@ import java.sql.Connection;
 
 /**
  * Coeur du projet, la classe IAThinkers regroupe toutes les <i> scènes </i> à afficher et les charge dans un tableau de scène.
- * De plus, elle s'occupe d'afficher la <i> scène </i> du menu principal {@link Menu}.
+ * De plus, elle s'occupe d'afficher la <i> scène </i> du menu principal {@link MainMenu}.
  * Ainsi, IAThinkers est la classe mère de ce projet, elle ne possède donc qu'un constructeur vide. Ce dernier ne sera jamais appelé.
  * @author IAThinkers
  */
@@ -63,7 +63,7 @@ public class IAThinkers extends Application {
         sceneTab[5] = scene5;
         
         //Objet menu
-        Menu monMenu = new Menu(800,600,sceneTab,primaryStage);
+        MainMenu monMenu = new MainMenu(800,600,sceneTab,primaryStage);
         root0.getChildren().add(monMenu);
 
         //Objet plan

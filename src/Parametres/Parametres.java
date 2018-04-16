@@ -7,7 +7,11 @@ package Parametres;
 
 //Import pour JavaFX
 import iathinkers.IAThinkers;
-import Menu.Menu;
+import Menu.MainMenu;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -27,13 +31,12 @@ import javafx.stage.Stage;
 
 //
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -53,12 +56,12 @@ public class Parametres extends Parent{
     private Connection cnt;
     /**
      * Constructeur de la classe Parametres {@link Parametres}
-     * @param primaryStage : variable Stage permettant de retourner à la <i> scène </i> Menu {@link Menu}
-     * @param sceneTab tableau de scene permettant de retourner à la <i> scène </i> Menu {@link Menu}
+     * @param primaryStage : variable Stage permettant de retourner à la <i> scène </i> MainMenu {@link MainMenu}
+     * @param sceneTab tableau de scene permettant de retourner à la <i> scène </i> MainMenu {@link MainMenu}
      */
     
     public Parametres(Stage primaryStage, Scene[] sceneTab) {
-        cnt = IAThinkers.getConnect();
+        cnt = null;
         Scene mainScene = sceneTab[5];
         GridPane grid = new GridPane();
         grid.setAlignment(Pos.CENTER);
@@ -104,18 +107,65 @@ public class Parametres extends Parent{
                 username = ((TextField) mainScene.lookup("#usrTxt")).getText();
                 mdp =  ((PasswordField) mainScene.lookup("#pwTxt")).getText();
                 adresse = ((TextField) mainScene.lookup("#addTxt")).getText();
+                setUsername(username);
+                setMdp(mdp);
+                setAdresse(adresse);
                 System.out.println(username+" "+mdp+" "+adresse);
                 try {
-                    cnt = DriverManager.getConnection("jdbc:mysql://"+adresse+"/TEST?"
+                    cnt = DriverManager.getConnection("jdbc:mysql://"+adresse+"/?"
                         + "user="+username+"&password="+mdp);
                     statement = cnt.createStatement();
-                    resultSet = statement.executeQuery("select * from TEST.test");
-                    writeResultSet(resultSet);
+                    if (statement.executeUpdate("CREATE DATABASE IF NOT EXISTS iathinkers") != -1) {
+                        statement.executeUpdate("USE iathinkers");
+                        System.out.println("Database initialized");
+                    }
+                    if (statement.executeUpdate("CREATE TABLE IF NOT EXISTS `iathinkers`.`Type` (`idType` INT NOT NULL AUTO_INCREMENT,`typeName` VARCHAR(45) NOT NULL, PRIMARY KEY (`idType`), UNIQUE INDEX `typeName_UNIQUE` (`typeName` ASC)) ENGINE = InnoDB") != -1 ) {
+                         ResultSet rs = statement.executeQuery("SELECT * FROM Type");
+                         if (!rs.next()) {
+                            if (statement.executeUpdate("INSERT INTO Type (idType,typeName) VALUES (1,\'Wall\'), (2,\'Door\'), (3,\'PointA\'), (4,\'PointB\')") != -1) {
+                                System.out.println("Type table initialized");
+                            }
+                         }   
+                    }
+                    if (statement.executeUpdate("CREATE TABLE IF NOT EXISTS `iathinkers`.`Object` (  `idObject` INT NOT NULL AUTO_INCREMENT,`type` INT NOT NULL,`height` INT NULL,`width` INT NULL,`posX` INT NULL,`posY` INT NULL,`isVertical` TINYINT NULL,PRIMARY KEY (`idObject`),CONSTRAINT `type` FOREIGN KEY (`type`) REFERENCES `iathinkers`.`Type` (`idType`) ON DELETE NO ACTION ON UPDATE NO ACTION) ENGINE = InnoDB") != -1) {
+                        System.out.println("Object table initialized");
+                    }
+                    if (statement.executeUpdate("CREATE TABLE IF NOT EXISTS `iathinkers`.`HousePlan` (\n" +
+                                                "  `idHousePlan` INT NOT NULL AUTO_INCREMENT,\n" +
+                                                "  `name` VARCHAR(45) NOT NULL,\n" +
+                                                "  PRIMARY KEY (`idHousePlan`),\n" +
+                                                "  UNIQUE INDEX `name_UNIQUE` (`name` ASC))\n" +
+                                                "ENGINE = InnoDB;") != -1 ) {
+                        System.out.println("HousePlan table initialized");
+                    }
+                    if (statement.executeUpdate("CREATE TABLE IF NOT EXISTS `iathinkers`.`Composition` (\n" +
+                                                "  `idComposition` INT NOT NULL AUTO_INCREMENT,\n" +
+                                                "  `object` INT NOT NULL,\n" +
+                                                "  `plan` INT NOT NULL,\n" +
+                                                "  PRIMARY KEY (`idComposition`),\n" +
+                                                "  INDEX `plan_idx` (`plan` ASC),\n" +
+                                                "  INDEX `object_idx` (`object` ASC),\n" +
+                                                "  CONSTRAINT `object`\n" +
+                                                "    FOREIGN KEY (`object`)\n" +
+                                                "    REFERENCES `iathinkers`.`Object` (`idObject`)\n" +
+                                                "    ON DELETE NO ACTION\n" +
+                                                "    ON UPDATE NO ACTION,\n" +
+                                                "  CONSTRAINT `plan`\n" +
+                                                "    FOREIGN KEY (`plan`)\n" +
+                                                "    REFERENCES `iathinkers`.`HousePlan` (`idHousePlan`)\n" +
+                                                "    ON DELETE NO ACTION\n" +
+                                                "    ON UPDATE NO ACTION)\n" +
+                                                "ENGINE = InnoDB;") != -1) {
+                        System.out.println("Composition table initialized");
+                    }
+                    //writeResultSet(resultSet);
                     Text texte = (Text) mainScene.lookup("#infoConnexion");
-                    texte.setText("Connexion établie !");
+                    texte.setText("Connection achieved !");
+                    encrypt();
+                    System.out.println("Encryption achieved !");
                 } catch (SQLException e) {
                     Text texte = (Text) mainScene.lookup("#infoConnexion");
-                    texte.setText("Connexion échouée,\nveuillez vérifier vos identifiants");
+                    texte.setText("Connection failed, please check your credentials");
                     e.printStackTrace();
                 } finally {
                     close();
@@ -218,8 +268,48 @@ public class Parametres extends Parent{
     public void setMdp(String mdp) {
         this.mdp = mdp;
     }
-    
-    public void saveCredentials() {
+    /**
+     * Encrypting method using Vigenère algorithm with the username as a key
+     */
+    public void encrypt() {
+        char[] username = getUsername().toCharArray();
+        char[] adresse = getAdresse().toCharArray();
+        char[] pwd = getMdp().toCharArray();
+        
+        
+        for(int i = 0; i < adresse.length; i++) {
+            adresse[i] = (char) ((int) adresse[i] + (int) username[i % username.length]);
+        }
+        
+        for (int i = 0; i < pwd.length; i++) {
+            pwd[i] = (char) ((int) pwd[i] + (int) username[i % username.length]);
+        }
+        
+        for(int i = 0; i < username.length; i++) {
+            username[i] = (char) ((int)username[i]*2);
+        }
+        
+        
+        String usrEncrypted = new String(username);
+        String adrEncrypted = new String(adresse);
+        String pwdEncrypted = new String(pwd);
+        
+        BufferedWriter writer = null;
+        try {
+            File logFile = new File("usrdata.txt");
+            writer = new BufferedWriter(new FileWriter(logFile));
+            writer.write(usrEncrypted+System.getProperty("line.separator"));
+            writer.write(adrEncrypted+System.getProperty("line.separator"));
+            writer.write(pwdEncrypted);
+        } catch (IOException iOException) {
+                        
+        } finally {
+            try {
+                writer.close();
+            } catch (IOException ex) {
+
+            }
+        }
         
     }
     

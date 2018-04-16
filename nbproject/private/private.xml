@@ -3,15 +3,15 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
+            <file>file:/H:/Documents/NetBeansProjects/IAThinkers/src/Objet/Point.java</file>
             <file>file:/H:/Documents/NetBeansProjects/IAThinkers/src/Parametres/Parametres.java</file>
-            <file>file:/H:/Documents/NetBeansProjects/IAThinkers/src/Plan/Plan.java</file>
+            <file>file:/H:/Documents/NetBeansProjects/IAThinkers/src/Objet/Wall.java</file>
+            <file>file:/H:/Documents/NetBeansProjects/IAThinkers/src/Objet/Door.java</file>
+            <file>file:/H:/Documents/NetBeansProjects/IAThinkers/src/Objet/ObjetInterface.java</file>
+            <file>file:/H:/Documents/NetBeansProjects/IAThinkers/src/Objet/PointType.java</file>
             <file>file:/H:/Documents/NetBeansProjects/IAThinkers/src/Plan/Grille.java</file>
-            <file>file:/H:/Documents/NetBeansProjects/IAThinkers/src/Parametres/Hash.java</file>
-            <file>file:/H:/Documents/NetBeansProjects/IAThinkers/src/Parametres/Encrypt.java</file>
+            <file>file:/H:/Documents/NetBeansProjects/IAThinkers/src/Plan/Plan.java</file>
             <file>file:/H:/Documents/NetBeansProjects/IAThinkers/src/Plan/Cell.java</file>
-            <file>file:/H:/Documents/NetBeansProjects/IAThinkers/src/iathinkers/IAThinkers.java</file>
-            <file>file:/H:/Documents/NetBeansProjects/IAThinkers/src/Plan/plan.css</file>
-            <file>file:/H:/Documents/NetBeansProjects/IAThinkers/src/Menu/Menu.java</file>
         </group>
     </open-files>
 </project-private>

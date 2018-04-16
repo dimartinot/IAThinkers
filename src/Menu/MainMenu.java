@@ -20,7 +20,7 @@ import javafx.stage.Stage;
  * Elle possède un constructeur.
  * @author IAThinkers
  */
-public class Menu extends Parent{
+public class MainMenu extends Parent{
     
     /**
      * Constructeur de la classe Menu. Définit un objet menu à l'aide des paramètres suivants :
@@ -29,7 +29,7 @@ public class Menu extends Parent{
      * @param sceneTab Tableau de scene : initialisé dans la classe IAThinkers {@link iathinkers.IAThinkers}, il permet de passer de n'importe quelle scene à n'importe quelle autre.
      * @param primaryStage Stage principal initialisé dans la classe IAThinkers {@link iathinkers.IAThinkers}, permet l'initialisation des scenes
      */
-    public Menu(int height, int width, Scene[] sceneTab, Stage primaryStage) {
+    public MainMenu(int height, int width, Scene[] sceneTab, Stage primaryStage) {
         
         Button buttonPlan = new Button("HOUSE PLAN CREATION");
         buttonPlan.setOnAction(new EventHandler<ActionEvent>() {

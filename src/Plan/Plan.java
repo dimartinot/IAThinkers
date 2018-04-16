@@ -5,7 +5,19 @@
  */
 package Plan;
 
-import Menu.Menu;
+import Menu.MainMenu;
+import Objet.PointType;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.LinkedList;
+import java.util.Optional;
 import java.util.StringTokenizer;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -18,6 +30,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -33,36 +46,41 @@ import javafx.stage.Stage;
 public class Plan extends Parent{
     /**
      * Constructeur de la classe Plan. Passe en paramètres une variable Stage et un tableau de Scene[] pour pouvoir retourner au menu principal à partir de cet <i> scène </i>
-     * @param primaryStage variable Stage permettant de retourner sur la <i> scène </i> Menu {@link Menu}
-     * @param sceneTab tableau de Scene permettant de retourner sur la <i> scène </i> Menu {@link Menu}
+     * @param primaryStage variable Stage permettant de retourner sur la <i> scène </i> MainMenu {@link MainMenu}
+     * @param sceneTab tableau de Scene permettant de retourner sur la <i> scène </i> MainMenu {@link MainMenu}
+     * @param connect connection variable linked to the SQL database
      */
+    
+    private String username;
+    private String adresse;
+    private String mdp;
+    
     public Plan(Stage primaryStage, Scene[] sceneTab) {
        
-        
         this.getStylesheets().add(this.getClass().getResource("plan.css").toExternalForm());
         
-        //Horizontale box mère
+        //Main horizontale box 
         HBox hbox = new HBox();
         
-        //Menu vertical
+        //Vertical menu
         VBox menuVertical = new VBox();
         menuVertical.setPadding(new Insets(0, 0, 0, 5));
-        //Grille composante du menu
+        //Grid composing the menu
         GridPane grid = new GridPane();
         
-        //Liste déroulante
+        //Selecting list
         ComboBox<String> choix = new ComboBox();
         choix.getItems().add("Wall");
         choix.getItems().add("Door");
         choix.getItems().add("Starting Point");
         choix.getItems().add("Ending Point");
 
-        //Défini les TextField d'option de chacun des choix de l'utilisateur à la pose d'un Wall
+        //Define the textfields for the wall properties
         TextField height = new TextField();
         height.setId("height");
         height.setPrefWidth(30);
         Label heightLbl = new Label("Height");
-        // force le textfield a ne contenir que des entrées numériques
+        // force the textfield only to contain numeric characters
         height.textProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, 
@@ -76,7 +94,7 @@ public class Plan extends Parent{
         width.setId("width");
         width.setPrefWidth(30);
         Label widthLbl = new Label("Width");
-        // force le textfield a ne contenir que des entrées numériques
+        // force the textfield only to contain numeric characters
         width.textProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, 
@@ -87,8 +105,7 @@ public class Plan extends Parent{
             }
         });
         
-        //Défini l'orientation choisie à la pose d'une Door : s'ouvre t elle à la verticale ou à l'horizontale (i.e, s'ouvre-t-elle en haut et bas de la de pose 
-        //ou à gauche et droite de la case de pose
+        //Define the orientation of the door to be put
         ComboBox<String> orientation = new ComboBox();
         orientation.getItems().add("Horizontal");
         orientation.getItems().add("Vertical");
@@ -102,55 +119,55 @@ public class Plan extends Parent{
         choix.setOnAction((e) -> {
              switch (choix.getSelectionModel().getSelectedItem()) {
                  case "Wall":
-                    //Remove les choix de personnalisation d'une Door
+                    //Remove personnalisation choices for a door
                      
-                    GridPane.clearConstraints(orientation);
-                    GridPane.clearConstraints(orientationLbl);
+                    grid.clearConstraints(orientation);
+                    grid.clearConstraints(orientationLbl);
                     grid.getChildren().remove(orientation);
                     grid.getChildren().remove(orientationLbl);
 
                     
-                    GridPane.setConstraints(height,1,4);
-                    GridPane.setConstraints(heightLbl,1,3);
-                    GridPane.setConstraints(width,1,6);
-                    GridPane.setConstraints(widthLbl,1,5);
-                    //Ajoute les choix de personnalisation d'un Wall
+                    grid.setConstraints(height,1,4);
+                    grid.setConstraints(heightLbl,1,3);
+                    grid.setConstraints(width,1,6);
+                    grid.setConstraints(widthLbl,1,5);
+                    //Add the choices for a wall
                     grid.getChildren().add(height);
                     grid.getChildren().add(width);
                     grid.getChildren().add(heightLbl);
                     grid.getChildren().add(widthLbl);
                     break;
                  case "Door":
-                     //Remove les choix de personnalisation d'un Wall
+                     //Remove the choices for a wall
                      
-                    GridPane.clearConstraints(height);
-                    GridPane.clearConstraints(width);
-                    GridPane.clearConstraints(heightLbl);
-                    GridPane.clearConstraints(widthLbl);
+                    grid.clearConstraints(height);
+                    grid.clearConstraints(width);
+                    grid.clearConstraints(heightLbl);
+                    grid.clearConstraints(widthLbl);
                     grid.getChildren().remove(height);
                     grid.getChildren().remove(width);
                     grid.getChildren().remove(heightLbl);
                     grid.getChildren().remove(widthLbl);
                     
-                    GridPane.setConstraints(orientationLbl,1,3);
-                    GridPane.setConstraints(orientation,1,4);
-                     //Ajoute les choix de personnalisation d'une Door
+                    grid.setConstraints(orientationLbl,1,3);
+                    grid.setConstraints(orientation,1,4);
+                     //Add the choices for a door
                     grid.getChildren().add(orientation);
                     grid.getChildren().add(orientationLbl);
                     break;
                  case "Starting Point":
                  case "Ending Point":
-                    GridPane.clearConstraints(height);
-                    GridPane.clearConstraints(width);
-                    GridPane.clearConstraints(heightLbl);
-                    GridPane.clearConstraints(widthLbl);
+                    grid.clearConstraints(height);
+                    grid.clearConstraints(width);
+                    grid.clearConstraints(heightLbl);
+                    grid.clearConstraints(widthLbl);
                     grid.getChildren().remove(height);
                     grid.getChildren().remove(width);
                     grid.getChildren().remove(heightLbl);
                     grid.getChildren().remove(widthLbl);
                     
-                    GridPane.clearConstraints(orientation);
-                    GridPane.clearConstraints(orientationLbl);
+                    grid.clearConstraints(orientation);
+                    grid.clearConstraints(orientationLbl);
                     grid.getChildren().remove(orientation);
                     grid.getChildren().remove(orientationLbl);
                 break;    
@@ -163,22 +180,22 @@ public class Plan extends Parent{
         
         choix.setId("choixObjet");
         grid.setVgap(10);
-        GridPane.setConstraints(choix,1,2);
+        grid.setConstraints(choix,1,2);
         
         //Label liste
         Label label = new Label("Object choice");
-        GridPane.setConstraints(label, 1, 1); // column=1 row=1
+        grid.setConstraints(label, 1, 1); // column=1 row=1
         
         //Info Case
         Text infoCase = new Text(10,50,"<_;_>");
         infoCase.setId("infoCase");
-        GridPane.setConstraints(infoCase,1,7);
+        grid.setConstraints(infoCase,1,7);
         
-        //Initialisation de l'objet grille
+        //Grid Object initialisation
         Grille objetGrid = new Grille(sceneTab[1]);
 
         Label objectListLbl = new Label("Listing of all created objects");
-        GridPane.setConstraints(objectListLbl,1,8);
+        grid.setConstraints(objectListLbl,1,8);
         
         ComboBox<String> objectList = new ComboBox();
         objectList.setId("objectlist");
@@ -296,11 +313,28 @@ public class Plan extends Parent{
             grid.getChildren().remove(deleteButton);
             grid.getChildren().add(deleteButton);
         });
-        GridPane.setConstraints(deleteButton,1,10);
-        GridPane.setConstraints(objectList,1,9);
+        grid.setConstraints(deleteButton,1,10);
+        grid.setConstraints(objectList,1,9);
         
         
-        //Bouton retour
+        
+        //Save button
+        Button saveButton = new Button("Save");
+        TextInputDialog savingPopup = new TextInputDialog("");
+        savingPopup.setTitle("House Plan Saving");
+        savingPopup.setHeaderText("In order to save your house plan, you need to enter a name for your House Plan");
+        savingPopup.setContentText("Please enter the saving name:");
+        saveButton.setOnAction(new EventHandler<ActionEvent>() {
+           @Override
+           public void handle(ActionEvent event) {
+              Optional<String> result = savingPopup.showAndWait();
+              if (result.isPresent()) {
+                  savingProcess(result,objetGrid.getListObjects());
+              }
+           }
+        });
+        
+        //Back button
         Button backButton = new Button("Back..");
         backButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -308,13 +342,203 @@ public class Plan extends Parent{
                 primaryStage.setScene(sceneTab[0]);
             }
         });
-        GridPane.setConstraints(backButton, 1, 12); // column=1 row=6
-
-        grid.getChildren().addAll(choix,label,backButton,infoCase,objectListLbl,objectList);
+        
+        //Error text zone
+        
+        
+        HBox hbButtons = new HBox();
+        hbButtons.setSpacing(10);
+        hbButtons.getChildren().addAll(backButton,saveButton);
+        grid.setConstraints(hbButtons,1,12);
+        
+        grid.getChildren().addAll(choix,label,infoCase,objectListLbl,objectList,hbButtons);
         menuVertical.getChildren().add(grid);
         
         hbox.getChildren().add(objetGrid);
         hbox.getChildren().add(menuVertical);
         this.getChildren().add(hbox);
     }
+
+    private void savingProcess(Optional<String> result, LinkedList<Object> listObjects) {
+        int idHousePlan = 0;
+        int idTypeDoor = 0;
+        int idTypePointA = 0;
+        int idTypePointB = 0;
+        int idTypeWall = 0;
+        try {
+            setCredentials();
+            Connection connect = DriverManager.getConnection("jdbc:mysql://"+this.getAdresse()+"/iathinkers?"
+                    + "user="+this.getUsername()+"&password="+this.getMdp());
+            //Dealing with house plan insertion
+            Statement statement = connect.createStatement();
+            String request = "SELECT * FROM houseplan WHERE name=\'"+result.get()+"\'";
+            System.out.println(request);
+            ResultSet rs = statement.executeQuery(request);
+            if (!rs.next()) {
+                if (statement.executeUpdate("INSERT INTO houseplan(name) VALUES (\'"+result.get()+"\')") != -1) {
+                    System.out.println("HousePlan value inserted");
+                }
+            }
+            rs = statement.executeQuery("SELECT * FROM houseplan WHERE name=\'"+result.get()+"\'");
+            
+            while (rs.next()) {
+              idHousePlan = rs.getInt("idHousePlan");
+            }
+            //Dealing with type Ids
+            rs = statement.executeQuery("SELECT * FROM Type");
+            while (rs.next()) {
+                switch (rs.getString("typeName")) {
+                    case "Door":
+                        idTypeDoor = rs.getInt("idType");
+                        break;
+                    case "PointA":
+                        idTypePointA = rs.getInt("idType");
+                        break;
+                    case "PointB":
+                        idTypePointB = rs.getInt("idType");
+                        break;
+                    case "Wall":
+                        idTypeWall = rs.getInt("idType");
+                        break;
+                    default:
+                        break;
+              }
+            }
+            for (Object o : listObjects) {
+                int objId = 0;
+                if (o instanceof Objet.Wall) {
+                    Objet.Wall w = (Objet.Wall) o;
+                    request = "INSERT INTO Object(type,height,width,posX,posY) VALUES ("+idTypeWall+", "+w.getHeight()+", "+w.getWidth()+", "+w.getPosX()+", "+w.getPosY()+")";
+                    System.out.println(request);
+                    if (statement.executeUpdate(request) != -1) {
+                        rs = statement.executeQuery("SELECT idObject FROM Object ORDER BY idObject DESC LIMIT 0,1");
+                        if (rs.next()) {
+                            objId = rs.getInt("idObject");
+                        }
+                        if (statement.executeUpdate("INSERT INTO Composition(object, plan) VALUES ("+objId+", "+idHousePlan+")") != -1) {
+                            System.out.println("Object "+w.toString()+" saved");
+                        }
+                    }
+                } else if (o instanceof Objet.Door) {
+                    Objet.Door d = (Objet.Door) o;
+                    if (d.getIsVertical()) {
+                        request = "INSERT INTO Object(type,height,width,posX,posY,isVertical) VALUES ("+idTypeDoor+", "+d.getHeight()+", "+d.getWidth()+", "+d.getPosX()+", "+d.getPosY()+", 1)";
+                    } else {
+                        request = "INSERT INTO Object(type,height,width,posX,posY,isVertical) VALUES ("+idTypeDoor+", "+d.getHeight()+", "+d.getWidth()+", "+d.getPosX()+", "+d.getPosY()+", 0)";
+                    }
+                    if (statement.executeUpdate(request) != -1) {
+                        rs = statement.executeQuery("SELECT idObject FROM Object ORDER BY idObject DESC LIMIT 0,1");
+                        if (rs.next()) {
+                            objId = rs.getInt("idObject");
+                        }
+                        if (statement.executeUpdate("INSERT INTO Composition(object, plan) VALUES ("+objId+", "+idHousePlan+")") != -1) {
+                            System.out.println("Object "+d.toString()+" saved");
+                        }
+                    }
+                } else if (((Objet.Point) o).getType() == Objet.PointType.POINTA) {
+                    Objet.Point p = (Objet.Point) o;
+                    request = "INSERT INTO Object(type,posX,posY) VALUES ("+idTypePointA+", "+p.getPosX()+", "+p.getPosY()+")";
+                    if (statement.executeUpdate(request) != -1) {
+                        rs = statement.executeQuery("SELECT idObject FROM Object ORDER BY idObject DESC LIMIT 0,1");
+                        if (rs.next()) {
+                            objId = rs.getInt("idObject");
+                        }
+                        if (statement.executeUpdate("INSERT INTO Composition(object, plan) VALUES ("+objId+", "+idHousePlan+")") != -1) {
+                            System.out.println("Object "+p.toString()+" saved");
+                        }
+                    }                
+                } else {
+                    Objet.Point p = (Objet.Point) o;
+                    request = "INSERT INTO Object(type,posX,posY) VALUES ("+idTypePointB+", "+p.getPosX()+", "+p.getPosY()+")";
+                    if (statement.executeUpdate(request) != -1) {
+                        rs = statement.executeQuery("SELECT idObject FROM Object ORDER BY idObject DESC LIMIT 0,1");
+                        if (rs.next()) {
+                            objId = rs.getInt("idObject");
+                        }
+                        if (statement.executeUpdate("INSERT INTO Composition(object, plan) VALUES ("+objId+", "+idHousePlan+")") != -1) {
+                            System.out.println("Object "+p.toString()+" saved");
+                        }
+                    }
+                }
+            }
+            System.out.println("\n Every object saved ! \n");
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
+    
+    private void setCredentials() {
+        try {
+            FileReader fr = new FileReader("usrdata.txt");
+            BufferedReader textReader = new BufferedReader(fr);
+            String[] textData = new String[3];
+            for (int i = 0; i < textData.length; i++ ) {
+                try {
+                    textData[i] = textReader.readLine();
+                } catch (IOException ex) {
+                    
+                }
+            }
+            try {
+                textReader.close();
+            } catch (IOException ex) {
+                
+            }
+            
+            char[] usrChar = textData[0].toCharArray();
+            char[] adrChar = textData[1].toCharArray();
+            char[] pwdChar = textData[2].toCharArray();
+            
+            for (int i = 0; i < usrChar.length; i++) {
+                usrChar[i] = (char)( (int) usrChar[i] / 2);
+            }
+            
+            for (int i = 0; i < adrChar.length; i++) {
+                adrChar[i] = (char) ((int)adrChar[i] - (int) usrChar[i % usrChar.length]);
+            }
+            
+            for (int i = 0; i < pwdChar.length; i++) {
+                pwdChar[i] = (char) ((int)pwdChar[i] - (int) usrChar[i % usrChar.length]);
+            }
+            
+            this.setUsername(new String(usrChar));
+            this.setMdp(new String(pwdChar));
+            this.setAdresse(new String(adrChar));
+                        
+        } catch (FileNotFoundException ex) {
+            System.out.println("No database set");
+            this.setUsername("");
+            this.setMdp("");
+            this.setAdresse("");
+        }
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setAdresse(String adresse) {
+        this.adresse = adresse;
+    }
+
+    public void setMdp(String mdp) {
+        this.mdp = mdp;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getAdresse() {
+        return adresse;
+    }
+
+    public String getMdp() {
+        return mdp;
+    }
+    
+    
+    
+    
+    
 }
