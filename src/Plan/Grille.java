@@ -6,6 +6,9 @@
 package Plan;
 
 import Objet.PointType;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import javafx.scene.Group;
 import javafx.scene.Parent;
@@ -42,7 +45,8 @@ public class Grille extends Parent{
     public int i;
     public int j;
     
-    public LinkedList<Object> listObjects;
+    private ArrayList<Object> listObjects;
+    private HashMap<String,Cell> listCells;
     
     //Defines if both the starting and ending point are defined
     private boolean pointAIsSet = false;
@@ -59,8 +63,8 @@ public class Grille extends Parent{
      */
     public Grille(Scene scene) {
         Group grille = new Group();
-        this.listObjects = new LinkedList<Object>();
-        
+        this.listObjects = new ArrayList<Object>();
+        this.listCells = new HashMap<String,Cell>();
         this.getStylesheets().add(this.getClass().getResource("plan.css").toExternalForm());
         /**
          * Boucle initialisant les objets cellules. /!\ Ces derniers ne sont sauvegarder que graphiquement : code à modifier lors de l'implémentation de l'algo
@@ -110,22 +114,7 @@ public class Grille extends Parent{
                                     }
                                 }
                                 if (fits) {
-                                    for (int i = 0; i < height; i++) {
-                                        for (int j = 0; j < width; j++) {
-                                            if ((cellule.getY() + i)<= n && (cellule.getX() + j)<= m) {
-                                                try {
-                                                    Rectangle rectangle = (Rectangle) scene.lookup("#"+(cellule.getX() + j)+"-"+(cellule.getY() + i));
-                                                    rectangle.setFill(Color.THISTLE);
-                                                    cellule.setOccupied(true);
-                                                } catch (NullPointerException e) {
-
-                                                }
-                                            }
-                                        }
-                                    }
-                                    Objet.Wall wall = new Objet.Wall(height,width,cellule.getX(),cellule.getY());
-                                    listObjects.add(wall);
-                                    objectList.getItems().add(wall.toString());
+                                    addWall(height,width,cellule.getX(),cellule.getY(),scene);
                                 }    
                             } catch (NumberFormatException e) {
                                 //e.printStackTrace();
@@ -149,11 +138,7 @@ public class Grille extends Parent{
                                             }
                                         }
                                         if (fits) {
-                                            Rectangle rectangle = (Rectangle) scene.lookup("#"+(cellule.getX())+"-"+(cellule.getY()));
-                                            rectangle.setFill(Color.ANTIQUEWHITE);
-                                            Objet.Door door = new Objet.Door(1, 1, cellule.getX(), cellule.getY(), true);
-                                            listObjects.add(door);
-                                            objectList.getItems().add(door.toString());
+                                            addDoor(cellule.getX(),cellule.getY(),true,scene);
                                         }
                                     } else if (orientation.getSelectionModel().getSelectedItem()=="Horizontal") {
                                        if ((cellule.getY()-1)>0 && (cellule.getY()+1)<m-1) {
@@ -170,11 +155,7 @@ public class Grille extends Parent{
                                             }
                                         }
                                         if (fits) {
-                                            Rectangle rectangle = (Rectangle) scene.lookup("#"+(cellule.getX())+"-"+(cellule.getY()));
-                                            rectangle.setFill(Color.ANTIQUEWHITE);
-                                            Objet.Door door = new Objet.Door(1, 1, cellule.getX(), cellule.getY(), true);
-                                            listObjects.add(door);
-                                            objectList.getItems().add(door.toString());
+                                            addDoor(cellule.getX(),cellule.getY(),false,scene);
                                         }
                                     } else {
                                         
@@ -186,22 +167,14 @@ public class Grille extends Parent{
                             if (isPointAIsSet()==false) {
                                 Rectangle rectangle = (Rectangle) scene.lookup("#"+(cellule.getX())+"-"+(cellule.getY()));
                                 if (rectangle.getFill() != Color.THISTLE && rectangle.getFill() != Color.ANTIQUEWHITE && rectangle.getFill() != Color.TEAL) {
-                                    rectangle.setFill(Color.BROWN);
-                                    Objet.Point pointA = new Objet.Point(Objet.PointType.POINTA,cellule.getX(),cellule.getY());
-                                    listObjects.add(pointA);
-                                    objectList.getItems().add(pointA.toString());
-                                    setPointAIsSet(true);
+                                    addPointA(cellule.getX(),cellule.getY(),scene);
                                 }    
                             }
                         } else if (choix.getSelectionModel().getSelectedItem()=="Ending Point") {
                             if (isPointBIsSet()==false) {
                                 Rectangle rectangle = (Rectangle) scene.lookup("#"+(cellule.getX())+"-"+(cellule.getY()));
                                 if (rectangle.getFill() != Color.THISTLE && rectangle.getFill() != Color.ANTIQUEWHITE && rectangle.getFill() != Color.BROWN) {
-                                    rectangle.setFill(Color.TEAL);
-                                    Objet.Point pointB = new Objet.Point(Objet.PointType.POINTB,cellule.getX(),cellule.getY());
-                                    listObjects.add(pointB);
-                                    objectList.getItems().add(pointB.toString());
-                                    setPointBIsSet(true);
+                                    addPointB(cellule.getX(),cellule.getY(),scene);
                                 }
                             }
                         } else {
@@ -210,6 +183,7 @@ public class Grille extends Parent{
                     }
                 });
                 grille.getChildren().add(cellule);
+                listCells.put("#"+(cellule.getX())+"-"+(cellule.getY()), cellule);
             }
         }
         this.getChildren().add(grille);
@@ -240,8 +214,12 @@ public class Grille extends Parent{
         this.pointBIsSet = pointBIsSet;
     }
     
-    public LinkedList<Object> getListObjects() {
+    public ArrayList<Object> getListObjects() {
         return listObjects;
+    }
+
+    public HashMap<String, Cell> getListCells() {
+        return listCells;
     }
     
     public boolean deleteWall(int height, int width, int posX, int posY) {
@@ -297,4 +275,102 @@ public class Grille extends Parent{
         }
         return false;
     }
+    
+    public boolean addWall(int height, int width, int posX, int posY, Scene scene) {
+        ComboBox objectList = (ComboBox) scene.lookup("#objectlist");
+        Objet.Wall w = new Objet.Wall(height,width,posX,posY);
+        objectList.getItems().add(w.toString());
+        this.getListObjects().add(w);
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                Cell cellule = listCells.get("#"+(posX+j)+"-"+(posY+i));
+                if ((cellule.getY())<= n && (cellule.getX())<= m) {
+                    try {
+                        Rectangle rectangle = (Rectangle) scene.lookup("#"+(cellule.getX())+"-"+(cellule.getY()));
+                        rectangle.setFill(Color.THISTLE);
+                        cellule.setOccupied(true);
+                    } catch (NullPointerException e) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+    
+    public boolean addDoor(int posX, int posY, boolean isVertical, Scene scene) {
+        ComboBox objectList = (ComboBox) scene.lookup("#objectlist");
+        Objet.Door d = new Objet.Door(1,1,posX,posY,isVertical);
+        objectList.getItems().add(d.toString());
+        this.getListObjects().add(d);
+        Cell cellule = listCells.get("#"+(posX)+"-"+(posY));
+        if ((cellule.getY())<= n && (cellule.getX())<= m) {
+            try {
+                Rectangle rectangle = (Rectangle) scene.lookup("#"+(cellule.getX())+"-"+(cellule.getY()));
+                rectangle.setFill(Color.ANTIQUEWHITE);
+                cellule.setOccupied(true);
+            } catch (NullPointerException e) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    public boolean addPointA(int posX, int posY, Scene scene) {
+        ComboBox objectList = (ComboBox) scene.lookup("#objectlist");
+        Objet.Point p = new Objet.Point(PointType.POINTA,posX,posY);
+        objectList.getItems().add(p.toString());
+        this.getListObjects().add(p);
+        Cell cellule = listCells.get("#"+(posX)+"-"+(posY));
+        if ((cellule.getY())<= n && (cellule.getX())<= m) {
+            try {
+                Rectangle rectangle = (Rectangle) scene.lookup("#"+(cellule.getX())+"-"+(cellule.getY()));
+                rectangle.setFill(Color.BROWN);
+                cellule.setOccupied(true);
+                setPointAIsSet(true);
+            } catch (NullPointerException e) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    public boolean addPointB(int posX, int posY, Scene scene) {
+        ComboBox objectList = (ComboBox) scene.lookup("#objectlist");
+        Objet.Point p = new Objet.Point(PointType.POINTB,posX,posY);
+        objectList.getItems().add(p.toString());
+        this.getListObjects().add(p);
+        Cell cellule = listCells.get("#"+(posX)+"-"+(posY));
+        if ((cellule.getY())<= n && (cellule.getX())<= m) {
+            try {
+                Rectangle rectangle = (Rectangle) scene.lookup("#"+(cellule.getX())+"-"+(cellule.getY()));
+                rectangle.setFill(Color.TEAL);
+                cellule.setOccupied(true);
+                setPointBIsSet(true);
+            } catch (NullPointerException e) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    public void printListObjects() {
+        for (Object o : listObjects) {
+            if (o instanceof Objet.Wall) {
+                System.out.println(((Objet.Wall) o).toString());
+            } else if (o instanceof Objet.Door) {
+                System.out.println(((Objet.Door) o).toString());
+            } else {
+                System.out.println(((Objet.Point) o).toString());
+            }
+        }
+        System.out.println("------------------");
+    }
+
+    @Override
+    public String toString() {
+        return "Grille{" + "sceneWidth=" + sceneWidth + ", sceneHeight=" + sceneHeight + ", listObjects=" + listObjects + ", pointAIsSet=" + pointAIsSet + ", pointBIsSet=" + pointBIsSet + '}';
+    }
+    
+    
 }

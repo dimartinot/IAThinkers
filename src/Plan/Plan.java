@@ -16,7 +16,8 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.StringTokenizer;
 import javafx.beans.value.ChangeListener;
@@ -27,6 +28,7 @@ import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -54,6 +56,7 @@ public class Plan extends Parent{
     private String username;
     private String adresse;
     private String mdp;
+    private Grille objetGrid;
     
     public Plan(Stage primaryStage, Scene[] sceneTab) {
        
@@ -192,7 +195,7 @@ public class Plan extends Parent{
         grid.setConstraints(infoCase,1,7);
         
         //Grid Object initialisation
-        Grille objetGrid = new Grille(sceneTab[1]);
+        this.objetGrid = new Grille(sceneTab[1]);
 
         Label objectListLbl = new Label("Listing of all created objects");
         grid.setConstraints(objectListLbl,1,8);
@@ -244,13 +247,9 @@ public class Plan extends Parent{
                                         int width = Integer.parseInt(doorData[1]);
                                         int posX = Integer.parseInt(doorData[2]);
                                         int posY = Integer.parseInt(doorData[3]);
-                                        for (int i = 0; i < width; i++) {
-                                            for (int j = 0; j < height; j++) {
-                                                Rectangle rectangle = (Rectangle) sceneTab[1].lookup("#"+(posX + i)+"-"+(posY+ j));
-                                                if (rectangle.getFill() == Color.ANTIQUEWHITE) {
-                                                    rectangle.setFill(Color.ALICEBLUE);
-                                                }
-                                            }
+                                        Rectangle rectangle = (Rectangle) sceneTab[1].lookup("#"+(posX)+"-"+(posY));
+                                        if (rectangle.getFill() == Color.ANTIQUEWHITE) {
+                                            rectangle.setFill(Color.ALICEBLUE);
                                         }
                                         if (objetGrid.deleteDoor(height, width, posX, posY)) {
                                             System.out.println("Door correctly deleted");
@@ -329,7 +328,41 @@ public class Plan extends Parent{
            public void handle(ActionEvent event) {
               Optional<String> result = savingPopup.showAndWait();
               if (result.isPresent()) {
-                  savingProcess(result,objetGrid.getListObjects());
+                  savingProcess(result,objetGrid.getListObjects(),sceneTab[1]);
+              }
+           }
+        });
+        
+        //Load button
+        Button loadButton = new Button("Load");
+        
+        //Set the choices possible
+        List<String> housePlans = new ArrayList<>();
+        try {
+            setCredentials();
+            Connection connect = DriverManager.getConnection("jdbc:mysql://" + this.getAdresse() + "/iathinkers?"
+                    + "user=" + this.getUsername() + "&password=" + this.getMdp());
+            Statement statement = connect.createStatement();
+            String request = "SELECT name FROM houseplan";
+            ResultSet rs = statement.executeQuery(request);
+            while(rs.next()) {
+                housePlans.add(rs.getString("name"));
+            }
+        } catch (SQLException e) {
+        
+        }
+        
+        ChoiceDialog<String> loadingPopup = new ChoiceDialog<>("",housePlans);
+        loadingPopup.setTitle("House Plan Loading");
+        loadingPopup.setHeaderText("In order to load an House Plan, you need to select one from the list below (/!\\ Warning, your current one will be deleted /!\\) :");
+        loadingPopup.setContentText("Please select the House Plan to Load");
+        loadButton.setOnAction(new EventHandler<ActionEvent>() {
+           @Override
+           public void handle(ActionEvent event) {
+              Optional<String> result = loadingPopup.showAndWait();
+              if (result.isPresent()) {
+                  objectList.getItems().clear();
+                  loading(sceneTab, result.get());
               }
            }
         });
@@ -344,14 +377,18 @@ public class Plan extends Parent{
         });
         
         //Error text zone
+        Text infoSQL = new Text(10,50,"");
+        infoSQL.setId("infoSQL");
+        grid.setConstraints(infoSQL,1,11);
         
+        //Hbox set to display the 3 bottom buttons
         
         HBox hbButtons = new HBox();
         hbButtons.setSpacing(10);
-        hbButtons.getChildren().addAll(backButton,saveButton);
+        hbButtons.getChildren().addAll(backButton,saveButton,loadButton);
         grid.setConstraints(hbButtons,1,12);
         
-        grid.getChildren().addAll(choix,label,infoCase,objectListLbl,objectList,hbButtons);
+        grid.getChildren().addAll(choix,label,infoCase,objectListLbl,objectList,hbButtons,infoSQL);
         menuVertical.getChildren().add(grid);
         
         hbox.getChildren().add(objetGrid);
@@ -359,7 +396,7 @@ public class Plan extends Parent{
         this.getChildren().add(hbox);
     }
 
-    private void savingProcess(Optional<String> result, LinkedList<Object> listObjects) {
+    private boolean savingProcess(Optional<String> result, ArrayList<Object> listObjects, Scene scene) {
         int idHousePlan = 0;
         int idTypeDoor = 0;
         int idTypePointA = 0;
@@ -378,6 +415,10 @@ public class Plan extends Parent{
                 if (statement.executeUpdate("INSERT INTO houseplan(name) VALUES (\'"+result.get()+"\')") != -1) {
                     System.out.println("HousePlan value inserted");
                 }
+            } else {
+                Text infoSQL = (Text) scene.lookup("#infoSQL");
+                infoSQL.setText("There is an existing\nplan with the name \'"+result.get()+"\'. \nPlease select another name. ");
+                return false;
             }
             rs = statement.executeQuery("SELECT * FROM houseplan WHERE name=\'"+result.get()+"\'");
             
@@ -462,9 +503,96 @@ public class Plan extends Parent{
                 }
             }
             System.out.println("\n Every object saved ! \n");
+            Text infoSQL = (Text) scene.lookup("#infoSQL");
+            infoSQL.setText("House Plan correctly\n saved as "+result.get());
+            return true;
+        } catch (SQLException ex) {
+            return false;
+        }
+    }
+    
+    private boolean loading(Scene[] sceneTab, String houseplanName) {
+        //objetGrid.printListObjects();
+        for (Object o : objetGrid.getListObjects()) {
+            if (o instanceof Objet.Wall) {
+                Objet.Wall w = (Objet.Wall) o;
+                for (int i = 0; i < w.getWidth(); i++) {
+                    for (int j = 0; j < w.getHeight(); j++) {
+                        Rectangle rectangle = (Rectangle) sceneTab[1].lookup("#"+(w.getPosX() + i)+"-"+(w.getPosY()+ j));
+                        if (rectangle.getFill() == Color.THISTLE) {
+                            rectangle.setFill(Color.ALICEBLUE);
+                        }
+                    }
+                }
+               // o = null;
+            } else if (o instanceof Objet.Door) {
+                Objet.Door d = (Objet.Door) o;
+                Rectangle rectangle = (Rectangle) sceneTab[1].lookup("#"+(d.getPosX())+"-"+(d.getPosY()));
+                if (rectangle.getFill() == Color.ANTIQUEWHITE) {
+                    rectangle.setFill(Color.ALICEBLUE);
+                }
+                //o = null;
+            } else if (((Objet.Point) o).getType() == PointType.POINTA) {
+                Objet.Point p = (Objet.Point) o;
+                Rectangle rectangle = (Rectangle) sceneTab[1].lookup("#"+p.getPosX()+"-"+p.getPosY());
+                if (rectangle.getFill() == Color.BROWN) {
+                    rectangle.setFill(Color.ALICEBLUE);
+                }
+            } else {
+                Objet.Point p = (Objet.Point) o;
+                Rectangle rectangle = (Rectangle) sceneTab[1].lookup("#"+p.getPosX()+"-"+p.getPosY());
+                if (rectangle.getFill() == Color.TEAL) {
+                    rectangle.setFill(Color.ALICEBLUE);
+                }            
+            }
+        }
+        try {
+            setCredentials();
+            Connection connect = DriverManager.getConnection("jdbc:mysql://"+this.getAdresse()+"/iathinkers?"
+                    + "user="+this.getUsername()+"&password="+this.getMdp());
+            Statement statement = connect.createStatement();
+            ResultSet rs = statement.executeQuery("SELECT idHousePlan FROM houseplan WHERE name=\'"+houseplanName+"\'");
+            int idHousePlan = 0;
+            if (rs.next()) {
+                idHousePlan = rs.getInt("idHousePlan");
+            }
+            rs = statement.executeQuery("SELECT object FROM composition WHERE plan="+idHousePlan);
+            Statement statementBis = connect.createStatement();
+            ResultSet rsbis;
+            
+            
+            objetGrid.getListObjects().clear();
+            System.out.println(objetGrid.getListCells().toString());
+            while(rs.next()) {
+                rsbis = statementBis.executeQuery("SELECT * FROM object WHERE idObject="+rs.getInt("object"));
+                if (rsbis.next()) {
+                    switch (rsbis.getInt("type")) {
+                        case 1://WALL
+                            objetGrid.addWall(rsbis.getInt("height"), rsbis.getInt("width"), rsbis.getInt("posX"), rsbis.getInt("posY"), sceneTab[1]);
+                            break;
+                        case 2://DOOR
+                            if (rsbis.getInt("isVertical") == 1) {
+                                objetGrid.addDoor(rsbis.getInt("posX"), rsbis.getInt("posY"), true, sceneTab[1]);
+                            } else {
+                                objetGrid.addDoor(rsbis.getInt("posX"), rsbis.getInt("posY"), false, sceneTab[1]);
+                            }
+                            break;
+                        case 3://POINTA
+                            objetGrid.addPointA(rsbis.getInt("posX"), rsbis.getInt("posY"), sceneTab[1]);
+                            break;
+                        case 4://POINTB
+                            objetGrid.addPointB(rsbis.getInt("posX"), rsbis.getInt("posY"), sceneTab[1]);
+                            break;
+                        default:
+                            break;
+                    }
+                }    
+            }
         } catch (SQLException ex) {
             ex.printStackTrace();
+            return false;
         }
+        return true;
     }
     
     private void setCredentials() {

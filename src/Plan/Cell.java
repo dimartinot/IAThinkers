@@ -43,6 +43,8 @@ public class Cell extends StackPane {
      */
     private final int gridHeight;
     
+    private Rectangle rectangle;
+    
     /**
      * Constructeur d'une case prenant en paramètre sa taille, sa position dans la scène (en pixel) et sa position dans la grille (en entier).
      * @param width largeur de la cellule (en pixel)
@@ -55,7 +57,7 @@ public class Cell extends StackPane {
     public Cell(int width, int height, int posX, int posY, int x, int y, int gridHeight, int gridWidth) {
         this.occupied = false;
         //cree le rectangle de la cellule de taille width-height
-        Rectangle rectangle = new Rectangle(width, height);
+        rectangle = new Rectangle(width, height);
         rectangle.setId(x+"-"+y);
         rectangle.setFill(Color.ALICEBLUE);
         //rectangle.setStroke(Color.BLACK);
