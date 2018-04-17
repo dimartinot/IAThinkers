@@ -336,35 +336,34 @@ public class Plan extends Parent{
         //Load button
         Button loadButton = new Button("Load");
         
-        //Set the choices possible
-        List<String> housePlans = new ArrayList<>();
-        try {
-            setCredentials();
-            Connection connect = DriverManager.getConnection("jdbc:mysql://" + this.getAdresse() + "/iathinkers?"
-                    + "user=" + this.getUsername() + "&password=" + this.getMdp());
-            Statement statement = connect.createStatement();
-            String request = "SELECT name FROM houseplan";
-            ResultSet rs = statement.executeQuery(request);
-            while(rs.next()) {
-                housePlans.add(rs.getString("name"));
-            }
-        } catch (SQLException e) {
-        
-        }
-        
-        ChoiceDialog<String> loadingPopup = new ChoiceDialog<>("",housePlans);
-        loadingPopup.setTitle("House Plan Loading");
-        loadingPopup.setHeaderText("In order to load an House Plan, you need to select one from the list below (/!\\ Warning, your current one will be deleted /!\\) :");
-        loadingPopup.setContentText("Please select the House Plan to Load");
         loadButton.setOnAction(new EventHandler<ActionEvent>() {
            @Override
            public void handle(ActionEvent event) {
-              Optional<String> result = loadingPopup.showAndWait();
-              if (result.isPresent()) {
-                  objectList.getItems().clear();
-                  loading(sceneTab, result.get());
-              }
-           }
+                List<String> housePlans = new ArrayList<>();
+                //Set the possible choices
+                try {
+                    setCredentials();
+                    Connection connect = DriverManager.getConnection("jdbc:mysql://" + getAdresse() + "/iathinkers?"
+                            + "user=" + getUsername() + "&password=" + getMdp());
+                    Statement statement = connect.createStatement();
+                    String request = "SELECT name FROM houseplan";
+                    ResultSet rs = statement.executeQuery(request);
+                    while(rs.next()) {
+                        housePlans.add(rs.getString("name"));
+                    }
+                } catch (SQLException e) {
+
+                }
+                ChoiceDialog<String> loadingPopup = new ChoiceDialog<>("",housePlans);
+                loadingPopup.setTitle("House Plan Loading");
+                loadingPopup.setHeaderText("In order to load an House Plan, you need to select one from the list below (/!\\ Warning, your current one will be deleted /!\\) :");
+                loadingPopup.setContentText("Please select the House Plan to Load");
+                Optional<String> result = loadingPopup.showAndWait();
+                if (result.isPresent()) {
+                    objectList.getItems().clear();
+                    loading(sceneTab, result.get());
+                }
+            }
         });
         
         //Back button
@@ -507,6 +506,8 @@ public class Plan extends Parent{
             infoSQL.setText("House Plan correctly\n saved as "+result.get());
             return true;
         } catch (SQLException ex) {
+            Text infoSQL = (Text) scene.lookup("#infoSQL");
+            infoSQL.setText("MySQL ERROR : \nPlease make sure\nyou have entered\nyour credentials.");
             return false;
         }
     }
@@ -588,8 +589,11 @@ public class Plan extends Parent{
                     }
                 }    
             }
+            Text infoSQL = (Text) sceneTab[1].lookup("#infoSQL");
+            infoSQL.setText("House Plan correctly loaded !");
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            Text infoSQL = (Text) sceneTab[1].lookup("#infoSQL");
+            infoSQL.setText("MySQL ERROR : \nPlease make sure\nyou have entered\nyour credentials.");
             return false;
         }
         return true;
