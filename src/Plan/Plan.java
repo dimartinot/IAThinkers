@@ -1,7 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * This package concerns every classes used the house plan display
+ *
  */
 package Plan;
 
@@ -42,22 +41,32 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 /**
- * Classe de la <i> scène </i> du plan de maison. Elle se compose d'une grille de cellule.
+ * Class of the House Plan <i> Scene </i>. It is composed of a grid of multiple {@link Plan.Cell} object.
  * @author IAThinkers
  */
 public class Plan extends Parent{
     /**
-     * Constructeur de la classe Plan. Passe en paramètres une variable Stage et un tableau de Scene[] pour pouvoir retourner au menu principal à partir de cet <i> scène </i>
-     * @param primaryStage variable Stage permettant de retourner sur la <i> scène </i> MainMenu {@link MainMenu}
-     * @param sceneTab tableau de Scene permettant de retourner sur la <i> scène </i> MainMenu {@link MainMenu}
-     * @param connect connection variable linked to the SQL database
+     * Constructor of the Plan class. Initialises every JavaFX components we can see and interact with in the Plan scene
+     * @param primaryStage Stage variable used to go back to the MainMenu <i> Scene </i> {@link Menu.MainMenu}
+     * @param sceneTab Scene Array used in the {@link Plan.Grid} class and to get the MainMenu <i> Scene </i> {@link Menu.MainMenu}
      */
     
+    /**
+    * String variables used as SQL credentials
+    */
     private String username;
     private String adresse;
     private String mdp;
-    private Grille objetGrid;
+    /**
+     * {@link Plan.Grid} Object
+     */
+    private Grid objetGrid;
     
+    /**
+     * Plan constructor.
+     * @param primaryStage
+     * @param sceneTab 
+     */
     public Plan(Stage primaryStage, Scene[] sceneTab) {
        
         this.getStylesheets().add(this.getClass().getResource("plan.css").toExternalForm());
@@ -195,7 +204,7 @@ public class Plan extends Parent{
         grid.setConstraints(infoCase,1,7);
         
         //Grid Object initialisation
-        this.objetGrid = new Grille(sceneTab[1]);
+        this.objetGrid = new Grid(sceneTab[1]);
 
         Label objectListLbl = new Label("Listing of all created objects");
         grid.setConstraints(objectListLbl,1,8);
@@ -263,7 +272,6 @@ public class Plan extends Parent{
                                 break;
                             case "PointA":
                                 String pointAData[] = data.split(", ");
-                                System.out.println(data);
                                 try {
                                         int posX = Integer.parseInt(pointAData[0]);
                                         StringTokenizer st = new StringTokenizer(pointAData[1], ")");
@@ -328,7 +336,7 @@ public class Plan extends Parent{
            public void handle(ActionEvent event) {
               Optional<String> result = savingPopup.showAndWait();
               if (result.isPresent()) {
-                  savingProcess(result,objetGrid.getListObjects(),sceneTab[1]);
+                  savingProcess(result.get(),objetGrid.getListObjects(),sceneTab[1]);
               }
            }
         });
@@ -387,15 +395,24 @@ public class Plan extends Parent{
         hbButtons.getChildren().addAll(backButton,saveButton,loadButton);
         grid.setConstraints(hbButtons,1,12);
         
+        //Add all the elements to the grid components
         grid.getChildren().addAll(choix,label,infoCase,objectListLbl,objectList,hbButtons,infoSQL);
         menuVertical.getChildren().add(grid);
         
         hbox.getChildren().add(objetGrid);
         hbox.getChildren().add(menuVertical);
+        //Add the main hbox to the scene
         this.getChildren().add(hbox);
     }
 
-    private boolean savingProcess(Optional<String> result, ArrayList<Object> listObjects, Scene scene) {
+    /**
+     * Method used to save an house plan in the MySQL database.
+     * @param houseplanName String variable describing the name of 
+     * @param listObjects ArrayList of the objects to save
+     * @param scene Scene variable describing the Plan scene
+     * @return true if correctly saved
+     */
+    private boolean savingProcess(String houseplanName, ArrayList<Object> listObjects, Scene scene) {
         int idHousePlan = 0;
         int idTypeDoor = 0;
         int idTypePointA = 0;
@@ -407,19 +424,18 @@ public class Plan extends Parent{
                     + "user="+this.getUsername()+"&password="+this.getMdp());
             //Dealing with house plan insertion
             Statement statement = connect.createStatement();
-            String request = "SELECT * FROM houseplan WHERE name=\'"+result.get()+"\'";
-            System.out.println(request);
+            String request = "SELECT * FROM houseplan WHERE name=\'"+houseplanName+"\'";
             ResultSet rs = statement.executeQuery(request);
             if (!rs.next()) {
-                if (statement.executeUpdate("INSERT INTO houseplan(name) VALUES (\'"+result.get()+"\')") != -1) {
+                if (statement.executeUpdate("INSERT INTO houseplan(name) VALUES (\'"+houseplanName+"\')") != -1) {
                     System.out.println("HousePlan value inserted");
                 }
             } else {
                 Text infoSQL = (Text) scene.lookup("#infoSQL");
-                infoSQL.setText("There is an existing\nplan with the name \'"+result.get()+"\'. \nPlease select another name. ");
+                infoSQL.setText("There is an existing\nplan with the name \'"+houseplanName+"\'. \nPlease select another name. ");
                 return false;
             }
-            rs = statement.executeQuery("SELECT * FROM houseplan WHERE name=\'"+result.get()+"\'");
+            rs = statement.executeQuery("SELECT * FROM houseplan WHERE name=\'"+houseplanName+"\'");
             
             while (rs.next()) {
               idHousePlan = rs.getInt("idHousePlan");
@@ -449,7 +465,6 @@ public class Plan extends Parent{
                 if (o instanceof Objet.Wall) {
                     Objet.Wall w = (Objet.Wall) o;
                     request = "INSERT INTO Object(type,height,width,posX,posY) VALUES ("+idTypeWall+", "+w.getHeight()+", "+w.getWidth()+", "+w.getPosX()+", "+w.getPosY()+")";
-                    System.out.println(request);
                     if (statement.executeUpdate(request) != -1) {
                         rs = statement.executeQuery("SELECT idObject FROM Object ORDER BY idObject DESC LIMIT 0,1");
                         if (rs.next()) {
@@ -503,7 +518,7 @@ public class Plan extends Parent{
             }
             System.out.println("\n Every object saved ! \n");
             Text infoSQL = (Text) scene.lookup("#infoSQL");
-            infoSQL.setText("House Plan correctly\n saved as "+result.get());
+            infoSQL.setText("House Plan correctly\nsaved as "+houseplanName);
             return true;
         } catch (SQLException ex) {
             Text infoSQL = (Text) scene.lookup("#infoSQL");
@@ -512,6 +527,12 @@ public class Plan extends Parent{
         }
     }
     
+    /**
+     * Method used to load a saved house plan.
+     * @param sceneTab Array of scenes used to get the Plan Scene
+     * @param houseplanName name of the plan to load
+     * @return true if correctly loaded
+     */
     private boolean loading(Scene[] sceneTab, String houseplanName) {
         //objetGrid.printListObjects();
         for (Object o : objetGrid.getListObjects()) {
@@ -563,7 +584,6 @@ public class Plan extends Parent{
             
             
             objetGrid.getListObjects().clear();
-            System.out.println(objetGrid.getListCells().toString());
             while(rs.next()) {
                 rsbis = statementBis.executeQuery("SELECT * FROM object WHERE idObject="+rs.getInt("object"));
                 if (rsbis.next()) {
@@ -599,6 +619,9 @@ public class Plan extends Parent{
         return true;
     }
     
+    /**
+    * Method used to read and decrypt user data saved in the text file 
+    */
     private void setCredentials() {
         try {
             FileReader fr = new FileReader("usrdata.txt");

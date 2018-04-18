@@ -3,25 +3,32 @@
  * Nous sommes 4 �tudiants en 1�re ann�e de cycle ing�nieur sp�cialit� informatique � l'EISTI.
  * Ce projet est r�alis� par nous-m�me de A � Z.
  */
+/**
+ * This package contains every object the user is able to put on the plan
+ */
 package Objet;
 
 /**
- *
- * @author Admin
+ * Door Class defining every method needed for the representation of a door 
+ * @author IAThinkers
  */
 public class Door {
     
+    /**
+     * Variable defining door properties such as its size and position
+     */
     private int height;
     private int width;
     private int posX;
     private int posY;
     private boolean isVertical;
     /**
-     * Constructor of 
-     * @param height
-     * @param width
-     * @param posX
-     * @param posY 
+     * Constructor of a Door object
+     * @param height height property of the door
+     * @param width height property of the door
+     * @param posX X position property of the door
+     * @param posY Y position property of the door
+     * @param isVertical Boolean variable describing the orientation of the door
      */
     public Door(int height, int width, int posX, int posY, boolean isVertical) {
         this.height = height;

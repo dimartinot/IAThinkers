@@ -6,22 +6,25 @@
 package Objet;
 
 /**
- *
- * @author Admin
+ * Wall Class defining every method needed for the representation of a wall 
+ * @author IAThinkers
  */
 public class Wall {
     
+    /**
+     * Variable defining wall properties such as its size and position
+     */
     private int height;
     private int width;
     private int posX;
     private int posY;
     
     /**
-     * Constructor of 
-     * @param height
-     * @param width
-     * @param posX
-     * @param posY 
+     * Constructor of a Wall object.
+     * @param height height property of the wall
+     * @param width width property of the wall
+     * @param posX X position property of the wall
+     * @param posY Y position property of the wall
      */
     public Wall(int height, int width, int posX, int posY) {
         this.height = height;

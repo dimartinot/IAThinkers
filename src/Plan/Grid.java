@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package Plan;
 
 import Objet.PointType;
@@ -22,30 +18,31 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 /**
- * Classe de la grille. Cette classe définit une grille comme un <i> Group </i> de cellules {@link Cell}.
- * @author Admin
+ * Grid Class. This class defines a grid as an <i> ArrayList </i> of Objects and an <i> HashMap </i> of cells {@link Plan.Cell}.
+ * @author IAThinkers
  */
-public class Grille extends Parent{
+public class Grid extends Parent{
     
     /**
-     * Attributs définissant la taille (en pixels) de la grille
+     * Integers defining the Scene size in pixels
      */
     private final int sceneWidth = 600;
     private final int sceneHeight = 600;
 
     /**
-     * Attributs définissant le nombre de cellules (modifiable dans des versions futures)
+     * Integer defining the Scene size in cells
      */
     private int n = 50;
     private int m = 50;
     
     /**
-     * Variables de boucle passées globales pour pouvoir être utilisées dans le handler des cellules. 
+     * ArrayList variable used to store all the objects (Wall, Door, Points,...) that had been put on the grid
      */
-    public int i;
-    public int j;
-    
     private ArrayList<Object> listObjects;
+    
+    /**
+     * HashMap variable storing every cell of the grid using a key following this syntax : '#i-j' where i is the column of the cell and j its row.
+     */
     private HashMap<String,Cell> listCells;
     
     //Defines if both the starting and ending point are defined
@@ -53,24 +50,25 @@ public class Grille extends Parent{
     private boolean pointBIsSet = false;
 
     /**
-     * Tailles en largeur et longueur de chacunes des cases
+     * Width and height, in pixel, of a cell of the grid.
      */
     int gridWidth = sceneWidth / n;
     int gridHeight = sceneHeight / m;
+    
     /**
-     * Constructeur d'une grille : va initialiser toutes les cellules sous jacentes à cette dernière.
-     * @param scene 
+     * Constructor of a grid : initialises every cells of the grid, giving it its <i> hover </i> and <i> onClick </i> properties
+     * @param scene Scene variable describing the Plan scene.
      */
-    public Grille(Scene scene) {
+    public Grid(Scene scene) {
         Group grille = new Group();
         this.listObjects = new ArrayList<Object>();
         this.listCells = new HashMap<String,Cell>();
         this.getStylesheets().add(this.getClass().getResource("plan.css").toExternalForm());
         /**
-         * Boucle initialisant les objets cellules. /!\ Ces derniers ne sont sauvegarder que graphiquement : code à modifier lors de l'implémentation de l'algo
+         * Loop initialising every cells and storing them in the HashMap
          */
-        for (i = 0; i < n; i++) {
-            for (j = 0; j < m; j++) {
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < m; j++) {
                 Cell cellule = new Cell(gridWidth, gridHeight, i * gridWidth, j * gridHeight,i,j,n,m);
                 cellule.hoverProperty().addListener(new ChangeListener<Boolean>(){
                     @Override
@@ -189,39 +187,78 @@ public class Grille extends Parent{
         this.getChildren().add(grille);
     }
     
+    /**
+     * Getter of the gridWidth variable
+     * @return gridWidth
+     */
     public int getGridWidth() {
         return this.gridWidth;
     }
     
-    
+    /**
+     * Getter of the gridHeight variable
+     * @return gridHeight
+     */
     public int getGridHeight() {
         return this.gridHeight;
     }
 
+    /**
+     * Getter of the pointAIsSet variable
+     * @return pointAIsSet
+     */
     public boolean isPointAIsSet() {
         return pointAIsSet;
     }
-
+    
+    /**
+     * Getter of the pointBIsSet variable
+     * @return pointBIsSet
+     */
     public boolean isPointBIsSet() {
         return pointBIsSet;
     }
-
+    
+    /**
+     * Setter of the pointAIsSet variable
+     * @param pointAIsSet : boolean to set pointAIsSet variable to
+     */
     public void setPointAIsSet(boolean pointAIsSet) {
         this.pointAIsSet = pointAIsSet;
     }
 
+    /**
+     * Setter of the pointBIsSet variable
+     * @param pointBIsSet : boolean to set pointBIsSet variable to
+     */
     public void setPointBIsSet(boolean pointBIsSet) {
         this.pointBIsSet = pointBIsSet;
     }
     
+    /**
+     * Getter of the ArrayList
+     * @return listObjects
+     */
     public ArrayList<Object> getListObjects() {
         return listObjects;
     }
 
+    /**
+     * Getter of the HashMap
+     * @return listCells
+     */
     public HashMap<String, Cell> getListCells() {
         return listCells;
     }
     
+    /**
+     * Method used to delete a wall using its properties 
+     * @param height height property of the wall
+     * @param width width property of the wall
+     * @param posX X position property of the wall
+     * @param posY Y position property of the wall
+     * @return true if correctly deleted
+     */
     public boolean deleteWall(int height, int width, int posX, int posY) {
         for (Object o : this.listObjects) {
             if (o instanceof Objet.Wall) {
@@ -235,6 +272,14 @@ public class Grille extends Parent{
         return false;
     }
     
+    /**
+     * Method used to delete a door using its properties 
+     * @param height height property of the door
+     * @param width height property of the door
+     * @param posX X position property of the door
+     * @param posY Y position property of the door
+     * @return true if correctly deleted
+     */
     public boolean deleteDoor(int height, int width, int posX, int posY) {
         for (Object o : this.listObjects) {
             if (o instanceof Objet.Door) {
@@ -248,6 +293,12 @@ public class Grille extends Parent{
         return false;
     }
     
+    /**
+     * Method used to delete a PointA using its properties 
+     * @param posX X position property of the PointA
+     * @param posY Y position property of the PointA
+     * @return true if correctly deleted
+     */
     public boolean deletePointA(int posX, int posY) {
         for (Object o : this.listObjects) {
             if (o instanceof Objet.Point) {
@@ -262,6 +313,12 @@ public class Grille extends Parent{
         return false;
     }
     
+    /**
+     * Method used to delete a PointB using its properties
+     * @param posX X position property of the PointB
+     * @param posY Y position property of the PointB
+     * @return true if correctly deleted
+     */
     public boolean deletePointB(int posX, int posY) {
         for (Object o : this.listObjects) {
             if (o instanceof Objet.Point) {
@@ -276,6 +333,15 @@ public class Grille extends Parent{
         return false;
     }
     
+    /**
+     * Method used to add a wall to the scene using given properties
+     * @param height height property of the wall
+     * @param width width property of the wall
+     * @param posX X position property of the wall
+     * @param posY Y position property of the wall
+     * @param scene Scene variable describing the Plan scene
+     * @return true if correctly added
+     */
     public boolean addWall(int height, int width, int posX, int posY, Scene scene) {
         ComboBox objectList = (ComboBox) scene.lookup("#objectlist");
         Objet.Wall w = new Objet.Wall(height,width,posX,posY);
@@ -298,6 +364,14 @@ public class Grille extends Parent{
         return true;
     }
     
+    /**
+     * Method used to add a door to the scene using given properties 
+     * @param posX X position property of the door
+     * @param posY Y position property of the door
+     * @param isVertical defines the orientation of the door
+     * @param scene Scene variable describing the Plan scene
+     * @return true if correctly added
+     */    
     public boolean addDoor(int posX, int posY, boolean isVertical, Scene scene) {
         ComboBox objectList = (ComboBox) scene.lookup("#objectlist");
         Objet.Door d = new Objet.Door(1,1,posX,posY,isVertical);
@@ -316,6 +390,13 @@ public class Grille extends Parent{
         return true;
     }
     
+    /**
+     * Method used to add a PointA to the scene using given properties 
+     * @param posX X position property of the PointA
+     * @param posY Y position property of the PointA
+     * @param scene Scene variable describing the Plan scene
+     * @return true if correctly added
+     */
     public boolean addPointA(int posX, int posY, Scene scene) {
         ComboBox objectList = (ComboBox) scene.lookup("#objectlist");
         Objet.Point p = new Objet.Point(PointType.POINTA,posX,posY);
@@ -335,6 +416,13 @@ public class Grille extends Parent{
         return true;
     }
     
+    /**
+     * Method used to add a PointB to the scene using given properties 
+     * @param posX X position property of the PointB
+     * @param posY Y position property of the PointB
+     * @param scene Scene variable describing the Plan scene
+     * @return true if correctly added
+     */
     public boolean addPointB(int posX, int posY, Scene scene) {
         ComboBox objectList = (ComboBox) scene.lookup("#objectlist");
         Objet.Point p = new Objet.Point(PointType.POINTB,posX,posY);
@@ -354,6 +442,9 @@ public class Grille extends Parent{
         return true;
     }
     
+    /**
+     * Print the contents of the listObjects variable
+     */
     public void printListObjects() {
         for (Object o : listObjects) {
             if (o instanceof Objet.Wall) {

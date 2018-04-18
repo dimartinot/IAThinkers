@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package Plan;
 
 import javafx.scene.Node;
@@ -15,21 +11,21 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 
 /**
- * Classe définissant les cellules comme des objets Rectangle {@link Rectangle}.
- * @author Admin
+ * Class defining the cell object. Afterward, they will compose the grid.
+ * @author IAThinkers
  */
 public class Cell extends StackPane {
     /**
-     * Booléen définissant si une case est occupée ou non : pas utilisé pour le moment
+     * Boolean defining if a cell is, indeed, occupied
      */
     private boolean occupied;
     
     /**
-     * Entier définissant la première coordonnée d'une case
+     * Integer defining the first coordinate of a cell
      */
     private int x;
     /**
-     * Entier définissant la seconde coordonnée d'une case
+     * Integer defining the second coordinate of a cell
      */
     private int y;
     
@@ -42,27 +38,24 @@ public class Cell extends StackPane {
      * Integer defining the height of the grid (in cell)
      */
     private final int gridHeight;
-    
-    private Rectangle rectangle;
-    
+        
     /**
-     * Constructeur d'une case prenant en paramètre sa taille, sa position dans la scène (en pixel) et sa position dans la grille (en entier).
-     * @param width largeur de la cellule (en pixel)
-     * @param height hauteur de la cellule (en pixel)
-     * @param posX position X de la cellule dans la scène (en pixel)
-     * @param posY position Y de la cellule dans la scène (en pixel)
-     * @param x position x de la cellule dans la scène (en entier)
-     * @param y position y de la cellule dans la scène (en entier)
+     * Constructor of a cell
+     * @param width cell width, in pixel
+     * @param height cell height, in pixel
+     * @param posX X position of the cell, in pixel
+     * @param posY Y position of the cell, in pixel
+     * @param x X position of the cell, in integer (i.e. the column in which the cell is put)
+     * @param y Y position of the cell, in integer (i.e the row in which the cell is put)
      */
     public Cell(int width, int height, int posX, int posY, int x, int y, int gridHeight, int gridWidth) {
         this.occupied = false;
-        //cree le rectangle de la cellule de taille width-height
-        rectangle = new Rectangle(width, height);
+        //Initialises the rectangle variable for the UI perspective
+        Rectangle rectangle = new Rectangle(width, height);
         rectangle.setId(x+"-"+y);
         rectangle.setFill(Color.ALICEBLUE);
-        //rectangle.setStroke(Color.BLACK);
         
-        //defini sa position avec x et y
+        //Defines its positioning using X and Y coordinates
         setTranslateX(posX);
         setTranslateY(posY);
         this.x = x;
@@ -73,7 +66,7 @@ public class Cell extends StackPane {
     }
 
     /**
-     * Getter de la variable occupied
+     * Getter of the occupied variable
      * @return occupied
      */
     public boolean isOccupied() {
@@ -81,7 +74,7 @@ public class Cell extends StackPane {
     }
 
     /**
-     * Setter de la variable occupied
+     * Setter of the occupied variable
      * @param occupied 
      */
     public void setOccupied(boolean occupied) {
@@ -89,7 +82,7 @@ public class Cell extends StackPane {
     }
     
     /**
-     * Getter de la variable x
+     * Getter of the x variable
      * @return 
      */
     public int getX() {
@@ -97,7 +90,7 @@ public class Cell extends StackPane {
     }
     
     /**
-     * Getter de la variable y
+     * Getter of the y variable
      * @return 
      */
     public int getY() {
@@ -123,9 +116,9 @@ public class Cell extends StackPane {
     
     
     /**
-     * Fonction <i> hover </i> pour les cases, les colorants lorsque le cruseur passe dessus et remplaçant le contenu d'une zone <i> Text </i> 
-     * faisant apparaître les coordonnées de la dite case.
-     * @param scene variable scene de la classe Plan {@link Plan}, utilisée pour retrouver la variable <i> Text </i> depuis son id
+     * <i> Hover </i> method for the cells. Its main purposes are to change the filling color of the rectangle object of the hovered cell 
+     * + it displays its position in a <i>Text</i> object, on the VBbox at the right side.
+     * @param scene Scene variable of the {@link Plan.Plan} class, used to lookup for the the <i> Text </i> object, using its id.
      */
      public void hoverHighlight(Scene scene) {
             coloring(scene, Color.LIGHTBLUE);
@@ -134,48 +127,52 @@ public class Cell extends StackPane {
         }
 
      /**
-      * Fonction désactivant le <i> hover </i> lorsque la souris quitte la case
+      * Method deactivating the <i> hover </i> effect when the mouse leaves the cell.
+      * @param scene Scene variable used by the {@link coloring} method.
       */
     public void hoverUnhighlight(Scene scene) {
         coloring(scene, Color.ALICEBLUE);
     }
     
+    /**
+     * Method used to change the color of the hovered cell. It is important to notice that the coloring depends on many things : it will happen only if the object the user 
+     * is intending to put down fits. If it does not, then there is no need to change the color the cell. Furthermore, in the case of a wall,
+     * the coloration will actually take the shape of the expected wall.
+     * @param scene Scene variable useful to check which object is intended to be put
+     * @param color Color variable : it represents the new color of the cell.
+     */
     public void coloring(Scene scene, Color color) {
-        /*for (Node node : this.getChildrenUnmodifiable()) {
-            Rectangle rectangle = (Rectangle)node;
-            rectangle.setFill(color);
-        }*/
+        
         ComboBox choix = (ComboBox) scene.lookup("#choixObjet");
         if (choix.getSelectionModel().getSelectedItem()=="Wall") {
             //We get the values entered for the dimensions of the wall
             TextField heightTxt = (TextField) scene.lookup("#height");
             TextField widthTxt = (TextField) scene.lookup("#width");
-            //We, then, convert it to an integer and loop on all chosen concerned rectangles
+            //We, then, convert it to an integer and loop on all concerned rectangles
             try {
+                
                 int height = Integer.parseInt(heightTxt.getText());
                 int width = Integer.parseInt(widthTxt.getText());
-                for (int i = 0; i < height; i++) {
-                    for (int j = 0; j < width; j++) {
-                        
-                        if ((this.getY() + i)< this.getGridHeight() && (this.getX() + j)< this.getGridWidth()) {
-                            try {
-                                Rectangle rectangle = (Rectangle) scene.lookup("#"+(this.getX() + j)+"-"+(this.getY() + i));
-                                if (rectangle.getFill() != Color.THISTLE && rectangle.getFill() != Color.ANTIQUEWHITE && rectangle.getFill() != Color.TEAL &&rectangle.getFill() != Color.BROWN) {
-                                  rectangle.setFill(color);
-                                }  
-                            } catch (NullPointerException e) {
-                                
+                //We check if the wall will fit entirely inside the drawing surface
+                if ((this.getY() + height) < this.getGridHeight() && (this.getX() + width) < this.getGridWidth()) {
+                    for (int i = 0; i < height; i++) {
+                        for (int j = 0; j < width; j++) {
+                            Rectangle rectangle = (Rectangle) scene.lookup("#"+(this.getX() + j)+"-"+(this.getY() + i));
+                            if (rectangle.getFill() != Color.THISTLE && rectangle.getFill() != Color.ANTIQUEWHITE && rectangle.getFill() != Color.TEAL &&rectangle.getFill() != Color.BROWN) {
+                                rectangle.setFill(color);
                             }
                         }
                     }
-                }
+                }    
             } catch (NumberFormatException e) {
                 //e.printStackTrace();
             }    
         } else if (choix.getSelectionModel().getSelectedItem()=="Door") {
+            //We get then orientation of the wall
             ComboBox orientation = (ComboBox) scene.lookup("#orientation");
             try {
                 boolean fits = true;
+                //Based on the orientation, we will seek for any blocking wall that would compromise laying the door
                 if (orientation.getSelectionModel().getSelectedItem()=="Vertical") {
                     if ((this.getY()-1)>0 && (this.getY()+1)<this.getGridHeight()-1) {
                         try {

@@ -1,11 +1,9 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * This package contains everything needed for SQL log-in Scene
  */
 package Parametres;
 
-//Import pour JavaFX
+//JavaFX Imports
 import iathinkers.IAThinkers;
 import Menu.MainMenu;
 import java.io.BufferedWriter;
@@ -29,7 +27,7 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
-//
+//SQL Imports
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -40,12 +38,12 @@ import java.util.List;
 
 
 /**
- * Classe de la <i> scène </i> Parametres {@link Parametres} affichant les <i> TextArea </i> de connexion au serveur MySQL
- * @author Admin
+ * SQLParameters Class {@link Parametres.SQLParameters} displaying the log-in <i> Scene </I>
+ * @author IAThinkers
  */
-public class Parametres extends Parent{
+public class SQLParameters extends Parent{
     /**
-     * Variables de connexion au serveur MySQL
+     * Connection variables
      */
     private String username;
     private String adresse;
@@ -55,12 +53,12 @@ public class Parametres extends Parent{
     private ResultSet resultSet;
     private Connection cnt;
     /**
-     * Constructeur de la classe Parametres {@link Parametres}
-     * @param primaryStage : variable Stage permettant de retourner à la <i> scène </i> MainMenu {@link MainMenu}
-     * @param sceneTab tableau de scene permettant de retourner à la <i> scène </i> MainMenu {@link MainMenu}
+     * Constructor of the SQLParameters class {@link Parametres.SQLParameters}
+     * @param primaryStage Stage variable used to go back to the MainMenu <i> Scene </i> {@link Menu.MainMenu}
+     * @param sceneTab Scene Array used to get the MainMenu <i> Scene </i> {@link Menu.MainMenu}
      */
     
-    public Parametres(Stage primaryStage, Scene[] sceneTab) {
+    public SQLParameters(Stage primaryStage, Scene[] sceneTab) {
         cnt = null;
         Scene mainScene = sceneTab[5];
         GridPane grid = new GridPane();
@@ -191,18 +189,10 @@ public class Parametres extends Parent{
         
         this.getChildren().add(grid);
     }
-    private void writeResultSet(ResultSet resultSet) throws SQLException {
-        // ResultSet is initially before the first data set
-        while (resultSet.next()) {
-            // It is possible to get the columns via name
-            // also possible to get the columns via the column number
-            // which starts at 1
-            // e.g. resultSet.getSTring(2);
-            String user = resultSet.getString(2);
-            System.out.println("User: " + user);
-        }
-    }
-     // You need to close the resultSet
+    
+     /**
+      * Method used to close the ResultSet safely
+      */
     private void close() {
         try {
             if (resultSet != null) {
@@ -220,17 +210,16 @@ public class Parametres extends Parent{
 
         }
     }
-    
     /**
-     * Getter de la variable username
-     * @return 
+     * Getter of the username variable
+     * @return username
      */
     public String getUsername() {
         return username;
     }
 
     /**
-     * Setter de la variable username
+     * Setter username variable
      * @param username 
      */
     public void setUsername(String username) {
@@ -238,15 +227,15 @@ public class Parametres extends Parent{
     }
 
     /**
-     * Getter de la variable adresse
-     * @return 
+     * Getter of the adresse variable
+     * @return adresse
      */
     public String getAdresse() {
         return adresse;
     }
 
     /**
-     * Setter de la variable adresse
+     * Setter of the adresse variable
      * @param adresse 
      */
     public void setAdresse(String adresse) {
@@ -254,15 +243,15 @@ public class Parametres extends Parent{
     }
 
     /**
-     * Getter de la variable mdp
-     * @return 
+     * Getter of the mdp (password) variable
+     * @return mdp
      */
     public String getMdp() {
         return mdp;
     }
 
     /**
-     * Setter de la variable mdp
+     * Setter of the mdp variable
      * @param mdp 
      */
     public void setMdp(String mdp) {

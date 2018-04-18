@@ -3,6 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+/**
+ * This package contains everything needed to display the starting menu
+ */
 package Menu;
 
 import javafx.event.ActionEvent;
@@ -16,21 +19,22 @@ import javafx.scene.layout.TilePane;
 import javafx.stage.Stage;
 
 /**
- * La classe menu définit les composantes nécessaires à l'affichage du menu en tuiles.
- * Elle possède un constructeur.
+ * The MainMenu Class defines every useful components of the MainMenu Scene
  * @author IAThinkers
  */
 public class MainMenu extends Parent{
     
     /**
-     * Constructeur de la classe Menu. Définit un objet menu à l'aide des paramètres suivants :
-     * @param height Définit la hauteur de la fenêtre d'affichage
-     * @param width Définit la largeur de la fenêtre d'affichage
-     * @param sceneTab Tableau de scene : initialisé dans la classe IAThinkers {@link iathinkers.IAThinkers}, il permet de passer de n'importe quelle scene à n'importe quelle autre.
-     * @param primaryStage Stage principal initialisé dans la classe IAThinkers {@link iathinkers.IAThinkers}, permet l'initialisation des scenes
-     */
+     * Constructor of a MainMenu Object
+     * @param height Defines the height of the display window
+     * @param width Defines the width of the display window
+     * @param sceneTab Array of Scenes : initialised in IAThinkers class {@link iathinkers.IAThinkers}, it allows to jump from any scene to any other if needed.
+     * @param primaryStage Main Stage variable initialised in IAThikers class {@link iathinkers.IAThinkers}     */
     public MainMenu(int height, int width, Scene[] sceneTab, Stage primaryStage) {
         
+        /**
+         * Defines all needed Button : one for each Scene
+        */
         Button buttonPlan = new Button("HOUSE PLAN CREATION");
         buttonPlan.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -49,6 +53,7 @@ public class MainMenu extends Parent{
             }
         });
         
+        //Gives to every button its class in order to adapt its shape and color
         buttonPlan.getStyleClass().add("button-menu");
         buttonTrace.getStyleClass().add("button-menu");
         buttonObjet.getStyleClass().add("button-menu");
@@ -60,22 +65,8 @@ public class MainMenu extends Parent{
         buttonObjet.setId("button-third");
         buttonStats.setId("button-forth");
         buttonSql.setId("button-fifth");
-        /*
-        buttonPlan.setMaxWidth(Double.MAX_VALUE);
-        buttonTrace.setMaxWidth(Double.MAX_VALUE);
-        buttonObjet.setMaxWidth(Double.MAX_VALUE);
-        buttonStats.setMaxWidth(Double.MAX_VALUE);
         
-        VBox vbButtons = new VBox();
-        vbButtons.setMaxSize(height, width);
-        vbButtons.setSpacing(0);
-        //vbButtons.setPadding(new Insets(0, 20, 10, 20)); 
-        vbButtons.getChildren().addAll(buttonPlan, buttonTrace, buttonObjet, buttonStats);
-        
-        
-        this.setTranslateX(width/2);
-        this.setTranslateY(height/3);
-        */
+        //Insert all the precedently initialised buttons
         TilePane tile = new TilePane(Orientation.VERTICAL);
         tile.setMaxWidth(Double.MAX_VALUE);
         tile.setMaxHeight(Double.MAX_VALUE);
@@ -85,10 +76,6 @@ public class MainMenu extends Parent{
         tile.getChildren().add(buttonStats);
         tile.getChildren().add(buttonSql);
         tile.setTileAlignment(Pos.TOP_LEFT);
-        
-        
-        
-        
         
         this.getChildren().add(tile);
     }

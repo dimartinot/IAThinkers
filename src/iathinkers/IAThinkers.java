@@ -1,17 +1,16 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+
+/**
+ * This package contains just one java file with the main function. This is there that are built all the scenes.
  */
 package iathinkers;
 
-//Import les classes du projet
+//Import the main classes of all the scenes
 import Menu.MainMenu;
-import Parametres.Parametres;
+import Parametres.SQLParameters;
 import Plan.Plan;
-//
+
 import java.io.IOException;
-//Import les classes JavaFX
+//Import useful JavaFX classes
 import javafx.application.Application;
 import static javafx.application.Application.launch;
 import javafx.scene.Group;
@@ -21,61 +20,61 @@ import javafx.stage.Stage;
 import java.sql.Connection;
 
 /**
- * Coeur du projet, la classe IAThinkers regroupe toutes les <i> scènes </i> à afficher et les charge dans un tableau de scène.
- * De plus, elle s'occupe d'afficher la <i> scène </i> du menu principal {@link MainMenu}.
- * Ainsi, IAThinkers est la classe mère de ce projet, elle ne possède donc qu'un constructeur vide. Ce dernier ne sera jamais appelé.
- * @author IAThinkers
+ * As explained, this class is the heart of the project. This is where the <i> scenes </i> are initialised.
+ * Furthermore, it deals with the displaying of the menu <i> scene </i> {@link Menu.MainMenu}.
+ * Then, we can call this class the <i> "mother" </i> of all the others
+ * @author IAThinkers team
  */
 public class IAThinkers extends Application {
+    
+    public static Connection connect;
+    
     /**
-     * Constructeur de classe (vide en l'occurence)
+     * Empty class constructor
      */
     public IAThinkers() {
         
     } 
-    public static Connection connect;
     /**
-     * La méthode start est appelée au lancement du programme. Elle redéfinit le start de la classe Application de JavaFX.
-     * Le lancement de cette fonction se fait dans la partie main à l'aide de l'appelle de la méthode <i> launch </i> de la classe Application.
-     * @param primaryStage variable stage, coeur de JavaFX
-     * @throws IOException 
+     * The start method is a mandatory function to define when you deal with JavaFX project.
+     * The launch of this method is done using the JavaFX pre-implemented <i> launch </i> method
      */
     @Override
-    public void start(Stage primaryStage) throws IOException {
+    public void start(Stage primaryStage) {
         setConnect(null);
-        //tableau de 6 scenes : 1 pour le menu, 1 pour le plan, 1 pour le tracé, 1 pour la création d'objet, 1 pour les stats et 1 pour les paramètres SQL
+        //The array of the six main scenes : the first one for the menu, the 2nd for the plan, the 3rd for the freehand path, the 4th for the object creation tool, the 5th for the stats and last, but definitly not the leaset, the 6th for the SQL parameters.
         Scene[] sceneTab = new Scene[6];
         
-        //Scene du menu
+        //Menu scene
         Group root0 = new Group();
         Scene scene0 = new Scene(root0, 800, 600);
         scene0.getStylesheets().add(this.getClass().getResource("menu.css").toExternalForm());
         sceneTab[0] = scene0;
 
-        //Scene du Plan de maison
+        //House Plan scene
         Group root1 = new Group();
         Scene scene1 = new Scene(root1,800,600);
         sceneTab[1] = scene1;
         
-        //Scene des Parametres
+        //Parameters scene
         Group root5 = new Group();
         Scene scene5 = new Scene(root5,800,600);
         sceneTab[5] = scene5;
         
-        //Objet menu
+        //MainMenu Object
         MainMenu monMenu = new MainMenu(800,600,sceneTab,primaryStage);
         root0.getChildren().add(monMenu);
 
-        //Objet plan
+        //Plan Object
         Plan monPlan = new Plan(primaryStage, sceneTab);
         root1.getChildren().add(monPlan);
         
-        //Objet parametres
-        Parametres mesParemetres = new Parametres(primaryStage, sceneTab);
+        //SQL SQLParameters Object
+        SQLParameters mesParemetres = new SQLParameters(primaryStage, sceneTab);
         root5.getChildren().add(mesParemetres);
         
         primaryStage.setScene(scene0);
-        primaryStage.setTitle("IA Thinkers - Réinventons le monde !");
+        primaryStage.setTitle("IA Thinkers - Rediscover the world !");
         primaryStage.show();
     }
 
@@ -88,7 +87,7 @@ public class IAThinkers extends Application {
     }
 
     /**
-     * @param args the command line arguments
+     * @param args is the command line arguments
      */
     public static void main(String[] args) {
         launch(args);

@@ -6,17 +6,26 @@
 package Objet;
 
 /**
- *
- * @author Admin
+ * Point Class defining every method needed for the representation of a point (starting or ending point) 
+ * @author IAThinkers
  */
 public class Point {
     
-    //There's two types of point : a starting point and an ending point.
+    //There's two types of point : a starting point (PointA) and an ending point (PointB).
     private PointType type;
     
+    /**
+     * Integers describing the position position
+     */
     private int posX;
     private int posY;
     
+    /**
+     * Constructor of a Point
+     * @param Type Enum variable describing the type of the point. All the possibilities are defined here : {@link Objet.PointType}
+     * @param posX X position property of the Point
+     * @param posY Y position property of the Point
+     */
     public Point(PointType Type, int posX, int posY) {
         this.type = Type;
         this.posX = posX;

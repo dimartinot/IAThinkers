@@ -6,8 +6,8 @@
 package Objet;
 
 /**
- *
- * @author Admin
+ * Enum describing the two state a point can take : indeed, whether it can be a starting point (POINTA) or and ending point (POINTB)
+ * @author IAThinkers
  */
 public enum PointType {
     POINTA,POINTB;
