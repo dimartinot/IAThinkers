@@ -9,6 +9,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -32,10 +33,15 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.RadioMenuItem;
@@ -211,54 +217,78 @@ public class SQLParameters extends Parent{
         }
         french.setOnAction(new EventHandler<ActionEvent>() {
             @Override public void handle(ActionEvent e) {
-                if (english.isSelected() == false) {
-                    french.setSelected(true);
-                } else {
-                    try {
-                        FileWriter f = new FileWriter(new File("language.txt"),false);
-                        f.write("fr");
-                        f.flush();
-                        f.close();
-                    } catch (IOException ex) {
+                Alert alert = new Alert(AlertType.CONFIRMATION);
+                alert.setTitle(messages.getString("alertTitle"));
+                alert.setHeaderText(messages.getString("alertHeader"));
+                alert.setContentText(messages.getString("alertContent"));
+                Optional<ButtonType> result = alert.showAndWait();
+                if (result.get() == ButtonType.OK) {
+                    if (english.isSelected() == false) {
+                        french.setSelected(true);
+                    } else {
                         try {
-                            File file = new File("language.txt");
-                            file.createNewFile();
-                            FileWriter f = new FileWriter(file,false);    
+                            FileWriter f = new FileWriter(new File("language.txt"),false);
                             f.write("fr");
                             f.flush();
                             f.close();
-                        } catch (IOException ex1) {
+                        } catch (IOException ex) {
+                            try {
+                                File file = new File("language.txt");
+                                file.createNewFile();
+                                FileWriter f = new FileWriter(file,false);    
+                                f.write("fr");
+                                f.flush();
+                                f.close();
+                            } catch (IOException ex1) {
+                            }
                         }
+                        english.setSelected(false);
+
                     }
-                    english.setSelected(false);
-                    
-                }
+                    restartApplication();
+                } else {
+                    if (english.isSelected() == true) {
+                        french.setSelected(false);
+                    }
+                }   
             }
         });
         
         english.setOnAction(new EventHandler<ActionEvent>() {
             @Override public void handle(ActionEvent e) {
-                if (french.isSelected() == false) {
-                    english.setSelected(true);
-                } else {
-                    try {
-                        FileWriter f = new FileWriter(new File("language.txt"),false);
-                        f.write("en");
-                        f.flush();
-                        f.close();
-                    } catch (IOException ex) {
+                Alert alert = new Alert(AlertType.CONFIRMATION);
+                alert.setTitle(messages.getString("alertTitle"));
+                alert.setHeaderText(messages.getString("alertHeader"));
+                alert.setContentText(messages.getString("alertContent"));
+                Optional<ButtonType> result = alert.showAndWait();
+                if (result.get() == ButtonType.OK) {
+                    if (french.isSelected() == false) {
+                        english.setSelected(true);
+                    } else {
                         try {
-                            File file = new File("language.txt");
-                            file.createNewFile();
-                            FileWriter f = new FileWriter(file,false);    
+                            FileWriter f = new FileWriter(new File("language.txt"),false);
                             f.write("en");
                             f.flush();
                             f.close();
-                        } catch (IOException ex1) {
+                        } catch (IOException ex) {
+                            try {
+                                File file = new File("language.txt");
+                                file.createNewFile();
+                                FileWriter f = new FileWriter(file,false);    
+                                f.write("en");
+                                f.flush();
+                                f.close();
+                            } catch (IOException ex1) {
+                            }
                         }
+                        french.setSelected(false);
                     }
-                    french.setSelected(false);
-                }    
+                    restartApplication();
+                } else {
+                    if (french.isSelected() == true) {
+                        english.setSelected(false);
+                    }
+                }   
             }
         });
         menuLanguage.getItems().addAll(english,french);
@@ -381,5 +411,38 @@ public class SQLParameters extends Parent{
         
     }
     
+    
+    /**
+     * Method that will restart eh application to apply the new language settings. It finds the executable generated by the compilation of the javacode then executes it before closing itself.
+     */
+    public void restartApplication()
+    {
+        final String javaBin = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
+        final File currentJar;
+        try {
+            currentJar = new File(iathinkers.IAThinkers.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+             /* is it a jar file? */
+            if(!currentJar.getName().endsWith(".jar"))
+              return;
+
+            /* Build command: java -jar application.jar */
+            final ArrayList<String> command = new ArrayList<String>();
+            command.add(javaBin);
+            command.add("-jar");
+            command.add(currentJar.getPath());
+
+            final ProcessBuilder builder = new ProcessBuilder(command);
+            try {
+                builder.start();
+            } catch (IOException ex) {
+                Logger.getLogger(SQLParameters.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            System.exit(0);
+        } catch (URISyntaxException ex) {
+            Logger.getLogger(SQLParameters.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+       
+    }
     
 }

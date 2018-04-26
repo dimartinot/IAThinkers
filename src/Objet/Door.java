@@ -8,6 +8,10 @@
  */
 package Objet;
 
+import static Menu.MainMenu.getLanguage;
+import java.util.Locale;
+import java.util.ResourceBundle;
+
 /**
  * Door Class defining every method needed for the representation of a door 
  * @author IAThinkers
@@ -59,10 +63,13 @@ public class Door {
     }
     
     public String toString() {
+        
+        Locale l = getLanguage();
+        ResourceBundle messages = ResourceBundle.getBundle("Objet/Objet",l);
         if (this.getIsVertical()) {
-            return java.util.ResourceBundle.getBundle("Objet/Objet").getString("DOOR(")+this.getHeight()+java.util.ResourceBundle.getBundle("Objet/Objet").getString(", ")+this.getWidth()+java.util.ResourceBundle.getBundle("Objet/Objet").getString(", ")+this.getPosX()+java.util.ResourceBundle.getBundle("Objet/Objet").getString(", ")+this.getPosY()+java.util.ResourceBundle.getBundle("Objet/Objet").getString(", VERTICAL)");
+            return messages.getString("DOOR(")+this.getHeight()+", "+this.getWidth()+", "+this.getPosX()+", "+this.getPosY()+messages.getString(", VERTICAL)");
         } else {
-            return java.util.ResourceBundle.getBundle("Objet/Objet").getString("DOOR(")+this.getHeight()+java.util.ResourceBundle.getBundle("Objet/Objet").getString(", ")+this.getWidth()+java.util.ResourceBundle.getBundle("Objet/Objet").getString(", ")+this.getPosX()+java.util.ResourceBundle.getBundle("Objet/Objet").getString(", ")+this.getPosY()+java.util.ResourceBundle.getBundle("Objet/Objet").getString(", HORIZONTAL)");
+            return messages.getString("DOOR(")+this.getHeight()+", "+this.getWidth()+", "+this.getPosX()+", "+this.getPosY()+messages.getString(", HORIZONTAL)");
         }
     }
     

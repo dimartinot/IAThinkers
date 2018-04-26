@@ -59,7 +59,6 @@ public class Cell extends StackPane {
         
         Locale l = getLanguage();
         messages = ResourceBundle.getBundle("Plan/Plan",l);
-        
         this.occupied = false;
         //Initialises the rectangle variable for the UI perspective
         Rectangle rectangle = new Rectangle(width, height);
@@ -135,7 +134,7 @@ public class Cell extends StackPane {
      public void hoverHighlight(Scene scene) {
             coloring(scene, Color.LIGHTBLUE);
             Text texte = (Text) scene.lookup("#infocase");
-            texte.setText(messages.getString("<")+this.getX()+messages.getString(";")+this.getY()+messages.getString(">"));
+            texte.setText("<"+this.getX()+";"+this.getY()+">");
         }
 
      /**
@@ -181,7 +180,7 @@ public class Cell extends StackPane {
             }    
         } else if (choix.getSelectionModel().getSelectedItem()==messages.getString("DOOR")) {
             //We get then orientation of the wall
-            ComboBox orientation = (ComboBox) scene.lookup(messages.getString("#ORIENTATION"));
+            ComboBox orientation = (ComboBox) scene.lookup("#orientation");
             try {
                 boolean fits = true;
                 //Based on the orientation, we will seek for any blocking wall that would compromise laying the door

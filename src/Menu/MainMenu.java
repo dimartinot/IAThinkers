@@ -53,6 +53,10 @@ public class MainMenu extends Parent{
             } catch (IOException ex) {
                 l = new Locale("en","UK");
             }
+            try {
+                fr.close();
+            } catch (IOException ex) {
+            }
             return l;
         } catch (FileNotFoundException fileNotFoundException) {
         }
