@@ -1,11 +1,12 @@
 
 package Plan;
 
+import static Menu.MainMenu.getLanguage;
 import Objet.PointType;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import javafx.scene.Group;
 import javafx.scene.Parent;
 import javafx.beans.value.ChangeListener;
@@ -18,7 +19,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 /**
- * Grid Class. This class defines a grid as an <i> ArrayList </i> of Objects and an <i> HashMap </i> of cells {@link Plan.Cell}.
+ * Grid Class. This class defines a grid as an <i> ArrayList </i> of Objects and an <i> HashMap </i> of cells {@link Cell}.
  * @author IAThinkers
  */
 public class Grid extends Parent{
@@ -55,11 +56,16 @@ public class Grid extends Parent{
     int gridWidth = sceneWidth / n;
     int gridHeight = sceneHeight / m;
     
+    private ResourceBundle messages;
+    
     /**
      * Constructor of a grid : initialises every cells of the grid, giving it its <i> hover </i> and <i> onClick </i> properties
      * @param scene Scene variable describing the Plan scene.
      */
     public Grid(Scene scene) {
+        
+        Locale l = getLanguage();
+        messages = ResourceBundle.getBundle("Plan/Plan",l);
         Group grille = new Group();
         this.listObjects = new ArrayList<Object>();
         this.listCells = new HashMap<String,Cell>();
@@ -84,8 +90,8 @@ public class Grid extends Parent{
                     @Override
                     public void handle(MouseEvent event) {
                         ComboBox objectList = (ComboBox) scene.lookup("#objectlist");
-                        ComboBox choix = (ComboBox) scene.lookup("#choixObjet");
-                        if (choix.getSelectionModel().getSelectedItem()=="Wall") {
+                        ComboBox choix = (ComboBox) scene.lookup("#choixobjet");
+                        if (choix.getSelectionModel().getSelectedItem()==messages.getString("WALL")) {
                             //We get the values entered for the dimensions of the wall
                             TextField heightTxt = (TextField) scene.lookup("#height");
                             TextField widthTxt = (TextField) scene.lookup("#width");
@@ -117,11 +123,11 @@ public class Grid extends Parent{
                             } catch (NumberFormatException e) {
                                 //e.printStackTrace();
                             }
-                        } else if (choix.getSelectionModel().getSelectedItem()=="Door") {
+                        } else if (choix.getSelectionModel().getSelectedItem()==messages.getString("DOOR")) {
                                 boolean fits= true;
                                 ComboBox orientation = (ComboBox) scene.lookup("#orientation");
                                 try {
-                                    if (orientation.getSelectionModel().getSelectedItem()=="Vertical") {
+                                    if (orientation.getSelectionModel().getSelectedItem()==messages.getString("VERTICAL")) {
                                         if ((cellule.getY()-1)>0 && (cellule.getY()+1)<m-1) {
                                             try {
                                                 for (int i =0; i< 3; i++) {
@@ -138,7 +144,7 @@ public class Grid extends Parent{
                                         if (fits) {
                                             addDoor(cellule.getX(),cellule.getY(),true,scene);
                                         }
-                                    } else if (orientation.getSelectionModel().getSelectedItem()=="Horizontal") {
+                                    } else if (orientation.getSelectionModel().getSelectedItem()==messages.getString("HORIZONTAL")) {
                                        if ((cellule.getY()-1)>0 && (cellule.getY()+1)<m-1) {
                                             try {
                                                 for (int i =0; i< 3; i++) {
@@ -161,14 +167,14 @@ public class Grid extends Parent{
                             } catch (NumberFormatException e) {
                                 //e.printStackTrace();
                             }
-                        } else if (choix.getSelectionModel().getSelectedItem()=="Starting Point") {
+                        } else if (choix.getSelectionModel().getSelectedItem()==messages.getString("STARTING POINT")) {
                             if (isPointAIsSet()==false) {
                                 Rectangle rectangle = (Rectangle) scene.lookup("#"+(cellule.getX())+"-"+(cellule.getY()));
                                 if (rectangle.getFill() != Color.THISTLE && rectangle.getFill() != Color.ANTIQUEWHITE && rectangle.getFill() != Color.TEAL) {
                                     addPointA(cellule.getX(),cellule.getY(),scene);
                                 }    
                             }
-                        } else if (choix.getSelectionModel().getSelectedItem()=="Ending Point") {
+                        } else if (choix.getSelectionModel().getSelectedItem()==messages.getString("ENDING POINT")) {
                             if (isPointBIsSet()==false) {
                                 Rectangle rectangle = (Rectangle) scene.lookup("#"+(cellule.getX())+"-"+(cellule.getY()));
                                 if (rectangle.getFill() != Color.THISTLE && rectangle.getFill() != Color.ANTIQUEWHITE && rectangle.getFill() != Color.BROWN) {
@@ -363,6 +369,7 @@ public class Grid extends Parent{
         }
         return true;
     }
+
     
     /**
      * Method used to add a door to the scene using given properties 
@@ -388,7 +395,7 @@ public class Grid extends Parent{
             }
         }
         return true;
-    }
+}
     
     /**
      * Method used to add a PointA to the scene using given properties 
@@ -414,7 +421,7 @@ public class Grid extends Parent{
             }
         }
         return true;
-    }
+}
     
     /**
      * Method used to add a PointB to the scene using given properties 
@@ -440,7 +447,7 @@ public class Grid extends Parent{
             }
         }
         return true;
-    }
+}
     
     /**
      * Print the contents of the listObjects variable
@@ -460,7 +467,7 @@ public class Grid extends Parent{
 
     @Override
     public String toString() {
-        return "Grille{" + "sceneWidth=" + sceneWidth + ", sceneHeight=" + sceneHeight + ", listObjects=" + listObjects + ", pointAIsSet=" + pointAIsSet + ", pointBIsSet=" + pointBIsSet + '}';
+        return java.text.MessageFormat.format(("GRILLE{" + "SCENEWIDTH={0}, SCENEHEIGHT={1}, LISTOBJECTS={2}, POINTAISSET={3}, POINTBISSET={4}{5}"), new Object[] {sceneWidth, sceneHeight, listObjects, pointAIsSet, pointBIsSet, '}'});
     }
     
     

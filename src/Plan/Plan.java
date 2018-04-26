@@ -5,6 +5,7 @@
 package Plan;
 
 import Menu.MainMenu;
+import static Menu.MainMenu.getLanguage;
 import Objet.PointType;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -17,7 +18,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
+import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -41,7 +44,7 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 /**
- * Class of the House Plan <i> Scene </i>. It is composed of a grid of multiple {@link Plan.Cell} object.
+ * Class of the House Plan <i> Scene </i>. It is composed of a grid of multiple {@link Cell} object.
  * @author IAThinkers
  */
 public class Plan extends Parent{
@@ -62,12 +65,18 @@ public class Plan extends Parent{
      */
     private Grid objetGrid;
     
+    private ResourceBundle messages;
+    
     /**
      * Plan constructor.
      * @param primaryStage
      * @param sceneTab 
      */
     public Plan(Stage primaryStage, Scene[] sceneTab) {
+        
+        
+        Locale l = getLanguage();
+        messages = ResourceBundle.getBundle("Plan/Plan",l);
        
         this.getStylesheets().add(this.getClass().getResource("plan.css").toExternalForm());
         
@@ -82,16 +91,16 @@ public class Plan extends Parent{
         
         //Selecting list
         ComboBox<String> choix = new ComboBox();
-        choix.getItems().add("Wall");
-        choix.getItems().add("Door");
-        choix.getItems().add("Starting Point");
-        choix.getItems().add("Ending Point");
+        choix.getItems().add(messages.getString("WALL"));
+        choix.getItems().add(messages.getString("DOOR"));
+        choix.getItems().add(messages.getString("STARTING POINT"));
+        choix.getItems().add(messages.getString("ENDING POINT"));
 
         //Define the textfields for the wall properties
         TextField height = new TextField();
         height.setId("height");
         height.setPrefWidth(30);
-        Label heightLbl = new Label("Height");
+        Label heightLbl = new Label(messages.getString("HEIGHT"));
         // force the textfield only to contain numeric characters
         height.textProperty().addListener(new ChangeListener<String>() {
             @Override
@@ -105,33 +114,35 @@ public class Plan extends Parent{
         TextField width = new TextField();
         width.setId("width");
         width.setPrefWidth(30);
-        Label widthLbl = new Label("Width");
+        Label widthLbl = new Label(messages.getString("WIDTH"));
         // force the textfield only to contain numeric characters
         width.textProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, 
                 String newValue) {
                 if (!newValue.matches("\\d*")) {
-                    width.setText(newValue.replaceAll("[^\\d]", ""));
+                    height.setText(newValue.replaceAll("[^\\d]", ""));
                 }
             }
         });
         
         //Define the orientation of the door to be put
         ComboBox<String> orientation = new ComboBox();
-        orientation.getItems().add("Horizontal");
-        orientation.getItems().add("Vertical");
+        orientation.getItems().add(messages.getString("HORIZONTAL"));
+        orientation.getItems().add(messages.getString("VERTICAL"));
         orientation.setId("orientation");
-        Label orientationLbl = new Label("Orientation");
+        Label orientationLbl = new Label(messages.getString("ORIENTATION"));
         
         
         
         
         //Define the executed action on the choice of an object
-        choix.setOnAction((e) -> {
-             switch (choix.getSelectionModel().getSelectedItem()) {
-                 case "Wall":
-                    //Remove personnalisation choices for a door
+        choix.setOnAction((ActionEvent e) -> {
+            String choice = choix.getSelectionModel().getSelectedItem();
+            String Wall = messages.getString("WALL");
+            String Door = messages.getString("DOOR");
+            if (choice.equals(Wall)) {
+                //Remove personnalisation choices for a door
                      
                     grid.clearConstraints(orientation);
                     grid.clearConstraints(orientationLbl);
@@ -148,9 +159,9 @@ public class Plan extends Parent{
                     grid.getChildren().add(width);
                     grid.getChildren().add(heightLbl);
                     grid.getChildren().add(widthLbl);
-                    break;
-                 case "Door":
-                     //Remove the choices for a wall
+                    
+            } else if (choice.equals(Door)) {
+              //Remove the choices for a wall
                      
                     grid.clearConstraints(height);
                     grid.clearConstraints(width);
@@ -165,10 +176,8 @@ public class Plan extends Parent{
                     grid.setConstraints(orientation,1,4);
                      //Add the choices for a door
                     grid.getChildren().add(orientation);
-                    grid.getChildren().add(orientationLbl);
-                    break;
-                 case "Starting Point":
-                 case "Ending Point":
+                    grid.getChildren().add(orientationLbl);   
+            } else {
                     grid.clearConstraints(height);
                     grid.clearConstraints(width);
                     grid.clearConstraints(heightLbl);
@@ -182,37 +191,34 @@ public class Plan extends Parent{
                     grid.clearConstraints(orientationLbl);
                     grid.getChildren().remove(orientation);
                     grid.getChildren().remove(orientationLbl);
-                break;    
-                 default:
-                    break;
-             }
+            }
         });
         
         
         
-        choix.setId("choixObjet");
+        choix.setId("choixobjet");
         grid.setVgap(10);
         grid.setConstraints(choix,1,2);
         
         //Label liste
-        Label label = new Label("Object choice");
+        Label label = new Label(messages.getString("OBJECT CHOICE"));
         grid.setConstraints(label, 1, 1); // column=1 row=1
         
         //Info Case
         Text infoCase = new Text(10,50,"<_;_>");
-        infoCase.setId("infoCase");
+        infoCase.setId("infocase");
         grid.setConstraints(infoCase,1,7);
         
         //Grid Object initialisation
         this.objetGrid = new Grid(sceneTab[1]);
 
-        Label objectListLbl = new Label("Listing of all created objects");
+        Label objectListLbl = new Label(messages.getString("LISTING OF ALL CREATED OBJECTS"));
         grid.setConstraints(objectListLbl,1,8);
         
         ComboBox<String> objectList = new ComboBox();
         objectList.setId("objectlist");
         //Initialisation of the delete Button
-        Button deleteButton = new Button("Delete");
+        Button deleteButton = new Button(messages.getString("DELETE"));
             //When we attempt to delete an object, we will have to get the data out of the selected option of the ComboBox
             deleteButton.setOnAction(new EventHandler<ActionEvent>() {
                 @Override
@@ -222,9 +228,12 @@ public class Plan extends Parent{
                         StringTokenizer splitObject = new StringTokenizer(selectedObject, "(");
                         String type = splitObject.nextElement().toString();
                         String data = splitObject.nextElement().toString();
-                        switch (type) {
-                            case "Wall":
-                                String wallData[] = data.split(", ");
+                        String Wall = messages.getString("WALL");
+                        String Door = messages.getString("DOOR");
+                        String PointA = messages.getString("POINTA");
+                        String PointB = messages.getString("POINTB");
+                        if (type.equals(Wall)) {
+                            String wallData[] = data.split(", ");
                                 try {
                                         int height = Integer.parseInt(wallData[0]);
                                         int width = Integer.parseInt(wallData[1]);
@@ -240,17 +249,16 @@ public class Plan extends Parent{
                                             }
                                         }
                                         if (objetGrid.deleteWall(height, width, posX, posY)) {
-                                            System.out.println("Wall correctly deleted");
+                                            System.out.println(messages.getString("WALL CORRECTLY DELETED"));
                                             objectList.getItems().removeAll(selectedObject);
                                         } else {
-                                            System.out.println("Error ! Wall not found");
+                                            System.out.println(messages.getString("ERROR ! WALL NOT FOUND"));
                                         }
                                     } catch (NumberFormatException e) {
 
-                                    }    
-                                break;
-                            case "Door":
-                                String doorData[] = data.split(", ");
+                                    }
+                        } else if (type.equals(Door)) {
+                            String doorData[] = data.split(", ");
                                 try {
                                         int height = Integer.parseInt(doorData[0]);
                                         int width = Integer.parseInt(doorData[1]);
@@ -261,17 +269,16 @@ public class Plan extends Parent{
                                             rectangle.setFill(Color.ALICEBLUE);
                                         }
                                         if (objetGrid.deleteDoor(height, width, posX, posY)) {
-                                            System.out.println("Door correctly deleted");
+                                            System.out.println(messages.getString("DOOR CORRECTLY DELETED"));
                                             objectList.getItems().removeAll(selectedObject);
                                         } else {
-                                            System.out.println("Error ! Door not found");
+                                            System.out.println(messages.getString("ERROR ! DOOR NOT FOUND"));
                                         }
                                     } catch (NumberFormatException e) {
 
-                                    }    
-                                break;
-                            case "PointA":
-                                String pointAData[] = data.split(", ");
+                                    }
+                        } else if (type.equals(PointA)) {
+                             String pointAData[] = data.split(", ");
                                 try {
                                         int posX = Integer.parseInt(pointAData[0]);
                                         StringTokenizer st = new StringTokenizer(pointAData[1], ")");
@@ -288,10 +295,9 @@ public class Plan extends Parent{
                                         }
                                     } catch (NumberFormatException e) {
                                         e.printStackTrace();
-                                    }  
-                                break;
-                            case "PointB":
-                                String pointBData[] = data.split(", ");
+                                    }       
+                        } else if (type.equals(PointB)) {
+                         String pointBData[] = data.split(", ");
                                 try {
                                         int posX = Integer.parseInt(pointBData[0]);
                                         StringTokenizer st = new StringTokenizer(pointBData[1], ")");
@@ -301,16 +307,17 @@ public class Plan extends Parent{
                                                 rectangle.setFill(Color.ALICEBLUE);
                                         }
                                         if (objetGrid.deletePointB(posX,posY)) {
-                                            System.out.println("Ending point correctly deleted");
+                                            System.out.println(messages.getString("ENDING POINT CORRECTLY DELETED"));
                                             objectList.getItems().removeAll(selectedObject);
                                         } else {
-                                            System.out.println("Error ! Ending Point not found");
+                                            System.out.println(messages.getString("ERROR ! ENDING POINT NOT FOUND"));
                                         }
                                     } catch (NumberFormatException e) {
                                         e.printStackTrace();
-                                    }
-                                break;
-                            }
+                                    }   
+                        } else {
+                            
+                        }
                     } catch (NullPointerException e) {
                 
                     }
@@ -326,11 +333,11 @@ public class Plan extends Parent{
         
         
         //Save button
-        Button saveButton = new Button("Save");
+        Button saveButton = new Button(messages.getString("SAVE"));
         TextInputDialog savingPopup = new TextInputDialog("");
-        savingPopup.setTitle("House Plan Saving");
-        savingPopup.setHeaderText("In order to save your house plan, you need to enter a name for your House Plan");
-        savingPopup.setContentText("Please enter the saving name:");
+        savingPopup.setTitle(messages.getString("HOUSE PLAN SAVING"));
+        savingPopup.setHeaderText(messages.getString("IN ORDER TO SAVE YOUR HOUSE PLAN, YOU NEED TO ENTER A NAME FOR YOUR HOUSE PLAN"));
+        savingPopup.setContentText(messages.getString("PLEASE ENTER THE SAVING NAME:"));
         saveButton.setOnAction(new EventHandler<ActionEvent>() {
            @Override
            public void handle(ActionEvent event) {
@@ -342,7 +349,7 @@ public class Plan extends Parent{
         });
         
         //Load button
-        Button loadButton = new Button("Load");
+        Button loadButton = new Button(messages.getString("LOAD"));
         
         loadButton.setOnAction(new EventHandler<ActionEvent>() {
            @Override
@@ -352,9 +359,9 @@ public class Plan extends Parent{
                 try {
                     setCredentials();
                     Connection connect = DriverManager.getConnection("jdbc:mysql://" + getAdresse() + "/iathinkers?"
-                            + "user=" + getUsername() + "&password=" + getMdp());
+                    + "user="+ getUsername() + "&password=" + getMdp());
                     Statement statement = connect.createStatement();
-                    String request = "SELECT name FROM houseplan";
+                    String request = "SELECT name FROM houseplan";                    
                     ResultSet rs = statement.executeQuery(request);
                     while(rs.next()) {
                         housePlans.add(rs.getString("name"));
@@ -363,9 +370,9 @@ public class Plan extends Parent{
 
                 }
                 ChoiceDialog<String> loadingPopup = new ChoiceDialog<>("",housePlans);
-                loadingPopup.setTitle("House Plan Loading");
-                loadingPopup.setHeaderText("In order to load an House Plan, you need to select one from the list below (/!\\ Warning, your current one will be deleted /!\\) :");
-                loadingPopup.setContentText("Please select the House Plan to Load");
+                loadingPopup.setTitle(messages.getString("HOUSE PLAN LOADING"));
+                loadingPopup.setHeaderText(messages.getString("WARNINGLOADING"));
+                loadingPopup.setContentText(messages.getString("PLEASE SELECT THE HOUSE PLAN TO LOAD"));
                 Optional<String> result = loadingPopup.showAndWait();
                 if (result.isPresent()) {
                     objectList.getItems().clear();
@@ -375,28 +382,27 @@ public class Plan extends Parent{
         });
         
         //Back button
-        Button backButton = new Button("Back..");
+        Button backButton = new Button(messages.getString("BACK.."));
         backButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
                 primaryStage.setScene(sceneTab[0]);
             }
         });
-        
+        grid.setConstraints(backButton,1,14);
         //Error text zone
         Text infoSQL = new Text(10,50,"");
-        infoSQL.setId("infoSQL");
+        infoSQL.setId("infosql");
         grid.setConstraints(infoSQL,1,11);
         
         //Hbox set to display the 3 bottom buttons
         
         HBox hbButtons = new HBox();
         hbButtons.setSpacing(10);
-        hbButtons.getChildren().addAll(backButton,saveButton,loadButton);
+        hbButtons.getChildren().addAll(saveButton,loadButton);
         grid.setConstraints(hbButtons,1,12);
-        
         //Add all the elements to the grid components
-        grid.getChildren().addAll(choix,label,infoCase,objectListLbl,objectList,hbButtons,infoSQL);
+        grid.getChildren().addAll(choix,label,infoCase,objectListLbl,objectList,hbButtons,infoSQL,backButton);
         menuVertical.getChildren().add(grid);
         
         hbox.getChildren().add(objetGrid);
@@ -421,27 +427,27 @@ public class Plan extends Parent{
         try {
             setCredentials();
             Connection connect = DriverManager.getConnection("jdbc:mysql://"+this.getAdresse()+"/iathinkers?"
-                    + "user="+this.getUsername()+"&password="+this.getMdp());
+            + "user="+this.getUsername()+"&password="+this.getMdp());
             //Dealing with house plan insertion
             Statement statement = connect.createStatement();
-            String request = "SELECT * FROM houseplan WHERE name=\'"+houseplanName+"\'";
+            String request = "SELECT * FROM HOUSEPLAN WHERE NAME=\'"+houseplanName+"\'";
             ResultSet rs = statement.executeQuery(request);
             if (!rs.next()) {
-                if (statement.executeUpdate("INSERT INTO houseplan(name) VALUES (\'"+houseplanName+"\')") != -1) {
-                    System.out.println("HousePlan value inserted");
+                if (statement.executeUpdate("INSERT INTO HOUSEPLAN(NAME) VALUES (\'"+houseplanName+"\')") != -1) {
+                    System.out.println("HOUSEPLAN VALUE INSERTED");
                 }
             } else {
-                Text infoSQL = (Text) scene.lookup("#infoSQL");
-                infoSQL.setText("There is an existing\nplan with the name \'"+houseplanName+"\'. \nPlease select another name. ");
+                Text infoSQL = (Text) scene.lookup("#infosql");
+                infoSQL.setText(messages.getString("THERE IS AN EXISTING\nPLAN WITH THE NAME \'")+houseplanName+messages.getString("\'. \nPLEASE SELECT ANOTHER NAME. "));
                 return false;
             }
-            rs = statement.executeQuery("SELECT * FROM houseplan WHERE name=\'"+houseplanName+"\'");
+            rs = statement.executeQuery("SELECT * FROM HOUSEPLAN WHERE NAME=\'"+houseplanName+"\'");
             
             while (rs.next()) {
               idHousePlan = rs.getInt("idHousePlan");
             }
             //Dealing with type Ids
-            rs = statement.executeQuery("SELECT * FROM Type");
+            rs = statement.executeQuery("SELECT * FROM TYPE");
             while (rs.next()) {
                 switch (rs.getString("typeName")) {
                     case "Door":
@@ -471,7 +477,7 @@ public class Plan extends Parent{
                             objId = rs.getInt("idObject");
                         }
                         if (statement.executeUpdate("INSERT INTO Composition(object, plan) VALUES ("+objId+", "+idHousePlan+")") != -1) {
-                            System.out.println("Object "+w.toString()+" saved");
+                            System.out.println("OBJECT "+w.toString()+" SAVED");
                         }
                     }
                 } else if (o instanceof Objet.Door) {
@@ -479,7 +485,7 @@ public class Plan extends Parent{
                     if (d.getIsVertical()) {
                         request = "INSERT INTO Object(type,height,width,posX,posY,isVertical) VALUES ("+idTypeDoor+", "+d.getHeight()+", "+d.getWidth()+", "+d.getPosX()+", "+d.getPosY()+", 1)";
                     } else {
-                        request = "INSERT INTO Object(type,height,width,posX,posY,isVertical) VALUES ("+idTypeDoor+", "+d.getHeight()+", "+d.getWidth()+", "+d.getPosX()+", "+d.getPosY()+", 0)";
+                         request = "INSERT INTO Object(type,height,width,posX,posY,isVertical) VALUES ("+idTypeDoor+", "+d.getHeight()+", "+d.getWidth()+", "+d.getPosX()+", "+d.getPosY()+", 0)";
                     }
                     if (statement.executeUpdate(request) != -1) {
                         rs = statement.executeQuery("SELECT idObject FROM Object ORDER BY idObject DESC LIMIT 0,1");
@@ -487,41 +493,41 @@ public class Plan extends Parent{
                             objId = rs.getInt("idObject");
                         }
                         if (statement.executeUpdate("INSERT INTO Composition(object, plan) VALUES ("+objId+", "+idHousePlan+")") != -1) {
-                            System.out.println("Object "+d.toString()+" saved");
+                            System.out.println("OBJECT "+d.toString()+" SAVED");
                         }
                     }
                 } else if (((Objet.Point) o).getType() == Objet.PointType.POINTA) {
                     Objet.Point p = (Objet.Point) o;
-                    request = "INSERT INTO Object(type,posX,posY) VALUES ("+idTypePointA+", "+p.getPosX()+", "+p.getPosY()+")";
-                    if (statement.executeUpdate(request) != -1) {
+                request = "INSERT INTO Object(type,posX,posY) VALUES ("+idTypePointA+", "+p.getPosX()+", "+p.getPosY()+")";
+                if (statement.executeUpdate(request) != -1) {
                         rs = statement.executeQuery("SELECT idObject FROM Object ORDER BY idObject DESC LIMIT 0,1");
                         if (rs.next()) {
                             objId = rs.getInt("idObject");
                         }
                         if (statement.executeUpdate("INSERT INTO Composition(object, plan) VALUES ("+objId+", "+idHousePlan+")") != -1) {
-                            System.out.println("Object "+p.toString()+" saved");
+                            System.out.println("OBJECT "+p.toString()+" SAVED");
                         }
                     }                
                 } else {
                     Objet.Point p = (Objet.Point) o;
-                    request = "INSERT INTO Object(type,posX,posY) VALUES ("+idTypePointB+", "+p.getPosX()+", "+p.getPosY()+")";
-                    if (statement.executeUpdate(request) != -1) {
-                        rs = statement.executeQuery("SELECT idObject FROM Object ORDER BY idObject DESC LIMIT 0,1");
+                        request = "INSERT INTO Object(type,posX,posY) VALUES ("+idTypePointB+", "+p.getPosX()+", "+p.getPosY()+")";
+                        if (statement.executeUpdate(request) != -1) {
+                            rs = statement.executeQuery("SELECT idObject FROM Object ORDER BY idObject DESC LIMIT 0,1");
                         if (rs.next()) {
                             objId = rs.getInt("idObject");
                         }
                         if (statement.executeUpdate("INSERT INTO Composition(object, plan) VALUES ("+objId+", "+idHousePlan+")") != -1) {
-                            System.out.println("Object "+p.toString()+" saved");
+                            System.out.println("OBJECT "+p.toString()+" SAVED");
                         }
                     }
                 }
             }
             System.out.println("\n Every object saved ! \n");
-            Text infoSQL = (Text) scene.lookup("#infoSQL");
+            Text infoSQL = (Text) scene.lookup("#infosql");
             infoSQL.setText("House Plan correctly\nsaved as "+houseplanName);
             return true;
         } catch (SQLException ex) {
-            Text infoSQL = (Text) scene.lookup("#infoSQL");
+            Text infoSQL = (Text) scene.lookup("#infosql");
             infoSQL.setText("MySQL ERROR : \nPlease make sure\nyou have entered\nyour credentials.");
             return false;
         }
@@ -609,10 +615,10 @@ public class Plan extends Parent{
                     }
                 }    
             }
-            Text infoSQL = (Text) sceneTab[1].lookup("#infoSQL");
-            infoSQL.setText("House Plan correctly loaded !");
+            Text infoSQL = (Text) sceneTab[1].lookup("#infosql");
+            infoSQL.setText(messages.getString("HOUSE PLAN CORRECTLY LOADED !"));
         } catch (SQLException ex) {
-            Text infoSQL = (Text) sceneTab[1].lookup("#infoSQL");
+            Text infoSQL = (Text) sceneTab[1].lookup("#infosql");
             infoSQL.setText("MySQL ERROR : \nPlease make sure\nyou have entered\nyour credentials.");
             return false;
         }
@@ -661,7 +667,7 @@ public class Plan extends Parent{
             this.setAdresse(new String(adrChar));
                         
         } catch (FileNotFoundException ex) {
-            System.out.println("No database set");
+            System.out.println(messages.getString("NO DATABASE SET"));
             this.setUsername("");
             this.setMdp("");
             this.setAdresse("");

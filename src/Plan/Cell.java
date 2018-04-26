@@ -1,6 +1,9 @@
 
 package Plan;
 
+import static Menu.MainMenu.getLanguage;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
@@ -38,6 +41,8 @@ public class Cell extends StackPane {
      * Integer defining the height of the grid (in cell)
      */
     private final int gridHeight;
+    
+    private ResourceBundle messages;
         
     /**
      * Constructor of a cell
@@ -47,13 +52,20 @@ public class Cell extends StackPane {
      * @param posY Y position of the cell, in pixel
      * @param x X position of the cell, in integer (i.e. the column in which the cell is put)
      * @param y Y position of the cell, in integer (i.e the row in which the cell is put)
+     * @param gridHeight defines the height of the grid (in cell)
+     * @param gridWidth defines the width of the grid (in cell)
      */
     public Cell(int width, int height, int posX, int posY, int x, int y, int gridHeight, int gridWidth) {
+        
+        Locale l = getLanguage();
+        messages = ResourceBundle.getBundle("Plan/Plan",l);
+        
         this.occupied = false;
         //Initialises the rectangle variable for the UI perspective
         Rectangle rectangle = new Rectangle(width, height);
         rectangle.setId(x+"-"+y);
         rectangle.setFill(Color.ALICEBLUE);
+        rectangle.setStroke(Color.LIGHTGRAY);
         
         //Defines its positioning using X and Y coordinates
         setTranslateX(posX);
@@ -118,12 +130,12 @@ public class Cell extends StackPane {
     /**
      * <i> Hover </i> method for the cells. Its main purposes are to change the filling color of the rectangle object of the hovered cell 
      * + it displays its position in a <i>Text</i> object, on the VBbox at the right side.
-     * @param scene Scene variable of the {@link Plan.Plan} class, used to lookup for the the <i> Text </i> object, using its id.
+     * @param scene Scene variable of the {@link Plan} class, used to lookup for the the <i> Text </i> object, using its id.
      */
      public void hoverHighlight(Scene scene) {
             coloring(scene, Color.LIGHTBLUE);
-            Text texte = (Text) scene.lookup("#infoCase");
-            texte.setText("<"+this.getX()+";"+this.getY()+">");
+            Text texte = (Text) scene.lookup("#infocase");
+            texte.setText(messages.getString("<")+this.getX()+messages.getString(";")+this.getY()+messages.getString(">"));
         }
 
      /**
@@ -143,8 +155,8 @@ public class Cell extends StackPane {
      */
     public void coloring(Scene scene, Color color) {
         
-        ComboBox choix = (ComboBox) scene.lookup("#choixObjet");
-        if (choix.getSelectionModel().getSelectedItem()=="Wall") {
+        ComboBox choix = (ComboBox) scene.lookup("#choixobjet");
+        if (choix.getSelectionModel().getSelectedItem()==messages.getString("WALL")) {
             //We get the values entered for the dimensions of the wall
             TextField heightTxt = (TextField) scene.lookup("#height");
             TextField widthTxt = (TextField) scene.lookup("#width");
@@ -167,13 +179,13 @@ public class Cell extends StackPane {
             } catch (NumberFormatException e) {
                 //e.printStackTrace();
             }    
-        } else if (choix.getSelectionModel().getSelectedItem()=="Door") {
+        } else if (choix.getSelectionModel().getSelectedItem()==messages.getString("DOOR")) {
             //We get then orientation of the wall
-            ComboBox orientation = (ComboBox) scene.lookup("#orientation");
+            ComboBox orientation = (ComboBox) scene.lookup(messages.getString("#ORIENTATION"));
             try {
                 boolean fits = true;
                 //Based on the orientation, we will seek for any blocking wall that would compromise laying the door
-                if (orientation.getSelectionModel().getSelectedItem()=="Vertical") {
+                if (orientation.getSelectionModel().getSelectedItem() == messages.getString("VERTICAL")) {
                     if ((this.getY()-1)>0 && (this.getY()+1)<this.getGridHeight()-1) {
                         try {
                             for (int i = 0; i < 3; i++) {
@@ -186,11 +198,11 @@ public class Cell extends StackPane {
                                 
                             }
                     }
-                } else if (orientation.getSelectionModel().getSelectedItem()=="Horizontal") {
+                } else if (orientation.getSelectionModel().getSelectedItem() == messages.getString("HORIZONTAL")) {
                    if ((this.getX()-1)>0 && (this.getX()+1)<this.getGridWidth()-1) {
                         try {
                             for (int i = 0; i < 3; i++) {
-                                Rectangle rectangle = (Rectangle) scene.lookup("#"+(this.getX()-1+i)+"-"+(this.getY()));
+                                Rectangle rectangle = (Rectangle) scene.lookup("#"+(this.getX())+"-"+(this.getY()));
                                 if (rectangle.getFill() == Color.THISTLE || rectangle.getFill() == Color.ANTIQUEWHITE && rectangle.getFill() != Color.TEAL &&rectangle.getFill() != Color.BROWN) {
                                     fits = false;
                                 }  
@@ -209,7 +221,7 @@ public class Cell extends StackPane {
             } catch (NumberFormatException e) {
                 //e.printStackTrace();
             }    
-        } else if (choix.getSelectionModel().getSelectedItem()=="Starting Point" || choix.getSelectionModel().getSelectedItem()=="Ending Point") {
+        } else if (choix.getSelectionModel().getSelectedItem() == messages.getString("STARTING POINT") || choix.getSelectionModel().getSelectedItem() ==  messages.getString("ENDING POINT")) {
             Rectangle rectangle = (Rectangle) scene.lookup("#"+(this.getX())+"-"+(this.getY()));
             if (rectangle.getFill() != Color.THISTLE && rectangle.getFill() != Color.ANTIQUEWHITE && rectangle.getFill() != Color.TEAL &&rectangle.getFill() != Color.BROWN) {
                 rectangle.setFill(color);

@@ -50,7 +50,7 @@ public class Wall {
     }
     
     public String toString() {
-        return "Wall("+this.getHeight()+", "+this.getWidth()+", "+this.getPosX()+", "+this.getPosY()+")";
+        return java.util.ResourceBundle.getBundle("Objet/Objet").getString("WALL(")+this.getHeight()+java.util.ResourceBundle.getBundle("Objet/Objet").getString(", ")+this.getWidth()+java.util.ResourceBundle.getBundle("Objet/Objet").getString(", ")+this.getPosX()+java.util.ResourceBundle.getBundle("Objet/Objet").getString(", ")+this.getPosY()+java.util.ResourceBundle.getBundle("Objet/Objet").getString(")");
     }
 
 }

@@ -60,9 +60,9 @@ public class Door {
     
     public String toString() {
         if (this.getIsVertical()) {
-            return "Door("+this.getHeight()+", "+this.getWidth()+", "+this.getPosX()+", "+this.getPosY()+", vertical)";
+            return java.util.ResourceBundle.getBundle("Objet/Objet").getString("DOOR(")+this.getHeight()+java.util.ResourceBundle.getBundle("Objet/Objet").getString(", ")+this.getWidth()+java.util.ResourceBundle.getBundle("Objet/Objet").getString(", ")+this.getPosX()+java.util.ResourceBundle.getBundle("Objet/Objet").getString(", ")+this.getPosY()+java.util.ResourceBundle.getBundle("Objet/Objet").getString(", VERTICAL)");
         } else {
-            return "Door("+this.getHeight()+", "+this.getWidth()+", "+this.getPosX()+", "+this.getPosY()+", horizontal)";
+            return java.util.ResourceBundle.getBundle("Objet/Objet").getString("DOOR(")+this.getHeight()+java.util.ResourceBundle.getBundle("Objet/Objet").getString(", ")+this.getWidth()+java.util.ResourceBundle.getBundle("Objet/Objet").getString(", ")+this.getPosX()+java.util.ResourceBundle.getBundle("Objet/Objet").getString(", ")+this.getPosY()+java.util.ResourceBundle.getBundle("Objet/Objet").getString(", HORIZONTAL)");
         }
     }
     

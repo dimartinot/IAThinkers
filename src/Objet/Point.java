@@ -46,9 +46,9 @@ public class Point {
     
     public String toString() {
         if (this.type == PointType.POINTA) {
-            return "PointA("+getPosX()+", "+getPosY()+")";
+            return java.util.ResourceBundle.getBundle("Objet/Objet").getString("POINTA(")+getPosX()+java.util.ResourceBundle.getBundle("Objet/Objet").getString(", ")+getPosY()+java.util.ResourceBundle.getBundle("Objet/Objet").getString(")");
         } else {
-            return "PointB("+getPosX()+", "+getPosY()+")";
+            return java.util.ResourceBundle.getBundle("Objet/Objet").getString("POINTB(")+getPosX()+java.util.ResourceBundle.getBundle("Objet/Objet").getString(", ")+getPosY()+java.util.ResourceBundle.getBundle("Objet/Objet").getString(")");
         }   
     }
 }

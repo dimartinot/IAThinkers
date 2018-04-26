@@ -4,8 +4,7 @@
 package Parametres;
 
 //JavaFX Imports
-import iathinkers.IAThinkers;
-import Menu.MainMenu;
+import static Menu.MainMenu.getLanguage;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -33,8 +32,13 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.RadioMenuItem;
 
 
 /**
@@ -52,6 +56,8 @@ public class SQLParameters extends Parent{
     private Statement statement;
     private ResultSet resultSet;
     private Connection cnt;
+    
+    private ResourceBundle messages;
     /**
      * Constructor of the SQLParameters class {@link Parametres.SQLParameters}
      * @param primaryStage Stage variable used to go back to the MainMenu <i> Scene </i> {@link Menu.MainMenu}
@@ -59,35 +65,39 @@ public class SQLParameters extends Parent{
      */
     
     public SQLParameters(Stage primaryStage, Scene[] sceneTab) {
+        
+        Locale l = getLanguage();
+        messages = ResourceBundle.getBundle("Parametres/Parameters",l);        
         cnt = null;
         Scene mainScene = sceneTab[5];
         GridPane grid = new GridPane();
         grid.setAlignment(Pos.CENTER);
         grid.setHgap(10);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(25, 25, 25, 25));
+        grid.setVgap(30);
+        grid.setPadding(new Insets(50, 50, 10, 10));
         
-        Text scenetitle = new Text("Welcome !\nPlease enter your MySQL credentials for the good functioning of this app");
+        Text scenetitle = new Text(messages.getString("WELCOME"));
         scenetitle.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
         grid.add(scenetitle, 0, 0, 2, 1);
         
-        Label adresseLbl = new Label("MySQL Server Address:");
+        Label adresseLbl = new Label(messages.getString("MYSQL SERVER ADDRESS:"));
         grid.add(adresseLbl, 0, 1);
         
         TextField adresseTextField = new TextField();
         adresseTextField.setId("addTxt");
         grid.add(adresseTextField, 1, 1);
         
-        Label usernameLbl = new Label("Identifier:");
+        Label usernameLbl = new Label(messages.getString("IDENTIFIER:"));
         grid.add(usernameLbl, 0, 2);
 
         TextField userTextField = new TextField();
         userTextField.setId("usrTxt");
         grid.add(userTextField, 1, 2);
 
-        Label pwLbl = new Label("Password:");
+        Label pwLbl = new Label(messages.getString("PASSWORD:"));
         grid.add(pwLbl, 0, 3);
 
+        
         PasswordField pwBox = new PasswordField();
         pwBox.setId("pwTxt");
         grid.add(pwBox, 1, 3);
@@ -97,7 +107,7 @@ public class SQLParameters extends Parent{
         infoConnexion.setId("infoConnexion");
         grid.add(infoConnexion, 0, 6);
         
-        Button btn = new Button("Connection");
+        Button btn = new Button(messages.getString("CONNECTION"));
         btn.setOnAction(new EventHandler<ActionEvent>(){
             @Override
             public void handle(ActionEvent event) {
@@ -158,12 +168,12 @@ public class SQLParameters extends Parent{
                     }
                     //writeResultSet(resultSet);
                     Text texte = (Text) mainScene.lookup("#infoConnexion");
-                    texte.setText("Connection achieved !");
+                    texte.setText(messages.getString("CONNECTIONACHIEVED"));
                     encrypt();
                     System.out.println("Encryption achieved !");
                 } catch (SQLException e) {
                     Text texte = (Text) mainScene.lookup("#infoConnexion");
-                    texte.setText("Connection failed, please check your credentials");
+                    texte.setText(messages.getString("CONNECTIONFAILED"));
                     e.printStackTrace();
                 } finally {
                     close();
@@ -175,7 +185,7 @@ public class SQLParameters extends Parent{
         hbBtn.getChildren().add(btn);
         grid.add(hbBtn, 1, 5);
         
-        Button btnRetour = new Button("Back..");
+        Button btnRetour = new Button(messages.getString("BACK"));
         btnRetour.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
@@ -187,7 +197,76 @@ public class SQLParameters extends Parent{
         hbBtnRetour.getChildren().add(btnRetour);
         grid.add(hbBtnRetour, 2, 5);
         
+        // Menu Bar
+        MenuBar menuBar = new MenuBar();
+        // Language Menu
+        Menu menuLanguage = new Menu(messages.getString("Language"));
+        // Menu Items
+        RadioMenuItem english = new RadioMenuItem("English");
+        RadioMenuItem french = new RadioMenuItem("Français");
+        if (l.equals(new Locale("fr","FR"))) {
+            french.setSelected(true);
+        } else if (l.equals(new Locale("en","UK"))) {
+            english.setSelected(true);
+        }
+        french.setOnAction(new EventHandler<ActionEvent>() {
+            @Override public void handle(ActionEvent e) {
+                if (english.isSelected() == false) {
+                    french.setSelected(true);
+                } else {
+                    try {
+                        FileWriter f = new FileWriter(new File("language.txt"),false);
+                        f.write("fr");
+                        f.flush();
+                        f.close();
+                    } catch (IOException ex) {
+                        try {
+                            File file = new File("language.txt");
+                            file.createNewFile();
+                            FileWriter f = new FileWriter(file,false);    
+                            f.write("fr");
+                            f.flush();
+                            f.close();
+                        } catch (IOException ex1) {
+                        }
+                    }
+                    english.setSelected(false);
+                    
+                }
+            }
+        });
+        
+        english.setOnAction(new EventHandler<ActionEvent>() {
+            @Override public void handle(ActionEvent e) {
+                if (french.isSelected() == false) {
+                    english.setSelected(true);
+                } else {
+                    try {
+                        FileWriter f = new FileWriter(new File("language.txt"),false);
+                        f.write("en");
+                        f.flush();
+                        f.close();
+                    } catch (IOException ex) {
+                        try {
+                            File file = new File("language.txt");
+                            file.createNewFile();
+                            FileWriter f = new FileWriter(file,false);    
+                            f.write("en");
+                            f.flush();
+                            f.close();
+                        } catch (IOException ex1) {
+                        }
+                    }
+                    french.setSelected(false);
+                }    
+            }
+        });
+        menuLanguage.getItems().addAll(english,french);
+        menuBar.getMenus().addAll(menuLanguage);
+        menuBar.prefWidthProperty().bind(primaryStage.widthProperty());
         this.getChildren().add(grid);
+        this.getChildren().add(menuBar);
+
     }
     
      /**
