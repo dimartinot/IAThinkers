@@ -389,7 +389,7 @@ public class Grid extends Parent{
             try {
                 Rectangle rectangle = (Rectangle) scene.lookup("#"+(cellule.getX())+"-"+(cellule.getY()));
                 rectangle.setFill(Color.ANTIQUEWHITE);
-                cellule.setOccupied(true);
+                //cellule.setOccupied(true);
             } catch (NullPointerException e) {
                 return false;
             }
@@ -414,7 +414,7 @@ public class Grid extends Parent{
             try {
                 Rectangle rectangle = (Rectangle) scene.lookup("#"+(cellule.getX())+"-"+(cellule.getY()));
                 rectangle.setFill(Color.BROWN);
-                cellule.setOccupied(true);
+                //cellule.setOccupied(true);
                 setPointAIsSet(true);
             } catch (NullPointerException e) {
                 return false;
@@ -440,7 +440,7 @@ public class Grid extends Parent{
             try {
                 Rectangle rectangle = (Rectangle) scene.lookup("#"+(cellule.getX())+"-"+(cellule.getY()));
                 rectangle.setFill(Color.TEAL);
-                cellule.setOccupied(true);
+                //cellule.setOccupied(true);
                 setPointBIsSet(true);
             } catch (NullPointerException e) {
                 return false;
@@ -465,6 +465,38 @@ public class Grid extends Parent{
         System.out.println("------------------");
     }
 
+    /**
+     * Search in the list of objects the starting point
+     * @return 
+     */
+    public Objet.Point getStartingPoint() {
+        for (Object o : listObjects) {
+            if (o instanceof Objet.Point) {
+                Objet.Point p = (Objet.Point) o;
+                if (p.getType() == PointType.POINTA) {
+                    return p;
+                }
+            }
+        }
+        return null;
+    }
+        
+    /**
+     * Search in the list of objects the starting point
+     * @return 
+     */
+    public Objet.Point getEndingPoint() {
+        for (Object o : listObjects) {
+            if (o instanceof Objet.Point) {
+                Objet.Point p = (Objet.Point) o;
+                if (p.getType() == PointType.POINTB) {
+                    return p;
+                }
+            }
+        }
+        return null;
+    }
+    
     @Override
     public String toString() {
         return java.text.MessageFormat.format(("GRILLE{" + "SCENEWIDTH={0}, SCENEHEIGHT={1}, LISTOBJECTS={2}, POINTAISSET={3}, POINTBISSET={4}{5}"), new Object[] {sceneWidth, sceneHeight, listObjects, pointAIsSet, pointBIsSet, '}'});

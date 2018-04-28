@@ -132,9 +132,16 @@ public class Cell extends StackPane {
      * @param scene Scene variable of the {@link Plan} class, used to lookup for the the <i> Text </i> object, using its id.
      */
      public void hoverHighlight(Scene scene) {
-            coloring(scene, Color.LIGHTBLUE);
-            Text texte = (Text) scene.lookup("#infocase");
-            texte.setText("<"+this.getX()+";"+this.getY()+">");
+            try {
+                ComboBox choix = (ComboBox) scene.lookup("#choixobjet");
+                coloring(scene, Color.LIGHTBLUE,choix.getSelectionModel().getSelectedItem().toString());
+                Text texte = (Text) scene.lookup("#infocase");
+                texte.setText("<"+this.getX()+";"+this.getY()+">");
+            } catch (NullPointerException e) {
+                coloring(scene, Color.LIGHTBLUE,"");
+                Text texte = (Text) scene.lookup("#infocase");
+                texte.setText("<"+this.getX()+";"+this.getY()+">");            
+            }
         }
 
      /**
@@ -142,7 +149,12 @@ public class Cell extends StackPane {
       * @param scene Scene variable used by the {@link coloring} method.
       */
     public void hoverUnhighlight(Scene scene) {
-        coloring(scene, Color.ALICEBLUE);
+        try {
+            ComboBox choix = (ComboBox) scene.lookup("#choixobjet");
+            coloring(scene, Color.ALICEBLUE, choix.getSelectionModel().getSelectedItem().toString());
+        } catch (NullPointerException e) {
+            coloring(scene, Color.ALICEBLUE, "");
+        }
     }
     
     /**
@@ -152,10 +164,8 @@ public class Cell extends StackPane {
      * @param scene Scene variable useful to check which object is intended to be put
      * @param color Color variable : it represents the new color of the cell.
      */
-    public void coloring(Scene scene, Color color) {
-        
-        ComboBox choix = (ComboBox) scene.lookup("#choixobjet");
-        if (choix.getSelectionModel().getSelectedItem()==messages.getString("WALL")) {
+    public void coloring(Scene scene, Color color, String selected) {
+        if (selected==messages.getString("WALL")) {
             //We get the values entered for the dimensions of the wall
             TextField heightTxt = (TextField) scene.lookup("#height");
             TextField widthTxt = (TextField) scene.lookup("#width");
@@ -178,7 +188,7 @@ public class Cell extends StackPane {
             } catch (NumberFormatException e) {
                 //e.printStackTrace();
             }    
-        } else if (choix.getSelectionModel().getSelectedItem()==messages.getString("DOOR")) {
+        } else if (selected==messages.getString("DOOR")) {
             //We get then orientation of the wall
             ComboBox orientation = (ComboBox) scene.lookup("#orientation");
             try {
@@ -220,7 +230,7 @@ public class Cell extends StackPane {
             } catch (NumberFormatException e) {
                 //e.printStackTrace();
             }    
-        } else if (choix.getSelectionModel().getSelectedItem() == messages.getString("STARTING POINT") || choix.getSelectionModel().getSelectedItem() ==  messages.getString("ENDING POINT")) {
+        } else if (selected == messages.getString("STARTING POINT") || selected ==  messages.getString("ENDING POINT")) {
             Rectangle rectangle = (Rectangle) scene.lookup("#"+(this.getX())+"-"+(this.getY()));
             if (rectangle.getFill() != Color.THISTLE && rectangle.getFill() != Color.ANTIQUEWHITE && rectangle.getFill() != Color.TEAL &&rectangle.getFill() != Color.BROWN) {
                 rectangle.setFill(color);
@@ -229,4 +239,9 @@ public class Cell extends StackPane {
             //When no option is selected
         }
     }
+    
+    public String toString() {
+        return "("+this.getX()+", "+this.getY()+")";
+    }
+    
 }

@@ -47,13 +47,13 @@ public class IAThinkers extends Application {
         
         //Menu scene
         Group root0 = new Group();
-        Scene scene0 = new Scene(root0, 800, 600);
+        Scene scene0 = new Scene(root0, 850, 600);
         scene0.getStylesheets().add(this.getClass().getResource(java.util.ResourceBundle.getBundle("iathinkers/Main").getString("MENU.CSS")).toExternalForm());
         sceneTab[0] = scene0;
 
         //House Plan scene
         Group root1 = new Group();
-        Scene scene1 = new Scene(root1,800,600);
+        Scene scene1 = new Scene(root1,850,600);
         sceneTab[1] = scene1;
         
         //Parameters scene

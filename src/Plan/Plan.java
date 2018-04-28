@@ -4,7 +4,6 @@
  */
 package Plan;
 
-import Menu.MainMenu;
 import static Menu.MainMenu.getLanguage;
 import Objet.PointType;
 import java.io.BufferedReader;
@@ -42,6 +41,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import Plan.Algorithm.*;
 
 /**
  * Class of the House Plan <i> Scene </i>. It is composed of a grid of multiple {@link Cell} object.
@@ -68,12 +68,18 @@ public class Plan extends Parent{
     private ResourceBundle messages;
     
     /**
+     * {@link Plan.Algorithm.Node} ArrayList used to describe the path between the two points 
+     */
+    private ArrayList<Node> path;
+    
+    /**
      * Plan constructor.
      * @param primaryStage
      * @param sceneTab 
      */
     public Plan(Stage primaryStage, Scene[] sceneTab) {
         
+        this.path = new ArrayList<Node>();
         
         Locale l = getLanguage();
         messages = ResourceBundle.getBundle("Plan/Plan",l);
@@ -381,6 +387,43 @@ public class Plan extends Parent{
             }
         });
         
+        //Error text zone
+        Text infoSQL = new Text(10,50,"");
+        infoSQL.setId("infosql");
+        grid.setConstraints(infoSQL,1,11);
+        
+        //Hbox set to display the 2  save and load buttons
+        HBox hbButtons1 = new HBox();
+        hbButtons1.setSpacing(10);
+        hbButtons1.getChildren().addAll(saveButton,loadButton);
+        grid.setConstraints(hbButtons1,1,12);
+        
+        //Launch Button
+        Button launchButton = new Button(messages.getString("LAUNCH"));
+        launchButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                if (objetGrid.isPointAIsSet() && objetGrid.isPointBIsSet()) {
+                    long startTime = System.currentTimeMillis();
+                    Graph g = new Graph(objetGrid);
+                    System.out.println("Graph initialized :"+g.toString());
+                    AStar solution = new AStar(new Node(g.getStart().getPosX(),g.getStart().getPosY()),new Node(g.getEnd().getPosX(),g.getEnd().getPosY()), g);
+                    for (Node n : solution.getSolution()) {
+                        path.add(n);
+                        Rectangle r = (Rectangle) sceneTab[1].lookup("#"+(n.getX())+"-"+(n.getY()));
+                        r.setFill(Color.BLUE);
+                    }    
+                    long stopTime = System.currentTimeMillis();
+                    long elapsedTime = stopTime - startTime;
+                    Text infoSQL = (Text) sceneTab[1].lookup("#infosql");
+                    infoSQL.setText(messages.getString("CALCULATION")+"= "+elapsedTime+" ms");
+                } else {
+                    Text infoSQL = (Text) sceneTab[1].lookup("#infosql");
+                    infoSQL.setText(messages.getString("POINTERROR"));                
+                }    
+            }
+        });
+        
         //Back button
         Button backButton = new Button(messages.getString("BACK.."));
         backButton.setOnAction(new EventHandler<ActionEvent>() {
@@ -389,20 +432,15 @@ public class Plan extends Parent{
                 primaryStage.setScene(sceneTab[0]);
             }
         });
-        grid.setConstraints(backButton,1,14);
-        //Error text zone
-        Text infoSQL = new Text(10,50,"");
-        infoSQL.setId("infosql");
-        grid.setConstraints(infoSQL,1,11);
         
-        //Hbox set to display the 3 bottom buttons
+        //Hbox set to display the two back and launch buttons
+        HBox hbButtons2 = new HBox();
+        hbButtons2.setSpacing(10);
+        hbButtons2.getChildren().addAll(launchButton,backButton);
+        grid.setConstraints(hbButtons2,1,14);
         
-        HBox hbButtons = new HBox();
-        hbButtons.setSpacing(10);
-        hbButtons.getChildren().addAll(saveButton,loadButton);
-        grid.setConstraints(hbButtons,1,12);
         //Add all the elements to the grid components
-        grid.getChildren().addAll(choix,label,infoCase,objectListLbl,objectList,hbButtons,infoSQL,backButton);
+        grid.getChildren().addAll(choix,label,infoCase,objectListLbl,objectList,hbButtons1,infoSQL,hbButtons2);
         menuVertical.getChildren().add(grid);
         
         hbox.getChildren().add(objetGrid);
@@ -574,6 +612,11 @@ public class Plan extends Parent{
                 }            
             }
         }
+        //On vide le chemin affiché
+        for (Node n : this.getPath()) {
+            Rectangle r = (Rectangle) sceneTab[1].lookup("#"+(n.getX())+"-"+(n.getY()));
+            r.setFill(Color.ALICEBLUE);
+        } 
         try {
             setCredentials();
             Connection connect = DriverManager.getConnection("jdbc:mysql://"+this.getAdresse()+"/iathinkers?"
@@ -623,6 +666,10 @@ public class Plan extends Parent{
             return false;
         }
         return true;
+    }
+    
+    public ArrayList<Node> getPath() {
+        return this.path;
     }
     
     /**
