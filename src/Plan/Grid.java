@@ -269,6 +269,11 @@ public class Grid extends Parent{
         for (Object o : this.listObjects) {
             if (o instanceof Objet.Wall) {
                 Objet.Wall w = (Objet.Wall) o;
+                for (int i = 0; i < w.getHeight(); i++) {
+                    for (int j = 0; j < w.getWidth(); j++) {
+                        this.getListCells().get("#"+(w.getPosX()+j)+"-"+(w.getPosY()+i)).setOccupied(false);
+                    }
+                }
                 if (w.getHeight() == height && w.getWidth() == width && w.getPosX() == posX && w.getPosY() == posY ) {
                     listObjects.remove(listObjects.indexOf(w));
                     return true;
@@ -290,6 +295,7 @@ public class Grid extends Parent{
         for (Object o : this.listObjects) {
             if (o instanceof Objet.Door) {
                 Objet.Door d = (Objet.Door) o;
+                this.getListCells().get("#"+(d.getPosX())+"-"+(d.getPosY())).setOccupied(false);
                 if (d.getHeight() == height && d.getWidth() == width && d.getPosX() == posX && d.getPosY() == posY) {
                     listObjects.remove(listObjects.indexOf(d));
                     return true;
@@ -309,6 +315,7 @@ public class Grid extends Parent{
         for (Object o : this.listObjects) {
             if (o instanceof Objet.Point) {
                 Objet.Point p = (Objet.Point) o;
+                this.getListCells().get("#"+(p.getPosX())+"-"+(p.getPosY())).setOccupied(false);
                 if (p.getPosX() == posX && p.getPosY() == posY && p.getType() == PointType.POINTA) {
                     listObjects.remove(listObjects.indexOf(p));
                     setPointAIsSet(false);
@@ -329,6 +336,7 @@ public class Grid extends Parent{
         for (Object o : this.listObjects) {
             if (o instanceof Objet.Point) {
                 Objet.Point p = (Objet.Point) o;
+                this.getListCells().get("#"+(p.getPosX())+"-"+(p.getPosY())).setOccupied(false);
                 if (p.getPosX() == posX && p.getPosY() == posY && p.getType() == PointType.POINTB) {
                     listObjects.remove(listObjects.indexOf(p));
                     setPointBIsSet(false);

@@ -584,6 +584,7 @@ public class Plan extends Parent{
                 Objet.Wall w = (Objet.Wall) o;
                 for (int i = 0; i < w.getWidth(); i++) {
                     for (int j = 0; j < w.getHeight(); j++) {
+                        objetGrid.getListCells().get("#"+(w.getPosX() + i)+"-"+(w.getPosY() + j)).setOccupied(false);
                         Rectangle rectangle = (Rectangle) sceneTab[1].lookup("#"+(w.getPosX() + i)+"-"+(w.getPosY()+ j));
                         if (rectangle.getFill() == Color.THISTLE) {
                             rectangle.setFill(Color.ALICEBLUE);
@@ -593,6 +594,7 @@ public class Plan extends Parent{
                // o = null;
             } else if (o instanceof Objet.Door) {
                 Objet.Door d = (Objet.Door) o;
+                objetGrid.getListCells().get("#"+(d.getPosX())+"-"+(d.getPosY())).setOccupied(false);
                 Rectangle rectangle = (Rectangle) sceneTab[1].lookup("#"+(d.getPosX())+"-"+(d.getPosY()));
                 if (rectangle.getFill() == Color.ANTIQUEWHITE) {
                     rectangle.setFill(Color.ALICEBLUE);
@@ -600,12 +602,14 @@ public class Plan extends Parent{
                 //o = null;
             } else if (((Objet.Point) o).getType() == PointType.POINTA) {
                 Objet.Point p = (Objet.Point) o;
+                objetGrid.getListCells().get("#"+(p.getPosX())+"-"+(p.getPosY())).setOccupied(false);
                 Rectangle rectangle = (Rectangle) sceneTab[1].lookup("#"+p.getPosX()+"-"+p.getPosY());
                 if (rectangle.getFill() == Color.BROWN) {
                     rectangle.setFill(Color.ALICEBLUE);
                 }
             } else {
                 Objet.Point p = (Objet.Point) o;
+                objetGrid.getListCells().get("#"+(p.getPosX())+"-"+(p.getPosY())).setOccupied(false);
                 Rectangle rectangle = (Rectangle) sceneTab[1].lookup("#"+p.getPosX()+"-"+p.getPosY());
                 if (rectangle.getFill() == Color.TEAL) {
                     rectangle.setFill(Color.ALICEBLUE);

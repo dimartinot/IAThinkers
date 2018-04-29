@@ -47,14 +47,14 @@ public class Graph {
     public ArrayList<Node> initNodeList(Cell current, HashMap<String,Cell> listCells, ArrayList<Node> res) {
         //ArrayList<Node> res = new ArrayList<Node>();
         if (current == null) {
-            return res;
+            //return res;
         } else {
             
             res.add(0,new Node(current.getX(),current.getY()));
-            Node top = new Node(current.getX()-1,current.getY());
-            Node bottom = new Node(current.getX()+1,current.getY());
-            Node left = new Node(current.getX(),current.getY()-1);
-            Node right = new Node(current.getX(),current.getY()+1);
+            Node top = new Node(current.getX(),current.getY()-1);
+            Node bottom = new Node(current.getX(),current.getY()+1);
+            Node left = new Node(current.getX()-1,current.getY());
+            Node right = new Node(current.getX()+1,current.getY());
             //
             Cell cellule = listCells.get("#"+(top.getX())+"-"+(top.getY()));
             if (cellule != null && !cellule.isOccupied() && !arrayContainsNode(res,top)) {
