@@ -47,13 +47,13 @@ public class IAThinkers extends Application {
         
         //Menu scene
         Group root0 = new Group();
-        Scene scene0 = new Scene(root0, 800, 600);
-        scene0.getStylesheets().add(this.getClass().getResource("menu.css").toExternalForm());
+        Scene scene0 = new Scene(root0, 850, 600);
+        scene0.getStylesheets().add(this.getClass().getResource(java.util.ResourceBundle.getBundle("iathinkers/Main").getString("MENU.CSS")).toExternalForm());
         sceneTab[0] = scene0;
 
         //House Plan scene
         Group root1 = new Group();
-        Scene scene1 = new Scene(root1,800,600);
+        Scene scene1 = new Scene(root1,850,600);
         sceneTab[1] = scene1;
         
         //Parameters scene
@@ -74,7 +74,7 @@ public class IAThinkers extends Application {
         root5.getChildren().add(mesParemetres);
         
         primaryStage.setScene(scene0);
-        primaryStage.setTitle("IA Thinkers - Rediscover the world !");
+        primaryStage.setTitle(java.util.ResourceBundle.getBundle("iathinkers/Main").getString("IA THINKERS - REDISCOVER THE WORLD !"));
         primaryStage.show();
     }
 

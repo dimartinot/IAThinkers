@@ -5,6 +5,10 @@
  */
 package Objet;
 
+import static Menu.MainMenu.getLanguage;
+import java.util.Locale;
+import java.util.ResourceBundle;
+
 /**
  * Point Class defining every method needed for the representation of a point (starting or ending point) 
  * @author IAThinkers
@@ -45,10 +49,13 @@ public class Point {
     }
     
     public String toString() {
+        
+        Locale l = getLanguage();
+        ResourceBundle messages = ResourceBundle.getBundle("Objet/Objet",l);
         if (this.type == PointType.POINTA) {
-            return "PointA("+getPosX()+", "+getPosY()+")";
+            return messages.getString("POINTA(")+getPosX()+", "+getPosY()+")";
         } else {
-            return "PointB("+getPosX()+", "+getPosY()+")";
+            return messages.getString("POINTB(")+getPosX()+", "+getPosY()+")";
         }   
     }
 }

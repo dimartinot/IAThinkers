@@ -5,6 +5,10 @@
  */
 package Objet;
 
+import static Menu.MainMenu.getLanguage;
+import java.util.Locale;
+import java.util.ResourceBundle;
+
 /**
  * Wall Class defining every method needed for the representation of a wall 
  * @author IAThinkers
@@ -50,7 +54,9 @@ public class Wall {
     }
     
     public String toString() {
-        return "Wall("+this.getHeight()+", "+this.getWidth()+", "+this.getPosX()+", "+this.getPosY()+")";
+        Locale l = getLanguage();
+        ResourceBundle messages = ResourceBundle.getBundle("Objet/Objet",l);
+        return messages.getString("WALL(")+this.getHeight()+", "+this.getWidth()+", "+this.getPosX()+", "+this.getPosY()+")";
     }
 
 }

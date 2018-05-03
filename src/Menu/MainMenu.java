@@ -8,6 +8,14 @@
  */
 package Menu;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Locale;
+import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
@@ -25,27 +33,61 @@ import javafx.stage.Stage;
 public class MainMenu extends Parent{
     
     /**
+     * 
+     * @return Locale variable designed for the language
+     */
+    public static Locale getLanguage() {
+        try {
+            Locale l;
+            FileReader fr = new FileReader("language.txt");
+            BufferedReader textReader = new BufferedReader(fr);
+            try {
+                String line = textReader.readLine();
+                if (line.equals("fr")) {
+                    l = new Locale("fr","FR");
+                } else if (line.equals("en")) {
+                    l = new Locale("en","UK");
+                } else {
+                    l = new Locale("en","UK");
+                }
+            } catch (IOException ex) {
+                l = new Locale("en","UK");
+            }
+            try {
+                fr.close();
+            } catch (IOException ex) {
+            }
+            return l;
+        } catch (FileNotFoundException fileNotFoundException) {
+        }
+        return new Locale("en","UK");
+    }
+    
+    
+    /**
      * Constructor of a MainMenu Object
      * @param height Defines the height of the display window
      * @param width Defines the width of the display window
      * @param sceneTab Array of Scenes : initialised in IAThinkers class {@link iathinkers.IAThinkers}, it allows to jump from any scene to any other if needed.
      * @param primaryStage Main Stage variable initialised in IAThikers class {@link iathinkers.IAThinkers}     */
     public MainMenu(int height, int width, Scene[] sceneTab, Stage primaryStage) {
-        
+        //Get the languages to set
+        Locale l = getLanguage();
+        ResourceBundle messages = ResourceBundle.getBundle("Menu/Menu",l);
         /**
          * Defines all needed Button : one for each Scene
         */
-        Button buttonPlan = new Button("HOUSE PLAN CREATION");
+        Button buttonPlan = new Button(messages.getString("HOUSE PLAN CREATION"));
         buttonPlan.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
                 primaryStage.setScene(sceneTab[1]);
             }
         });
-        Button buttonTrace = new Button("FREEHAND PATH CREATION");
-        Button buttonObjet = new Button("OBJECT CREATION");
-        Button buttonStats = new Button("STATISTICS");
-        Button buttonSql = new Button("SQL SETTINGS");
+        Button buttonTrace = new Button(messages.getString("FREEHAND PATH CREATION"));
+        Button buttonObjet = new Button(messages.getString("OBJECT CREATION"));
+        Button buttonStats = new Button(messages.getString("STATISTICS"));
+        Button buttonSql = new Button(messages.getString("SQL SETTINGS"));
         buttonSql.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {

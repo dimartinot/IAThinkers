@@ -5,10 +5,16 @@
         <group>
             <file>file:/H:/Documents/NetBeansProjects/IAThinkers/src/Objet/Point.java</file>
             <file>file:/H:/Documents/NetBeansProjects/IAThinkers/src/Objet/Wall.java</file>
+            <file>file:/H:/Documents/NetBeansProjects/IAThinkers/src/Objet/Door.java</file>
             <file>file:/H:/Documents/NetBeansProjects/IAThinkers/src/Plan/Plan.java</file>
-            <file>file:/H:/Documents/NetBeansProjects/IAThinkers/src/Plan/Grille.java</file>
+            <file>file:/H:/Documents/NetBeansProjects/IAThinkers/src/Objet/Objet_en_UK.properties</file>
+            <file>file:/H:/Documents/NetBeansProjects/IAThinkers/src/Parametres/SQLParameters.java</file>
             <file>file:/H:/Documents/NetBeansProjects/IAThinkers/src/Plan/Cell.java</file>
             <file>file:/H:/Documents/NetBeansProjects/IAThinkers/src/iathinkers/IAThinkers.java</file>
+            <file>file:/H:/Documents/NetBeansProjects/IAThinkers/src/Objet/Objet_fr_FR.properties</file>
+            <file>file:/H:/Documents/NetBeansProjects/IAThinkers/src/Menu/MainMenu.java</file>
+            <file>file:/H:/Documents/NetBeansProjects/IAThinkers/src/Plan/Grid.java</file>
+            <file>file:/H:/Documents/NetBeansProjects/IAThinkers/src/Plan/Plan_en_UK.properties</file>
         </group>
     </open-files>
 </project-private>
