@@ -26,7 +26,7 @@ public class Grid extends Parent{
     /**
      * Integers defining the Scene size in pixels
      */
-    private final int sceneWidth = 600;
+    private final int sceneWidth =600;
     private final int sceneHeight = 600;
 
     /**
@@ -48,7 +48,7 @@ public class Grid extends Parent{
     //Defines if both the starting and ending point are defined
     private boolean pointAIsSet = false;
     private boolean pointBIsSet = false;
-
+23
     /**
      * Width and height, in pixel, of a cell of the grid.
      */
