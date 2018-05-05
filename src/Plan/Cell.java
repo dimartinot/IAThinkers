@@ -175,44 +175,21 @@ public class Cell extends StackPane {
                 int height = Integer.parseInt(heightTxt.getText());
                 int width = Integer.parseInt(widthTxt.getText());
                 //We check if the wall will fit entirely inside the drawing surface
-                /*
-                if ((this.getY() + height) <= this.getGridHeight() && (this.getX() + width) <= this.getGridWidth()) {
-                    for (int i = 0; i < height; i++) {
-                        Rectangle rectangle = (Rectangle) scene.lookup("#"+(this.getX())+"-"+(this.getY() + i));
-                        if (rectangle.getFill() != Color.THISTLE && rectangle.getFill() != Color.ANTIQUEWHITE && rectangle.getFill() != Color.TEAL &&rectangle.getFill() != Color.BROWN) {
-                            rectangle.setFill(color);
-                        }
-                        rectangle = (Rectangle) scene.lookup("#"+(this.getX() + width - 1)+"-"+(this.getY() + i));
-                        if (rectangle.getFill() != Color.THISTLE && rectangle.getFill() != Color.ANTIQUEWHITE && rectangle.getFill() != Color.TEAL &&rectangle.getFill() != Color.BROWN) {
-                            rectangle.setFill(color);
-                        }                    }
-                    for (int j = 0; j < width; j++) {
-                            Rectangle rectangle = (Rectangle) scene.lookup("#"+(this.getX() + j)+"-"+(this.getY()));
-                            if (rectangle.getFill() != Color.THISTLE && rectangle.getFill() != Color.ANTIQUEWHITE && rectangle.getFill() != Color.TEAL &&rectangle.getFill() != Color.BROWN) {
-                                rectangle.setFill(color);
-                            }
-                        rectangle = (Rectangle) scene.lookup("#"+(this.getX() + j)+"-"+(this.getY() + height - 1));
-                        if (rectangle.getFill() != Color.THISTLE && rectangle.getFill() != Color.ANTIQUEWHITE && rectangle.getFill() != Color.TEAL &&rectangle.getFill() != Color.BROWN) {
-                            rectangle.setFill(color);
-                        }                        
-                    }
-                }*/
-                
                 if ((this.getY() + height) < this.getGridHeight() && (this.getX() + width) < this.getGridWidth()) {
                     Rectangle rectangle = (Rectangle) scene.lookup("#"+(this.getX())+"-"+(this.getY()));
-                    if (rectangle.getFill() != Color.THISTLE && rectangle.getFill() != Color.ANTIQUEWHITE && rectangle.getFill() != Color.TEAL &&rectangle.getFill() != Color.BROWN) {
+                    if (rectangle.getFill() != Color.THISTLE && rectangle.getFill() != Color.ANTIQUEWHITE && rectangle.getFill() != Color.TEAL && rectangle.getFill() != Color.BROWN && rectangle.getFill() != Color.RED && rectangle.getFill() != Color.BLUE) {
                         rectangle.setFill(color);
                     }
-                    rectangle = (Rectangle) scene.lookup("#"+(this.getX())+"-"+(this.getY()+height));
-                    if (rectangle.getFill() != Color.THISTLE && rectangle.getFill() != Color.ANTIQUEWHITE && rectangle.getFill() != Color.TEAL && rectangle.getFill() != Color.BROWN) {
+                    rectangle = (Rectangle) scene.lookup("#"+(this.getX())+"-"+(this.getY()+height-1));
+                    if (rectangle.getFill() != Color.THISTLE && rectangle.getFill() != Color.ANTIQUEWHITE && rectangle.getFill() != Color.TEAL && rectangle.getFill() != Color.BROWN && rectangle.getFill() != Color.RED && rectangle.getFill() != Color.BLUE) {
                         rectangle.setFill(color);
                     }
-                    rectangle = (Rectangle) scene.lookup("#"+(this.getX()+width)+"-"+(this.getY()));
-                    if (rectangle.getFill() != Color.THISTLE && rectangle.getFill() != Color.ANTIQUEWHITE && rectangle.getFill() != Color.TEAL &&rectangle.getFill() != Color.BROWN) {
+                    rectangle = (Rectangle) scene.lookup("#"+(this.getX()+width-1)+"-"+(this.getY()));
+                    if (rectangle.getFill() != Color.THISTLE && rectangle.getFill() != Color.ANTIQUEWHITE && rectangle.getFill() != Color.TEAL && rectangle.getFill() != Color.BROWN && rectangle.getFill() != Color.RED && rectangle.getFill() != Color.BLUE) {
                         rectangle.setFill(color);
                     }
-                    rectangle = (Rectangle) scene.lookup("#"+(this.getX()+width)+"-"+(this.getY()+height));
-                    if (rectangle.getFill() != Color.THISTLE && rectangle.getFill() != Color.ANTIQUEWHITE && rectangle.getFill() != Color.TEAL && rectangle.getFill() != Color.BROWN) {
+                    rectangle = (Rectangle) scene.lookup("#"+(this.getX()+width-1)+"-"+(this.getY()+height-1));
+                    if (rectangle.getFill() != Color.THISTLE && rectangle.getFill() != Color.ANTIQUEWHITE && rectangle.getFill() != Color.TEAL && rectangle.getFill() != Color.BROWN && rectangle.getFill() != Color.RED && rectangle.getFill() != Color.BLUE) {
                         rectangle.setFill(color);
                     }
                     

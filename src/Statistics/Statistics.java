@@ -23,6 +23,8 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import static Menu.MainMenu.getLanguage;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Optional;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -30,12 +32,16 @@ import javafx.event.EventHandler;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.ScatterChart;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
@@ -81,17 +87,43 @@ public class Statistics extends Parent{
         });
         Menu graphMenu = new Menu(messages.getString("NEWGRAPH"));
         //We setup the graphmenu items
-        MenuItem pointCloudOption = new MenuItem(messages.getString("POINTCLOUD"));
-        pointCloudOption.setOnAction(new EventHandler<ActionEvent>() {
+        MenuItem scatterOption = new MenuItem(messages.getString("SCATTER"));
+        scatterOption.setOnAction(new EventHandler<ActionEvent>() {
             @Override 
             public void handle(ActionEvent e) {
-                setPointCloudOption(primaryStage);
+                setScatterOption(primaryStage);
             }
         });
-        graphMenu.getItems().addAll(pointCloudOption);
+        graphMenu.getItems().addAll(scatterOption);
         Menu fileMenu = new Menu(messages.getString("FILE"));
+        
+        Menu optionMenu = new Menu(messages.getString("OPTIONS"));
+        
+        MenuItem refresh = new MenuItem(messages.getString("REFRESH"));
+        refresh.setAccelerator(KeyCombination.keyCombination("F5"));
+        refresh.setOnAction(new EventHandler<ActionEvent>() {
+           public void handle(ActionEvent t) {
+               setData(data);
+           } 
+        });
+        MenuItem reset = new MenuItem(messages.getString("RESET"));
+        reset.setOnAction(new EventHandler<ActionEvent>() {
+           public void handle(ActionEvent t) {
+               Alert alert = new Alert(AlertType.CONFIRMATION);
+               alert.setTitle(messages.getString("RESETCONFIRMATION"));
+               alert.setHeaderText(messages.getString("RESETHEADER"));
+               alert.setContentText(messages.getString("RESETCONTENT"));
+               
+               Optional<ButtonType> result = alert.showAndWait();
+               if (result.get() == ButtonType.OK) {
+                   resetData(data);
+               }
+           } 
+        });
+        optionMenu.getItems().addAll(refresh,reset);
+        
         fileMenu.getItems().addAll(graphMenu, new SeparatorMenuItem(),homeMenu);
-        menuBar.getMenus().addAll(fileMenu);
+        menuBar.getMenus().addAll(fileMenu,optionMenu);
         
         //We setup the table
         TableView<Input> table = new TableView<Input>();
@@ -123,24 +155,10 @@ public class Statistics extends Parent{
         this.username = credentials[0];
         this.mdp = credentials[1];
         this.adresse = credentials[2];
-        Connection connect;
-        try {
-            connect = DriverManager.getConnection("jdbc:mysql://"+this.adresse+"/iathinkers?"
-                    + "user="+this.username+"&password="+this.mdp);
-            Statement statement = connect.createStatement();
-            ResultSet rs = statement.executeQuery("SELECT * FROM statistics");
-            //We, dynamically, get all the data we need for statistics purposes
-            while (rs.next()) {
-                System.out.println(rs.getInt(1)+" "+rs.getInt(2)+" "+rs.getInt(3)+" "+rs.getInt(4)+" "+rs.getInt(5));
-                data.add(new Input(rs.getInt(1),rs.getInt(2),rs.getInt(3),rs.getInt(4),rs.getInt(5)));
-            }
-        } catch (SQLException ex) {
-            System.out.println("MySQL Error !");
-        }
+        setData(data);
         table.setItems(data);
         //We add the table and menus to our vbox
         vbox.getChildren().addAll(menuBar,table);
-        //System.out.println(fields.toString());
         this.getChildren().add(vbox);
     }
 
@@ -163,7 +181,7 @@ public class Statistics extends Parent{
      */
     public String fromLabelToSQLFieldName(String a) {
         if (a.equals("idStatistics")) {
-            return "id";
+            return "idstatistics";
         } else if (a.equals(messages.getString("TIME"))) {
             return "time";
         } else if (a.equals(messages.getString("PATH"))) {
@@ -177,28 +195,76 @@ public class Statistics extends Parent{
         }
     }
     
-    public ArrayList<XYChart.Data<Integer,Integer>> getData (String x, String y) {
-        ArrayList<XYChart.Data<Integer,Integer>> res = new ArrayList<XYChart.Data<Integer,Integer>>();
+    public void setData(ObservableList<Input> data) {
+        Connection connect;
+        data.clear();
         try {
-            Connection connect = DriverManager.getConnection("jdbc:mysql://"+this.getAdresse()+"/iathinkers?"
+            connect = DriverManager.getConnection("jdbc:mysql://"+this.getAdresse()+"/iathinkers?"
                     + "user="+this.getUsername()+"&password="+this.getMdp());
             Statement statement = connect.createStatement();
-            System.out.println("SELECT "+fromLabelToSQLFieldName(x)+", "+fromLabelToSQLFieldName(y)+" FROM statistics");
-            ResultSet rs = statement.executeQuery("SELECT "+fromLabelToSQLFieldName(x)+", "+fromLabelToSQLFieldName(y)+" FROM statistics");
+            ResultSet rs = statement.executeQuery("SELECT * FROM statistics");
             //We, dynamically, get all the data we need for statistics purposes
             while (rs.next()) {
-                res.add(new XYChart.Data(rs.getInt(1),rs.getInt(2)));
+                data.add(new Input(rs.getInt(1),rs.getInt(2),rs.getInt(3),rs.getInt(4),rs.getInt(5)));
             }
         } catch (SQLException ex) {
             System.out.println("MySQL Error !");
         }
+    }
+    
+    public void resetData(ObservableList<Input> data) {
+        Connection connect;
+        data.clear();
+        try {
+            connect = DriverManager.getConnection("jdbc:mysql://"+this.getAdresse()+"/iathinkers?"
+                    + "user="+this.getUsername()+"&password="+this.getMdp());
+            Statement statement = connect.createStatement();
+            if (statement.executeUpdate("TRUNCATE TABLE statistics") == 0) {
+                System.out.println("Database emptied !");
+            }
+            //We, dynamically, get all the data we need for statistics purposes
+        } catch (SQLException ex) {
+            System.out.println("MySQL Error ! : "+ex.toString());
+        }
+    }
+    
+    public ArrayList<XYChart.Data<Integer,Integer>> getDataChart (String x, String y) {
+        ArrayList<XYChart.Data<Integer,Integer>> res = new ArrayList<XYChart.Data<Integer,Integer>>();
+        if (!x.equals(y)) {
+            try {
+                Connection connect = DriverManager.getConnection("jdbc:mysql://"+this.getAdresse()+"/iathinkers?"
+                        + "user="+this.getUsername()+"&password="+this.getMdp());
+                Statement statement = connect.createStatement();
+                System.out.println("SELECT "+fromLabelToSQLFieldName(x)+", "+fromLabelToSQLFieldName(y)+" FROM statistics");
+                ResultSet rs = statement.executeQuery("SELECT "+fromLabelToSQLFieldName(x)+", "+fromLabelToSQLFieldName(y)+" FROM statistics");
+                //We, dynamically, get all the data we need for statistics purposes
+                while (rs.next()) {
+                    res.add(new XYChart.Data(rs.getInt(1),rs.getInt(2)));
+                }
+            } catch (SQLException ex) {
+                System.out.println("MySQL Error !");
+            }
+        } else {
+            try {
+                Connection connect = DriverManager.getConnection("jdbc:mysql://"+this.getAdresse()+"/iathinkers?"
+                        + "user="+this.getUsername()+"&password="+this.getMdp());
+                Statement statement = connect.createStatement();
+                ResultSet rs = statement.executeQuery("SELECT "+fromLabelToSQLFieldName(x)+" FROM statistics");
+                //We, dynamically, get all the data we need for statistics purposes
+                while (rs.next()) {
+                    res.add(new XYChart.Data(rs.getInt(1),rs.getInt(1)));
+                }
+            } catch (SQLException ex) {
+                System.out.println("MySQL Error !");
+            }
+        }
         return res;
     }
     
-    public void setPointCloudOption(Stage primaryStage) {
+    public void setScatterOption(Stage primaryStage) {
         
         //The main stage of this window
-        Stage pointCloudOptionWindow = new Stage();
+        Stage scatterOptionWindow = new Stage();
         
         String[] options = new String[2];
         BorderPane secondaryLayout = new BorderPane();
@@ -233,12 +299,18 @@ public class Statistics extends Parent{
                 if (cbX.getValue() != null && cbY.getValue() != null) {
                     options[0] = cbX.getValue().toString();
                     options[1] = cbY.getValue().toString();
-                    ArrayList<XYChart.Data<Integer,Integer>> dataToDisplay = getData(options[0],options[1]);
+                    ArrayList<XYChart.Data<Integer,Integer>> dataToDisplay = getDataChart(options[0],options[1]);
+                    System.out.println(options[0]+" "+options[1]);
                     Stage chartStage = new Stage();
                     chartStage.setTitle(messages.getString("SCATTERSTAGE"));
-                    NumberAxis xAxis = new NumberAxis(0, 100, 10);
+                    //We sort the array to get the highest x value
+                    dataToDisplay.sort(Comparator.comparingDouble(d -> d.getXValue().doubleValue()));
+                    NumberAxis xAxis = new NumberAxis(0, dataToDisplay.get(dataToDisplay.size()-1).getXValue()+10, 10);
                     xAxis.setLabel(options[0]);
-                    NumberAxis yAxis = new NumberAxis(0,100,10);
+                    
+                    //We sort the array to get the highest y value
+                    dataToDisplay.sort(Comparator.comparingDouble(d -> d.getYValue().doubleValue()));
+                    NumberAxis yAxis = new NumberAxis(0,dataToDisplay.get(dataToDisplay.size()-1).getYValue()+10,10);
                     yAxis.setLabel(options[1]);
                     //The chart variable
                     ScatterChart<Number,Number> sc = new ScatterChart<Number,Number>(xAxis,yAxis);
@@ -257,7 +329,7 @@ public class Statistics extends Parent{
         cancelButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override 
             public void handle(ActionEvent e) {
-                pointCloudOptionWindow.close();
+                scatterOptionWindow.close();
             }
         });
         buttons.getChildren().addAll(okButton,cancelButton);
@@ -266,13 +338,13 @@ public class Statistics extends Parent{
         secondaryLayout.setBottom(buttons);
         
         Scene secondaryScene = new Scene(secondaryLayout, 350, 200);
-        pointCloudOptionWindow.setScene(secondaryScene);
-        pointCloudOptionWindow.setTitle(messages.getString("POINTCLOUDSETTINGS"));
+        scatterOptionWindow.setScene(secondaryScene);
+        scatterOptionWindow.setTitle(messages.getString("SCATTERSETTINGS"));
         //Specifies the modality for the windpw
-        pointCloudOptionWindow.initModality(Modality.WINDOW_MODAL);
+        scatterOptionWindow.initModality(Modality.WINDOW_MODAL);
         //Specifies the parent of this stage
-        pointCloudOptionWindow.initOwner(primaryStage);
-        pointCloudOptionWindow.show();
+        scatterOptionWindow.initOwner(primaryStage);
+        scatterOptionWindow.show();
     }
 
 }

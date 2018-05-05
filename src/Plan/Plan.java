@@ -6,10 +6,6 @@ package Plan;
 
 import Menu.MainMenu.*;
 import Objet.PointType;
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -42,6 +38,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import Plan.Algorithm.*;
+import javafx.scene.control.ToggleButton;
 
 /**
  * Class of the House Plan <i> Scene </i>. It is composed of a grid of multiple {@link Cell} object.
@@ -221,8 +218,43 @@ public class Plan extends Parent{
         Label objectListLbl = new Label(messages.getString("LISTING OF ALL CREATED OBJECTS"));
         grid.setConstraints(objectListLbl,1,8);
         
+        
+        
         ComboBox<String> objectList = new ComboBox();
         objectList.setId("objectlist");
+        
+        HBox boxButtons = new HBox();
+        boxButtons.setSpacing(10);
+        
+        Button closeDoor = new Button(messages.getString("CLOSE"));
+        closeDoor.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                
+                String selectedObject = objectList.getSelectionModel().getSelectedItem();
+                StringTokenizer splitObject = new StringTokenizer(selectedObject, "(");
+                String type = splitObject.nextElement().toString();
+                String data = splitObject.nextElement().toString();
+                String Door = messages.getString("DOOR");
+                String doorData[] = data.split(", ");
+                try {
+                    int height = Integer.parseInt(doorData[0]);
+                    int width = Integer.parseInt(doorData[1]);
+                    int posX = Integer.parseInt(doorData[2]);
+                    int posY = Integer.parseInt(doorData[3]);
+                    Rectangle rectangle = (Rectangle) sceneTab[1].lookup("#"+(posX)+"-"+(posY));
+                    if (rectangle.getFill() == Color.ANTIQUEWHITE) {
+                        rectangle.setFill(Color.RED);
+                    } else if (rectangle.getFill() == Color.RED){
+                        rectangle.setFill(Color.ANTIQUEWHITE);
+                    }
+                    objetGrid.changeDoor(height,width,posX,posY);
+                } catch (NumberFormatException e) {
+
+                }
+            }
+        });
+        
         //Initialisation of the delete Button
         Button deleteButton = new Button(messages.getString("DELETE"));
             //When we attempt to delete an object, we will have to get the data out of the selected option of the ComboBox
@@ -271,7 +303,7 @@ public class Plan extends Parent{
                                         int posX = Integer.parseInt(doorData[2]);
                                         int posY = Integer.parseInt(doorData[3]);
                                         Rectangle rectangle = (Rectangle) sceneTab[1].lookup("#"+(posX)+"-"+(posY));
-                                        if (rectangle.getFill() == Color.ANTIQUEWHITE) {
+                                        if (rectangle.getFill() == Color.ANTIQUEWHITE || rectangle.getFill() == Color.RED) {
                                             rectangle.setFill(Color.ALICEBLUE);
                                         }
                                         if (objetGrid.deleteDoor(height, width, posX, posY)) {
@@ -330,10 +362,22 @@ public class Plan extends Parent{
                 }       
             });
         objectList.setOnAction((e) -> {
-            grid.getChildren().remove(deleteButton);
-            grid.getChildren().add(deleteButton);
+            boxButtons.getChildren().remove(deleteButton);
+            boxButtons.getChildren().add(deleteButton);
+            String selectedObject = objectList.getSelectionModel().getSelectedItem();
+           if (selectedObject != null) {
+                StringTokenizer splitObject = new StringTokenizer(selectedObject, "(");
+                String type = splitObject.nextElement().toString();
+                if (type.equals(messages.getString("DOOR"))) {
+                    boxButtons.getChildren().remove(closeDoor);
+                    boxButtons.getChildren().add(closeDoor);
+                } else {
+                    boxButtons.getChildren().remove(closeDoor);
+                }
+           }
+            
         });
-        grid.setConstraints(deleteButton,1,10);
+        grid.setConstraints(boxButtons,1,10);
         grid.setConstraints(objectList,1,9);
         
         
@@ -460,7 +504,7 @@ public class Plan extends Parent{
         grid.setConstraints(hbButtons2,1,14);
         
         //Add all the elements to the grid components
-        grid.getChildren().addAll(choix,label,infoCase,objectListLbl,objectList,hbButtons1,infoSQL,hbButtons2);
+        grid.getChildren().addAll(choix,label,infoCase,objectListLbl,objectList,hbButtons1,infoSQL,hbButtons2,boxButtons);
         menuVertical.getChildren().add(grid);
         
         hbox.getChildren().add(objetGrid);
@@ -627,13 +671,15 @@ public class Plan extends Parent{
                 if (rectangle.getFill() == Color.BROWN) {
                     rectangle.setFill(Color.ALICEBLUE);
                 }
+                objetGrid.setPointAIsSet(false);
             } else {
                 Objet.Point p = (Objet.Point) o;
                 objetGrid.getListCells().get("#"+(p.getPosX())+"-"+(p.getPosY())).setOccupied(false);
                 Rectangle rectangle = (Rectangle) sceneTab[1].lookup("#"+p.getPosX()+"-"+p.getPosY());
                 if (rectangle.getFill() == Color.TEAL) {
                     rectangle.setFill(Color.ALICEBLUE);
-                }            
+                }
+                objetGrid.setPointBIsSet(false);
             }
         }
         //On vide le chemin affiché

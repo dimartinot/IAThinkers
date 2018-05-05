@@ -26,6 +26,7 @@ public class Door {
     private int posX;
     private int posY;
     private boolean isVertical;
+    private boolean isClosed;
     /**
      * Constructor of a Door object
      * @param height height property of the door
@@ -40,6 +41,7 @@ public class Door {
         this.posX = posX;
         this.posY = posY;
         this.isVertical = isVertical;
+        this.isClosed = false;
     }
 
     public int getHeight() {
@@ -62,6 +64,18 @@ public class Door {
         return isVertical;
     }
     
+    public boolean isClosed() {
+        return this.isClosed;
+    }
+    
+    public void close() {
+        this.isClosed = true;
+    }
+    
+    public void open() {
+        this.isClosed = false;
+    }
+    
     public String toString() {
         
         Locale l = getLanguage();
@@ -72,5 +86,34 @@ public class Door {
             return messages.getString("DOOR(")+this.getHeight()+", "+this.getWidth()+", "+this.getPosX()+", "+this.getPosY()+messages.getString(", HORIZONTAL)");
         }
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Door other = (Door) obj;
+        if (this.height != other.height) {
+            return false;
+        }
+        if (this.width != other.width) {
+            return false;
+        }
+        if (this.posX != other.posX) {
+            return false;
+        }
+        if (this.posY != other.posY) {
+            return false;
+        }
+        return true;
+    }
+    
+    
     
 }

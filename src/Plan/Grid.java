@@ -268,12 +268,12 @@ public class Grid extends Parent{
         for (Object o : this.listObjects) {
             if (o instanceof Objet.Wall) {
                 Objet.Wall w = (Objet.Wall) o;
-                for (int i = 0; i < w.getHeight(); i++) {
-                    for (int j = 0; j < w.getWidth(); j++) {
-                        this.getListCells().get("#"+(w.getPosX()+j)+"-"+(w.getPosY()+i)).setOccupied(false);
-                    }
-                }
                 if (w.getHeight() == height && w.getWidth() == width && w.getPosX() == posX && w.getPosY() == posY ) {
+                    for (int i = 0; i < w.getHeight(); i++) {
+                        for (int j = 0; j < w.getWidth(); j++) {
+                            this.getListCells().get("#"+(w.getPosX()+j)+"-"+(w.getPosY()+i)).setOccupied(false);
+                        }
+                    }
                     listObjects.remove(listObjects.indexOf(w));
                     return true;
                 }
@@ -372,6 +372,7 @@ public class Grid extends Parent{
                         return false;
                     }
                 }
+                listCells.replace("#"+(posX+j)+"-"+(posY+i), cellule);
             }
         }
         return true;
@@ -522,6 +523,38 @@ public class Grid extends Parent{
     @Override
     public String toString() {
         return java.text.MessageFormat.format(("GRILLE{" + "SCENEWIDTH={0}, SCENEHEIGHT={1}, LISTOBJECTS={2}, POINTAISSET={3}, POINTBISSET={4}{5}"), new Object[] {sceneWidth, sceneHeight, listObjects, pointAIsSet, pointBIsSet, '}'});
+    }
+
+    /**
+     * Change the state of a door : pass it from being close to being open and vice versa
+     * @param height
+     * @param width
+     * @param posX
+     * @param posY
+     * @return 
+     */
+    public boolean changeDoor(int height, int width, int posX, int posY) {
+        for (Object o : listObjects) {
+            if (o instanceof Objet.Door){
+                Objet.Door d = (Objet.Door) o;
+                if (d.equals(new Objet.Door(height,width,posX,posY,d.getIsVertical()))) {
+                    if (((Objet.Door) o).isClosed()) {
+                        ((Objet.Door) o).open();
+                        Cell cellule = listCells.get("#"+(posX)+"-"+(posY));
+                        cellule.setOccupied(false);
+                        
+                        return true;
+                    } else {
+                        ((Objet.Door) o).close();
+                        Cell cellule = listCells.get("#"+(posX)+"-"+(posY));
+                        cellule.setOccupied(true);
+                        System.out.println(true);
+                        return true;
+                    }
+                }    
+            }
+        }
+        return false;
     }
     
     
