@@ -87,6 +87,12 @@ public class MainMenu extends Parent{
         Button buttonTrace = new Button(messages.getString("FREEHAND PATH CREATION"));
         Button buttonObjet = new Button(messages.getString("OBJECT CREATION"));
         Button buttonStats = new Button(messages.getString("STATISTICS"));
+        buttonStats.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                primaryStage.setScene(sceneTab[4]);
+            }
+        });
         Button buttonSql = new Button(messages.getString("SQL SETTINGS"));
         buttonSql.setOnAction(new EventHandler<ActionEvent>() {
             @Override

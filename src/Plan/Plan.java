@@ -430,7 +430,8 @@ public class Plan extends Parent{
                             }
                              
                         } catch (SQLException e) {
-
+                            infoSQL = (Text) sceneTab[1].lookup("#infosql");
+                            infoSQL.setText(infoSQL.getText()+"\n"+messages.getString("MYSQLERROR"));
                         }
                     } else {
                         Text infoSQL = (Text) sceneTab[1].lookup("#infosql");
@@ -585,7 +586,7 @@ public class Plan extends Parent{
             return true;
         } catch (SQLException ex) {
             Text infoSQL = (Text) scene.lookup("#infosql");
-            infoSQL.setText("MySQL ERROR : \nPlease make sure\nyou have entered\nyour credentials.");
+            infoSQL.setText("MYSQLERROR");
             return false;
         }
     }
@@ -685,7 +686,7 @@ public class Plan extends Parent{
             infoSQL.setText(messages.getString("HOUSE PLAN CORRECTLY LOADED !"));
         } catch (SQLException ex) {
             Text infoSQL = (Text) sceneTab[1].lookup("#infosql");
-            infoSQL.setText("MySQL ERROR : \nPlease make sure\nyou have entered\nyour credentials.");
+            infoSQL.setText("MYSQLERROR");
             return false;
         }
         return true;
@@ -696,52 +697,13 @@ public class Plan extends Parent{
     }
     
     /**
-    * Method used to read and decrypt user data saved in the text file 
-    */
+     * Method used to set the MySQL credentials
+     */
     private void setCredentials() {
-        try {
-            FileReader fr = new FileReader("usrdata.txt");
-            BufferedReader textReader = new BufferedReader(fr);
-            String[] textData = new String[3];
-            for (int i = 0; i < textData.length; i++ ) {
-                try {
-                    textData[i] = textReader.readLine();
-                } catch (IOException ex) {
-                    
-                }
-            }
-            try {
-                textReader.close();
-            } catch (IOException ex) {
-                
-            }
-            
-            char[] usrChar = textData[0].toCharArray();
-            char[] adrChar = textData[1].toCharArray();
-            char[] pwdChar = textData[2].toCharArray();
-            
-            for (int i = 0; i < usrChar.length; i++) {
-                usrChar[i] = (char)( (int) usrChar[i] / 2);
-            }
-            
-            for (int i = 0; i < adrChar.length; i++) {
-                adrChar[i] = (char) ((int)adrChar[i] - (int) usrChar[i % usrChar.length]);
-            }
-            
-            for (int i = 0; i < pwdChar.length; i++) {
-                pwdChar[i] = (char) ((int)pwdChar[i] - (int) usrChar[i % usrChar.length]);
-            }
-            
-            this.setUsername(new String(usrChar));
-            this.setMdp(new String(pwdChar));
-            this.setAdresse(new String(adrChar));
-                        
-        } catch (FileNotFoundException ex) {
-            System.out.println(messages.getString("NO DATABASE SET"));
-            this.setUsername("");
-            this.setMdp("");
-            this.setAdresse("");
-        }
+        String[] credentials = Parametres.SQLParameters.getSQLInfos();
+        this.setUsername(credentials[0]);
+        this.setMdp(credentials[1]);
+        this.setAdresse(credentials[2]);
     }
 
     public void setUsername(String username) {

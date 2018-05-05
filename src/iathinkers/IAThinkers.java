@@ -9,7 +9,7 @@ import Menu.MainMenu;
 import Parametres.SQLParameters;
 import Plan.Plan;
 
-import java.io.IOException;
+import Statistics.Statistics;
 //Import useful JavaFX classes
 import javafx.application.Application;
 import static javafx.application.Application.launch;
@@ -56,18 +56,27 @@ public class IAThinkers extends Application {
         Scene scene1 = new Scene(root1,850,600);
         sceneTab[1] = scene1;
         
+        //Statistics scene
+        Group root4 = new Group();
+        Scene scene4 = new Scene(root4,850,600);
+        sceneTab[4] = scene4;
+        
         //Parameters scene
         Group root5 = new Group();
-        Scene scene5 = new Scene(root5,800,600);
+        Scene scene5 = new Scene(root5,850,600);
         sceneTab[5] = scene5;
         
         //MainMenu Object
-        MainMenu monMenu = new MainMenu(800,600,sceneTab,primaryStage);
+        MainMenu monMenu = new MainMenu(850,600,sceneTab,primaryStage);
         root0.getChildren().add(monMenu);
 
         //Plan Object
         Plan monPlan = new Plan(primaryStage, sceneTab);
         root1.getChildren().add(monPlan);
+        
+        //Statistics Object
+        Statistics mesStats = new Statistics(primaryStage, sceneTab);
+        root4.getChildren().add(mesStats);
         
         //SQL SQLParameters Object
         SQLParameters mesParemetres = new SQLParameters(primaryStage, sceneTab);

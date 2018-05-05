@@ -5,8 +5,11 @@ package Parametres;
 
 //JavaFX Imports
 import static Menu.MainMenu.getLanguage;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -124,7 +127,6 @@ public class SQLParameters extends Parent{
                 setUsername(username);
                 setMdp(mdp);
                 setAdresse(adresse);
-                System.out.println(username+" "+mdp+" "+adresse);
                 try {
                     cnt = DriverManager.getConnection("jdbc:mysql://"+adresse+"/?"
                         + "user="+username+"&password="+mdp);
@@ -172,7 +174,7 @@ public class SQLParameters extends Parent{
                                                 "ENGINE = InnoDB;") != -1) {
                         System.out.println("Composition table initialized");
                     }
-                    if (statement.executeUpdate("CREATE TABLE `iathinkers`.`statistics` (\n" +
+                    if (statement.executeUpdate("CREATE TABLE IF NOT EXISTS `iathinkers`.`statistics` (\n" +
                         "  `idstatistics` INT NOT NULL AUTO_INCREMENT,\n" +
                         "  `time` INT NOT NULL,\n" +
                         "  `lengthOfPath` INT NOT NULL,\n" +
@@ -454,4 +456,53 @@ public class SQLParameters extends Parent{
        
     }
     
+    /**
+    * Method used to read and decrypt user data saved in the text file 
+    */
+    public static String[] getSQLInfos() {
+        String[] res = new String[3];
+        try {
+            FileReader fr = new FileReader("usrdata.txt");
+            BufferedReader textReader = new BufferedReader(fr);
+            String[] textData = new String[3];
+            for (int i = 0; i < textData.length; i++ ) {
+                try {
+                    textData[i] = textReader.readLine();
+                } catch (IOException ex) {
+                    
+                }
+            }
+            try {
+                textReader.close();
+            } catch (IOException ex) {
+                
+            }
+            
+            char[] usrChar = textData[0].toCharArray();
+            char[] adrChar = textData[1].toCharArray();
+            char[] pwdChar = textData[2].toCharArray();
+            
+            for (int i = 0; i < usrChar.length; i++) {
+                usrChar[i] = (char)( (int) usrChar[i] / 2);
+            }
+            
+            for (int i = 0; i < adrChar.length; i++) {
+                adrChar[i] = (char) ((int)adrChar[i] - (int) usrChar[i % usrChar.length]);
+            }
+            
+            for (int i = 0; i < pwdChar.length; i++) {
+                pwdChar[i] = (char) ((int)pwdChar[i] - (int) usrChar[i % usrChar.length]);
+            }
+            res[0] = String.copyValueOf(usrChar);
+            res[1] = String.copyValueOf(pwdChar);
+            res[2] = String.copyValueOf(adrChar);
+            return res;
+                        
+        } catch (FileNotFoundException ex) {
+            res[0] = "";
+            res[1] = "";
+            res[2] = "";
+            return res;
+        }
+    }
 }
