@@ -4,7 +4,7 @@
  */
 package Plan;
 
-import static Menu.MainMenu.getLanguage;
+import Menu.MainMenu.*;
 import Objet.PointType;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -81,7 +81,7 @@ public class Plan extends Parent{
         
         this.path = new ArrayList<Node>();
         
-        Locale l = getLanguage();
+        Locale l = Menu.MainMenu.getLanguage();
         messages = ResourceBundle.getBundle("Plan/Plan",l);
        
         this.getStylesheets().add(this.getClass().getResource("plan.css").toExternalForm());
@@ -406,17 +406,36 @@ public class Plan extends Parent{
                 if (objetGrid.isPointAIsSet() && objetGrid.isPointBIsSet()) {
                     long startTime = System.currentTimeMillis();
                     Graph g = new Graph(objetGrid);
-                    System.out.println("Graph initialized :"+g.toString());
-                    AStar solution = new AStar(new Node(g.getStart().getPosX(),g.getStart().getPosY()),new Node(g.getEnd().getPosX(),g.getEnd().getPosY()), g);
-                    for (Node n : solution.getSolution()) {
-                        path.add(n);
-                        Rectangle r = (Rectangle) sceneTab[1].lookup("#"+(n.getX())+"-"+(n.getY()));
-                        r.setFill(Color.BLUE);
-                    }    
-                    long stopTime = System.currentTimeMillis();
-                    long elapsedTime = stopTime - startTime;
-                    Text infoSQL = (Text) sceneTab[1].lookup("#infosql");
-                    infoSQL.setText(messages.getString("CALCULATION")+"= "+elapsedTime+" ms");
+                    //We check if the graph of all the reachable nodes contains the ending point in order to check if a path between the ending and starting point exists
+                    if (g.arrayContainsNode(g.getListOfNodes(), new Node(g.getEnd().getPosX(),g.getEnd().getPosY()))) {
+                        AStar solution = new AStar(new Node(g.getStart().getPosX(),g.getStart().getPosY()),new Node(g.getEnd().getPosX(),g.getEnd().getPosY()), g);
+                        for (Node n : solution.getSolution()) {
+                            path.add(n);
+                            Rectangle r = (Rectangle) sceneTab[1].lookup("#"+(n.getX())+"-"+(n.getY()));
+                            r.setFill(Color.BLUE);
+                        }    
+                        long stopTime = System.currentTimeMillis();
+                        long elapsedTime = stopTime - startTime;
+                        Text infoSQL = (Text) sceneTab[1].lookup("#infosql");
+                        infoSQL.setText(messages.getString("CALCULATION")+"= "+elapsedTime+" ms");
+                        //After the calculation, we will save path statistics to the database
+                        try {
+                            setCredentials();
+                            Connection connect = DriverManager.getConnection("jdbc:mysql://" + getAdresse() + "/iathinkers?"
+                            + "user="+ getUsername() + "&password=" + getMdp());
+                            Statement statement = connect.createStatement();
+                            String request = "INSERT INTO STATISTICS(TIME,LENGTHOFPATH,NUMBEROFBLOCK,NUMBEROFAVAILABLECELL) VALUES("+elapsedTime+", "+path.size()+", "+objetGrid.numberOfBlocks()+", "+g.getListOfNodes().size()+")";                    
+                            if (statement.executeUpdate(request) != -1) {
+                                System.out.println("Statistics saved !");
+                            }
+                             
+                        } catch (SQLException e) {
+
+                        }
+                    } else {
+                        Text infoSQL = (Text) sceneTab[1].lookup("#infosql");
+                        infoSQL.setText(messages.getString("NOPATHERROR"));
+                    }     
                 } else {
                     Text infoSQL = (Text) sceneTab[1].lookup("#infosql");
                     infoSQL.setText(messages.getString("POINTERROR"));                

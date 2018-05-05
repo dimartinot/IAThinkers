@@ -49,7 +49,6 @@ public class Grid extends Parent{
     //Defines if both the starting and ending point are defined
     private boolean pointAIsSet = false;
     private boolean pointBIsSet = false;
-23
     /**
      * Width and height, in pixel, of a cell of the grid.
      */
@@ -475,7 +474,7 @@ public class Grid extends Parent{
 
     /**
      * Search in the list of objects the starting point
-     * @return 
+     * @return the PointA object
      */
     public Objet.Point getStartingPoint() {
         for (Object o : listObjects) {
@@ -490,8 +489,8 @@ public class Grid extends Parent{
     }
         
     /**
-     * Search in the list of objects the starting point
-     * @return 
+     * Searches in the list of objects the ending point
+     * @return the PointB object
      */
     public Objet.Point getEndingPoint() {
         for (Object o : listObjects) {
@@ -503,6 +502,21 @@ public class Grid extends Parent{
             }
         }
         return null;
+    }
+    
+    /**
+     * Counts the number of 1 sized blocks there is in all the disposed blocks
+     * @return the number of 1 sized blocks as an int
+     */
+    public int numberOfBlocks() {
+        int number = 0;
+        for (Object o : listObjects) {
+            if (o instanceof Objet.Wall) {
+                Objet.Wall p = (Objet.Wall) o;
+                number += p.getHeight()*p.getWidth();
+            }
+        }
+        return number;
     }
     
     @Override

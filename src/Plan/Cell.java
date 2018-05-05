@@ -175,7 +175,8 @@ public class Cell extends StackPane {
                 int height = Integer.parseInt(heightTxt.getText());
                 int width = Integer.parseInt(widthTxt.getText());
                 //We check if the wall will fit entirely inside the drawing surface
-                if ((this.getY() + height) < this.getGridHeight() && (this.getX() + width) < this.getGridWidth()) {
+                /*
+                if ((this.getY() + height) <= this.getGridHeight() && (this.getX() + width) <= this.getGridWidth()) {
                     for (int i = 0; i < height; i++) {
                         Rectangle rectangle = (Rectangle) scene.lookup("#"+(this.getX())+"-"+(this.getY() + i));
                         if (rectangle.getFill() != Color.THISTLE && rectangle.getFill() != Color.ANTIQUEWHITE && rectangle.getFill() != Color.TEAL &&rectangle.getFill() != Color.BROWN) {
@@ -195,10 +196,18 @@ public class Cell extends StackPane {
                             rectangle.setFill(color);
                         }                        
                     }
-                }
-                /*
+                }*/
+                
                 if ((this.getY() + height) < this.getGridHeight() && (this.getX() + width) < this.getGridWidth()) {
                     Rectangle rectangle = (Rectangle) scene.lookup("#"+(this.getX())+"-"+(this.getY()));
+                    if (rectangle.getFill() != Color.THISTLE && rectangle.getFill() != Color.ANTIQUEWHITE && rectangle.getFill() != Color.TEAL &&rectangle.getFill() != Color.BROWN) {
+                        rectangle.setFill(color);
+                    }
+                    rectangle = (Rectangle) scene.lookup("#"+(this.getX())+"-"+(this.getY()+height));
+                    if (rectangle.getFill() != Color.THISTLE && rectangle.getFill() != Color.ANTIQUEWHITE && rectangle.getFill() != Color.TEAL && rectangle.getFill() != Color.BROWN) {
+                        rectangle.setFill(color);
+                    }
+                    rectangle = (Rectangle) scene.lookup("#"+(this.getX()+width)+"-"+(this.getY()));
                     if (rectangle.getFill() != Color.THISTLE && rectangle.getFill() != Color.ANTIQUEWHITE && rectangle.getFill() != Color.TEAL &&rectangle.getFill() != Color.BROWN) {
                         rectangle.setFill(color);
                     }
@@ -206,7 +215,8 @@ public class Cell extends StackPane {
                     if (rectangle.getFill() != Color.THISTLE && rectangle.getFill() != Color.ANTIQUEWHITE && rectangle.getFill() != Color.TEAL && rectangle.getFill() != Color.BROWN) {
                         rectangle.setFill(color);
                     }
-                } */   
+                    
+                } 
             } catch (NumberFormatException e) {
                 //e.printStackTrace();
             }    

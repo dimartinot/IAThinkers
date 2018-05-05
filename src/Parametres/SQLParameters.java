@@ -172,6 +172,15 @@ public class SQLParameters extends Parent{
                                                 "ENGINE = InnoDB;") != -1) {
                         System.out.println("Composition table initialized");
                     }
+                    if (statement.executeUpdate("CREATE TABLE `iathinkers`.`statistics` (\n" +
+                        "  `idstatistics` INT NOT NULL AUTO_INCREMENT,\n" +
+                        "  `time` INT NOT NULL,\n" +
+                        "  `lengthOfPath` INT NOT NULL,\n" +
+                        "  `numberOfBlock` INT NOT NULL,\n" +
+                        "  `numberOfAvailableCell` INT NOT NULL,\n" +
+                        "  PRIMARY KEY (`idstatistics`));") != -1) {
+                        System.out.println("Statistics table initialized");
+                    }
                     //writeResultSet(resultSet);
                     Text texte = (Text) mainScene.lookup("#infoConnexion");
                     texte.setText(messages.getString("CONNECTIONACHIEVED"));
