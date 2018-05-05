@@ -10,11 +10,8 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -25,12 +22,23 @@ import javafx.scene.control.TableView;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import static Menu.MainMenu.getLanguage;
+import java.util.ArrayList;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.ScatterChart;
+import javafx.scene.chart.XYChart;
+import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.stage.Modality;
 
 /**
  *
@@ -63,16 +71,27 @@ public class Statistics extends Parent{
         //We setup the menubar
         MenuBar menuBar = new MenuBar();
         menuBar.prefWidthProperty().bind(primaryStage.widthProperty());
-        MenuItem homeMenu = new MenuItem(messages.getString("HOME"));
+        //We create all menu items
+        MenuItem homeMenu = new MenuItem(messages.getString("EXIT"));
         homeMenu.setOnAction(new EventHandler<ActionEvent>() {
             @Override 
             public void handle(ActionEvent e) {
                 primaryStage.setScene(sceneTab[0]);
             }
         });
-        Menu optionMenu = new Menu(messages.getString("OPTION"));
-        optionMenu.getItems().add(homeMenu);
-        menuBar.getMenus().addAll(optionMenu);
+        Menu graphMenu = new Menu(messages.getString("NEWGRAPH"));
+        //We setup the graphmenu items
+        MenuItem pointCloudOption = new MenuItem(messages.getString("POINTCLOUD"));
+        pointCloudOption.setOnAction(new EventHandler<ActionEvent>() {
+            @Override 
+            public void handle(ActionEvent e) {
+                setPointCloudOption(primaryStage);
+            }
+        });
+        graphMenu.getItems().addAll(pointCloudOption);
+        Menu fileMenu = new Menu(messages.getString("FILE"));
+        fileMenu.getItems().addAll(graphMenu, new SeparatorMenuItem(),homeMenu);
+        menuBar.getMenus().addAll(fileMenu);
         
         //We setup the table
         TableView<Input> table = new TableView<Input>();
@@ -135,6 +154,125 @@ public class Statistics extends Parent{
 
     public String getMdp() {
         return mdp;
+    }
+    
+    /**
+     * This functions takes a label of a ChoiceBox as an input and return its equivalent in the MySQL database field name. For instance, <i> idStatistics </i> will become <i> id </i>
+     * @param a the label taken as an input
+     * @return the MySQL field name
+     */
+    public String fromLabelToSQLFieldName(String a) {
+        if (a.equals("idStatistics")) {
+            return "id";
+        } else if (a.equals(messages.getString("TIME"))) {
+            return "time";
+        } else if (a.equals(messages.getString("PATH"))) {
+            return "lengthOfPath";
+        } else if (a.equals(messages.getString("BLOCK"))) {
+            return "numberOfBlock";
+        } else if (a.equals(messages.getString("CELL"))) {
+            return "numberOfAvailableCell";
+        } else {
+            return "";
+        }
+    }
+    
+    public ArrayList<XYChart.Data<Integer,Integer>> getData (String x, String y) {
+        ArrayList<XYChart.Data<Integer,Integer>> res = new ArrayList<XYChart.Data<Integer,Integer>>();
+        try {
+            Connection connect = DriverManager.getConnection("jdbc:mysql://"+this.getAdresse()+"/iathinkers?"
+                    + "user="+this.getUsername()+"&password="+this.getMdp());
+            Statement statement = connect.createStatement();
+            System.out.println("SELECT "+fromLabelToSQLFieldName(x)+", "+fromLabelToSQLFieldName(y)+" FROM statistics");
+            ResultSet rs = statement.executeQuery("SELECT "+fromLabelToSQLFieldName(x)+", "+fromLabelToSQLFieldName(y)+" FROM statistics");
+            //We, dynamically, get all the data we need for statistics purposes
+            while (rs.next()) {
+                res.add(new XYChart.Data(rs.getInt(1),rs.getInt(2)));
+            }
+        } catch (SQLException ex) {
+            System.out.println("MySQL Error !");
+        }
+        return res;
+    }
+    
+    public void setPointCloudOption(Stage primaryStage) {
+        
+        //The main stage of this window
+        Stage pointCloudOptionWindow = new Stage();
+        
+        String[] options = new String[2];
+        BorderPane secondaryLayout = new BorderPane();
+        Label instructions = new Label(messages.getString("INSTRUCTIONS"));
+        BorderPane.setMargin(instructions, new Insets(0,0,20,0));
+        secondaryLayout.setTop(instructions);
+        
+        HBox choices = new HBox();
+        choices.setSpacing(10);
+        
+        ChoiceBox cbX = new ChoiceBox(FXCollections.observableArrayList(
+            "idStatistics", messages.getString("TIME"), messages.getString("PATH"), messages.getString("BLOCK"), messages.getString("CELL"))
+        );
+        ChoiceBox cbY = new ChoiceBox(FXCollections.observableArrayList(
+            "idStatistics", messages.getString("TIME"), messages.getString("PATH"), messages.getString("BLOCK"), messages.getString("CELL"))
+        );
+        
+        choices.getChildren().addAll(cbX,cbY);
+        
+        HBox buttons = new HBox();
+        buttons.setSpacing(30);
+        
+        BorderPane.setMargin(buttons, new Insets(10,10,10,10));
+        
+        secondaryLayout.setCenter(choices);
+        
+        //When this button is clicked, we initializes a new window with only the chart displayed
+        Button okButton = new Button(messages.getString("DRAW"));
+        okButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override 
+            public void handle(ActionEvent e) {
+                if (cbX.getValue() != null && cbY.getValue() != null) {
+                    options[0] = cbX.getValue().toString();
+                    options[1] = cbY.getValue().toString();
+                    ArrayList<XYChart.Data<Integer,Integer>> dataToDisplay = getData(options[0],options[1]);
+                    Stage chartStage = new Stage();
+                    chartStage.setTitle(messages.getString("SCATTERSTAGE"));
+                    NumberAxis xAxis = new NumberAxis(0, 100, 10);
+                    xAxis.setLabel(options[0]);
+                    NumberAxis yAxis = new NumberAxis(0,100,10);
+                    yAxis.setLabel(options[1]);
+                    //The chart variable
+                    ScatterChart<Number,Number> sc = new ScatterChart<Number,Number>(xAxis,yAxis);
+                    XYChart.Series series = new XYChart.Series();
+                    series.setName("\""+options[1]+"\" "+messages.getString("FUNCTION")+" \""+options[0]);
+                    series.getData().addAll(dataToDisplay);
+                    sc.getData().add(series);
+                    Scene scene = new Scene(sc, 500, 400);
+                    chartStage.setScene(scene);
+                    chartStage.show();
+                }
+            }
+        });
+        
+        Button cancelButton = new Button(messages.getString("CANCEL"));
+        cancelButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override 
+            public void handle(ActionEvent e) {
+                pointCloudOptionWindow.close();
+            }
+        });
+        buttons.getChildren().addAll(okButton,cancelButton);
+        
+        
+        secondaryLayout.setBottom(buttons);
+        
+        Scene secondaryScene = new Scene(secondaryLayout, 350, 200);
+        pointCloudOptionWindow.setScene(secondaryScene);
+        pointCloudOptionWindow.setTitle(messages.getString("POINTCLOUDSETTINGS"));
+        //Specifies the modality for the windpw
+        pointCloudOptionWindow.initModality(Modality.WINDOW_MODAL);
+        //Specifies the parent of this stage
+        pointCloudOptionWindow.initOwner(primaryStage);
+        pointCloudOptionWindow.show();
     }
 
 }
