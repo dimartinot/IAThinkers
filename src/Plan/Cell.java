@@ -61,14 +61,14 @@ public class Cell extends StackPane {
         messages = ResourceBundle.getBundle("Plan/Plan",l);
         this.occupied = false;
         //Initialises the rectangle variable for the UI perspective
-        Rectangle rectangle = new Rectangle(width, height);
+        Rectangle rectangle = new Rectangle(width,height);
         rectangle.setId(x+"-"+y);
         rectangle.setFill(Color.ALICEBLUE);
         rectangle.setStroke(Color.LIGHTGRAY);
-        
+        rectangle.setStrokeWidth(1);
         //Defines its positioning using X and Y coordinates
-        setTranslateX(posX);
-        setTranslateY(posY);
+        //setTranslateX(posX);
+        //setTranslateY(posY);
         this.x = x;
         this.y = y;
         this.gridWidth = gridWidth;
@@ -175,7 +175,7 @@ public class Cell extends StackPane {
                 int height = Integer.parseInt(heightTxt.getText());
                 int width = Integer.parseInt(widthTxt.getText());
                 //We check if the wall will fit entirely inside the drawing surface
-                if ((this.getY() + height) < this.getGridHeight() && (this.getX() + width) < this.getGridWidth()) {
+                if ((this.getY() + height) <= this.getGridHeight() && (this.getX() + width) <= this.getGridWidth()) {
                     Rectangle rectangle = (Rectangle) scene.lookup("#"+(this.getX())+"-"+(this.getY()));
                     if (rectangle.getFill() != Color.THISTLE && rectangle.getFill() != Color.ANTIQUEWHITE && rectangle.getFill() != Color.TEAL && rectangle.getFill() != Color.BROWN && rectangle.getFill() != Color.RED && rectangle.getFill() != Color.BLUE) {
                         rectangle.setFill(color);

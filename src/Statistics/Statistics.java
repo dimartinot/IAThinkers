@@ -62,7 +62,6 @@ public class Statistics extends Parent{
     private ObservableList<Input> data;
     
     public Statistics (Stage primaryStage, Scene[] sceneTab) {
-        
         //we setup the datas variable
         ObservableList<Input> data = FXCollections.observableArrayList();        
         //We setup language settings
@@ -82,6 +81,7 @@ public class Statistics extends Parent{
         homeMenu.setOnAction(new EventHandler<ActionEvent>() {
             @Override 
             public void handle(ActionEvent e) {
+                primaryStage.setResizable(false);
                 primaryStage.setScene(sceneTab[0]);
             }
         });
@@ -235,7 +235,6 @@ public class Statistics extends Parent{
                 Connection connect = DriverManager.getConnection("jdbc:mysql://"+this.getAdresse()+"/iathinkers?"
                         + "user="+this.getUsername()+"&password="+this.getMdp());
                 Statement statement = connect.createStatement();
-                System.out.println("SELECT "+fromLabelToSQLFieldName(x)+", "+fromLabelToSQLFieldName(y)+" FROM statistics");
                 ResultSet rs = statement.executeQuery("SELECT "+fromLabelToSQLFieldName(x)+", "+fromLabelToSQLFieldName(y)+" FROM statistics");
                 //We, dynamically, get all the data we need for statistics purposes
                 while (rs.next()) {
@@ -300,7 +299,6 @@ public class Statistics extends Parent{
                     options[0] = cbX.getValue().toString();
                     options[1] = cbY.getValue().toString();
                     ArrayList<XYChart.Data<Integer,Integer>> dataToDisplay = getDataChart(options[0],options[1]);
-                    System.out.println(options[0]+" "+options[1]);
                     Stage chartStage = new Stage();
                     chartStage.setTitle(messages.getString("SCATTERSTAGE"));
                     //We sort the array to get the highest x value

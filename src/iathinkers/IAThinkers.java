@@ -41,6 +41,11 @@ public class IAThinkers extends Application {
      */
     @Override
     public void start(Stage primaryStage) {
+        
+        primaryStage.setResizable(false);
+        primaryStage.sizeToScene();
+        primaryStage.setMinHeight(400);
+        primaryStage.setMinWidth(600);
         setConnect(null);
         //The array of the six main scenes : the first one for the menu, the 2nd for the plan, the 3rd for the freehand path, the 4th for the object creation tool, the 5th for the stats and last, but definitly not the leaset, the 6th for the SQL parameters.
         Scene[] sceneTab = new Scene[6];
@@ -53,21 +58,23 @@ public class IAThinkers extends Application {
 
         //House Plan scene
         Group root1 = new Group();
-        Scene scene1 = new Scene(root1,850,600);
+        Scene scene1 = new Scene(root1,850, 600);
         sceneTab[1] = scene1;
         
         //Statistics scene
         Group root4 = new Group();
-        Scene scene4 = new Scene(root4,850,600);
+        Scene scene4 = new Scene(root4,850, 600);
         sceneTab[4] = scene4;
         
         //Parameters scene
         Group root5 = new Group();
-        Scene scene5 = new Scene(root5,850,600);
+        Scene scene5 = new Scene(root5,850, 600);
         sceneTab[5] = scene5;
         
         //MainMenu Object
-        MainMenu monMenu = new MainMenu(850,600,sceneTab,primaryStage);
+        Double widthMenu = new Double(850);
+        Double heightMenu = new Double(600);
+        MainMenu monMenu = new MainMenu(widthMenu.intValue(),heightMenu.intValue(),sceneTab,primaryStage);
         root0.getChildren().add(monMenu);
 
         //Plan Object

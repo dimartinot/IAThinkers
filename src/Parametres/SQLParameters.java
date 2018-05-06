@@ -15,15 +15,12 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -42,12 +39,16 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.geometry.Insets;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.RadioMenuItem;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 
 
 /**
@@ -74,47 +75,49 @@ public class SQLParameters extends Parent{
      */
     
     public SQLParameters(Stage primaryStage, Scene[] sceneTab) {
-        
         Locale l = getLanguage();
         messages = ResourceBundle.getBundle("Parametres/Parameters",l);        
         cnt = null;
         Scene mainScene = sceneTab[5];
-        GridPane grid = new GridPane();
-        grid.setAlignment(Pos.CENTER);
-        grid.setHgap(10);
-        grid.setVgap(30);
-        grid.setPadding(new Insets(50, 50, 10, 10));
+        BorderPane grid = new BorderPane();
+        
+        VBox container = new VBox();
+        container.setPadding(new Insets(10,10,10,10));
+        GridPane entryGrid = new GridPane();
+        entryGrid.setPadding(new Insets(50, 50, 50, 50));
+        entryGrid.setVgap(20);
         
         Text scenetitle = new Text(messages.getString("WELCOME"));
         scenetitle.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
-        grid.add(scenetitle, 0, 0, 2, 1);
+        container.getChildren().add(scenetitle);
         
         Label adresseLbl = new Label(messages.getString("MYSQL SERVER ADDRESS:"));
-        grid.add(adresseLbl, 0, 1);
+        entryGrid.add(adresseLbl,0,1);
         
         TextField adresseTextField = new TextField();
         adresseTextField.setId("addTxt");
-        grid.add(adresseTextField, 1, 1);
-        
+        entryGrid.add(adresseTextField,1,1);
+                
         Label usernameLbl = new Label(messages.getString("IDENTIFIER:"));
-        grid.add(usernameLbl, 0, 2);
+        entryGrid.add(usernameLbl,0,2);
 
         TextField userTextField = new TextField();
         userTextField.setId("usrTxt");
-        grid.add(userTextField, 1, 2);
+        entryGrid.add(userTextField,1,2);
 
         Label pwLbl = new Label(messages.getString("PASSWORD:"));
-        grid.add(pwLbl, 0, 3);
+        entryGrid.add(pwLbl,0,3);
 
         
         PasswordField pwBox = new PasswordField();
         pwBox.setId("pwTxt");
-        grid.add(pwBox, 1, 3);
+        entryGrid.add(pwBox,1,3);
       
+        container.getChildren().add(entryGrid);
+        
         //Info Case
         Text infoConnexion = new Text("");
         infoConnexion.setId("infoConnexion");
-        grid.add(infoConnexion, 0, 6);
         
         Button btn = new Button(messages.getString("CONNECTION"));
         btn.setOnAction(new EventHandler<ActionEvent>(){
@@ -198,21 +201,19 @@ public class SQLParameters extends Parent{
             }
         });
         HBox hbBtn = new HBox(10);
-        hbBtn.setAlignment(Pos.BOTTOM_RIGHT);
         hbBtn.getChildren().add(btn);
-        grid.add(hbBtn, 1, 5);
         
         Button btnRetour = new Button(messages.getString("BACK"));
         btnRetour.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
+                primaryStage.setResizable(false);
                 primaryStage.setScene(sceneTab[0]);
             }
         });
-        HBox hbBtnRetour = new HBox(10);
-        hbBtnRetour.setAlignment(Pos.BOTTOM_RIGHT);
-        hbBtnRetour.getChildren().add(btnRetour);
-        grid.add(hbBtnRetour, 2, 5);
+        
+        hbBtn.getChildren().add(btnRetour);
+        container.getChildren().add(hbBtn);
         
         // Menu Bar
         MenuBar menuBar = new MenuBar();
@@ -305,8 +306,11 @@ public class SQLParameters extends Parent{
         menuLanguage.getItems().addAll(english,french);
         menuBar.getMenus().addAll(menuLanguage);
         menuBar.prefWidthProperty().bind(primaryStage.widthProperty());
+        
+        grid.setBottom(infoConnexion);
+        grid.setCenter(container);
+        grid.setTop(menuBar);
         this.getChildren().add(grid);
-        this.getChildren().add(menuBar);
 
     }
     

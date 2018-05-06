@@ -7,17 +7,21 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import javafx.scene.Group;
+import javafx.animation.ScaleTransition;
 import javafx.scene.Parent;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.util.Duration;
 /**
  * Grid Class. This class defines a grid as an <i> ArrayList </i> of Objects and an <i> HashMap </i> of cells {@link Cell}.
  * @author IAThinkers
@@ -27,8 +31,8 @@ public class Grid extends Parent{
     /**
      * Integers defining the Scene size in pixels
      */
-    private final int sceneWidth =600;
-    private final int sceneHeight = 600;
+    private int sceneWidth;
+    private int sceneHeight;
 
     /**
      * Integer defining the Scene size in cells
@@ -52,8 +56,8 @@ public class Grid extends Parent{
     /**
      * Width and height, in pixel, of a cell of the grid.
      */
-    int gridWidth = sceneWidth / n;
-    int gridHeight = sceneHeight / m;
+    int gridWidth;
+    int gridHeight;
     
     private ResourceBundle messages;
     
@@ -61,11 +65,19 @@ public class Grid extends Parent{
      * Constructor of a grid : initialises every cells of the grid, giving it its <i> hover </i> and <i> onClick </i> properties
      * @param scene Scene variable describing the Plan scene.
      */
-    public Grid(Scene scene) {
+    public Grid(Scene scene, int height, int width) {
         
+        this.sceneHeight = height;
+        this.sceneWidth = width;
+        this.gridWidth = sceneWidth / n;
+        this.gridHeight = sceneHeight / m;
         Locale l = getLanguage();
         messages = ResourceBundle.getBundle("Plan/Plan",l);
-        Group grille = new Group();
+        GridPane grille = new GridPane();
+        grille.setHgap(0);
+        grille.setVgap(0);
+        grille.setPrefSize(sceneWidth, sceneHeight);
+        grille.setMaxSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
         this.listObjects = new ArrayList<Object>();
         this.listCells = new HashMap<String,Cell>();
         this.getStylesheets().add(this.getClass().getResource("plan.css").toExternalForm());
@@ -73,6 +85,13 @@ public class Grid extends Parent{
          * Loop initialising every cells and storing them in the HashMap
          */
         for (int i = 0; i < n; i++) {
+            /*ColumnConstraints column = new ColumnConstraints();
+            column.setPercentWidth(100/n);
+            grille.getColumnConstraints().add(column);
+            
+            RowConstraints row = new RowConstraints();
+            row.setPercentHeight(100/m);
+            grille.getRowConstraints().add(row);*/
             for (int j = 0; j < m; j++) {
                 Cell cellule = new Cell(gridWidth, gridHeight, i * gridWidth, j * gridHeight,i,j,n,m);
                 cellule.hoverProperty().addListener(new ChangeListener<Boolean>(){
@@ -185,7 +204,7 @@ public class Grid extends Parent{
                         }
                     }
                 });
-                grille.getChildren().add(cellule);
+                grille.add(cellule, i+1, j+1);
                 listCells.put("#"+(cellule.getX())+"-"+(cellule.getY()), cellule);
             }
         }
@@ -207,7 +226,66 @@ public class Grid extends Parent{
     public int getGridHeight() {
         return this.gridHeight;
     }
+    
+    public void setGridWidth(int size) {
+        this.gridWidth = size;
+    }
 
+    public void setGridHeight(int size) {
+        this.gridHeight = size;
+    }
+
+    public int getSceneWidth() {
+        return sceneWidth;
+    }
+
+    public void setSceneWidth(int sceneWidth) {
+        this.sceneWidth = sceneWidth;
+    }
+
+    public int getSceneHeight() {
+        return sceneHeight;
+    }
+
+    public void setSceneHeight(int sceneHeight) {
+        this.sceneHeight = sceneHeight;
+    }
+    
+    
+    
+    public void setGridSize(Scene scene, int size) {
+        Double convertedSize = new Double(size);
+        Double width = scene.getWidth();//We get the height in order to keep squared cells
+        Double height = scene.getHeight();
+        Double updatedWidth = (width/5+4*height/5)*size/100;
+        Double updatedHeight = (width/5+4*height/5)*size/100;
+        if (size > 0) {
+            this.setSceneHeight(updatedHeight.intValue());
+            this.setSceneWidth(updatedWidth.intValue());
+            this.setGridWidth(this.getSceneHeight()/this.n);
+            this.setGridHeight(this.getSceneWidth()/this.m);
+        }
+        GridPane gp = (GridPane) this.getChildren().get(0);
+        gp.setPrefSize(this.getSceneHeight(), this.getSceneWidth());
+        for (Node n : gp.getChildren()) {
+            if (n instanceof Cell) {
+                for (Node nbis : ((Cell) n).getChildren()) {
+                    Rectangle rect = (Rectangle) nbis;
+                    rect.setHeight(this.getGridHeight());
+                    rect.setWidth(this.getGridWidth());
+                }
+            }
+        }
+        /*for (int i = 0; i < n; i++) {
+            gp.getColumnConstraints().clear();
+            gp.getRowConstraints().clear();
+        }
+        for (int i = 0; i < n; i++) {
+            gp.getColumnConstraints().add(new ColumnConstraints(this.getGridHeight()));
+            gp.getRowConstraints().add(new RowConstraints(this.getGridHeight()));
+        }*/
+    }
+    
     /**
      * Getter of the pointAIsSet variable
      * @return pointAIsSet
@@ -522,7 +600,7 @@ public class Grid extends Parent{
     
     @Override
     public String toString() {
-        return java.text.MessageFormat.format(("GRILLE{" + "SCENEWIDTH={0}, SCENEHEIGHT={1}, LISTOBJECTS={2}, POINTAISSET={3}, POINTBISSET={4}{5}"), new Object[] {sceneWidth, sceneHeight, listObjects, pointAIsSet, pointBIsSet, '}'});
+        return java.text.MessageFormat.format(("GRILLE{" + "SCENEWIDTH={0}, SCENEHEIGHT={1}, LISTOBJECTS={2}, POINTAISSET={3}, POINTBISSET={4}"), new Object[] {sceneWidth, sceneHeight, listObjects, pointAIsSet, pointBIsSet, '}'});
     }
 
     /**

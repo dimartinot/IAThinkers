@@ -4,7 +4,7 @@
  */
 package Plan;
 
-import Menu.MainMenu.*;
+import static Menu.MainMenu.getLanguage;
 import Objet.PointType;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -38,7 +38,18 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import Plan.Algorithm.*;
-import javafx.scene.control.ToggleButton;
+import javafx.geometry.Pos;
+import javafx.scene.control.CustomMenuItem;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.control.Slider;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
+import javafx.scene.layout.BorderPane;
+import javafx.stage.WindowEvent;
 
 /**
  * Class of the House Plan <i> Scene </i>. It is composed of a grid of multiple {@link Cell} object.
@@ -75,10 +86,10 @@ public class Plan extends Parent{
      * @param sceneTab 
      */
     public Plan(Stage primaryStage, Scene[] sceneTab) {
-        
+                
         this.path = new ArrayList<Node>();
         
-        Locale l = Menu.MainMenu.getLanguage();
+        Locale l = getLanguage();
         messages = ResourceBundle.getBundle("Plan/Plan",l);
        
         this.getStylesheets().add(this.getClass().getResource("plan.css").toExternalForm());
@@ -213,7 +224,9 @@ public class Plan extends Parent{
         grid.setConstraints(infoCase,1,7);
         
         //Grid Object initialisation
-        this.objetGrid = new Grid(sceneTab[1]);
+        Double gridHeight = (Double) sceneTab[1].getHeight()*70/100;
+        Double gridWidth = (Double) sceneTab[1].getHeight()*70/100;
+        this.objetGrid = new Grid(sceneTab[1],gridHeight.intValue(),gridWidth.intValue());
 
         Label objectListLbl = new Label(messages.getString("LISTING OF ALL CREATED OBJECTS"));
         grid.setConstraints(objectListLbl,1,8);
@@ -380,10 +393,14 @@ public class Plan extends Parent{
         grid.setConstraints(boxButtons,1,10);
         grid.setConstraints(objectList,1,9);
         
+        MenuBar menuBar = new MenuBar();
         
+        Menu planMenu = new Menu(messages.getString("PLAN"));
         
         //Save button
-        Button saveButton = new Button(messages.getString("SAVE"));
+        MenuItem saveButton = new MenuItem(messages.getString("SAVE"));
+        saveButton.setMnemonicParsing(true);
+        saveButton.setAccelerator(new KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN));
         TextInputDialog savingPopup = new TextInputDialog("");
         savingPopup.setTitle(messages.getString("HOUSE PLAN SAVING"));
         savingPopup.setHeaderText(messages.getString("IN ORDER TO SAVE YOUR HOUSE PLAN, YOU NEED TO ENTER A NAME FOR YOUR HOUSE PLAN"));
@@ -399,8 +416,9 @@ public class Plan extends Parent{
         });
         
         //Load button
-        Button loadButton = new Button(messages.getString("LOAD"));
-        
+        MenuItem loadButton = new MenuItem(messages.getString("LOAD"));    
+        loadButton.setMnemonicParsing(true);
+        loadButton.setAccelerator(new KeyCodeCombination(KeyCode.L, KeyCombination.SHORTCUT_DOWN));
         loadButton.setOnAction(new EventHandler<ActionEvent>() {
            @Override
            public void handle(ActionEvent event) {
@@ -431,16 +449,57 @@ public class Plan extends Parent{
             }
         });
         
+        
+        //Back button
+        MenuItem backButton = new MenuItem(messages.getString("BACK.."));
+        backButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                primaryStage.setResizable(false);
+                primaryStage.setScene(sceneTab[0]);
+            }
+        });
+        
+        planMenu.getItems().addAll(saveButton,loadButton,new SeparatorMenuItem(), backButton);
+                
+        Menu optionMenu = new Menu(messages.getString("OPTIONS"));
+        Menu sizingMenu = new Menu(messages.getString("SIZING"));/*
+        Double min = (Double) sceneTab[1].getHeight()*50/100;
+        Double max = (Double) sceneTab[1].getHeight()*80/100;*/
+        Slider sizing = new Slider(50,75,1);
+        sizing.valueProperty().addListener(new ChangeListener<Number>() {
+            public void changed(ObservableValue<? extends Number> ov,
+                Number old_val, Number new_val) {
+                    objetGrid.setGridSize(sceneTab[1],new_val.intValue());
+            }
+        });
+        sizing.setShowTickMarks(true);
+        sizing.setShowTickLabels(true);
+        
+        //Whenever the height of the scene is changed, we mke sure that our grid adapt its size to it !
+        sceneTab[1].heightProperty().addListener(new ChangeListener<Number>() {
+            @Override 
+            public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) {
+                Double new_val = new Double(sizing.getValue());
+                objetGrid.setGridSize(sceneTab[1],new_val.intValue());
+                objetGrid.setVisible(false);
+                objetGrid.setVisible(true);
+            }
+        });
+        
+        CustomMenuItem gridSize = new CustomMenuItem(sizing); 
+        
+        sizingMenu.getItems().add(gridSize);
+        optionMenu.getItems().add(sizingMenu);
+        menuBar.getMenus().addAll(planMenu,optionMenu);
+        
+        
         //Error text zone
         Text infoSQL = new Text(10,50,"");
         infoSQL.setId("infosql");
         grid.setConstraints(infoSQL,1,11);
         
-        //Hbox set to display the 2  save and load buttons
-        HBox hbButtons1 = new HBox();
-        hbButtons1.setSpacing(10);
-        hbButtons1.getChildren().addAll(saveButton,loadButton);
-        grid.setConstraints(hbButtons1,1,12);
+        
         
         //Launch Button
         Button launchButton = new Button(messages.getString("LAUNCH"));
@@ -453,6 +512,12 @@ public class Plan extends Parent{
                     //We check if the graph of all the reachable nodes contains the ending point in order to check if a path between the ending and starting point exists
                     if (g.arrayContainsNode(g.getListOfNodes(), new Node(g.getEnd().getPosX(),g.getEnd().getPosY()))) {
                         AStar solution = new AStar(new Node(g.getStart().getPosX(),g.getStart().getPosY()),new Node(g.getEnd().getPosX(),g.getEnd().getPosY()), g);
+                        for (Node n : path) {
+                            path.add(n);
+                            Rectangle r = (Rectangle) sceneTab[1].lookup("#"+(n.getX())+"-"+(n.getY()));
+                            r.setFill(Color.BLUE);
+                        }
+                        path.clear();
                         for (Node n : solution.getSolution()) {
                             path.add(n);
                             Rectangle r = (Rectangle) sceneTab[1].lookup("#"+(n.getX())+"-"+(n.getY()));
@@ -488,29 +553,24 @@ public class Plan extends Parent{
             }
         });
         
-        //Back button
-        Button backButton = new Button(messages.getString("BACK.."));
-        backButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                primaryStage.setScene(sceneTab[0]);
-            }
-        });
         
-        //Hbox set to display the two back and launch buttons
+        //Hbox set to display the launch button
         HBox hbButtons2 = new HBox();
         hbButtons2.setSpacing(10);
-        hbButtons2.getChildren().addAll(launchButton,backButton);
+        hbButtons2.getChildren().addAll(launchButton);
         grid.setConstraints(hbButtons2,1,14);
         
         //Add all the elements to the grid components
-        grid.getChildren().addAll(choix,label,infoCase,objectListLbl,objectList,hbButtons1,infoSQL,hbButtons2,boxButtons);
+        grid.getChildren().addAll(choix,label,infoCase,objectListLbl,objectList,infoSQL,hbButtons2,boxButtons);
         menuVertical.getChildren().add(grid);
-        
-        hbox.getChildren().add(objetGrid);
-        hbox.getChildren().add(menuVertical);
+        BorderPane container = new BorderPane();
+        container.setTop(menuBar);
+        container.setMinSize(BASELINE_OFFSET_SAME_AS_HEIGHT, BASELINE_OFFSET_SAME_AS_HEIGHT);
+        container.setCenter(objetGrid);
+        menuVertical.setPadding(new Insets(10,10,10,10));
+        container.setRight(menuVertical);
         //Add the main hbox to the scene
-        this.getChildren().add(hbox);
+        sceneTab[1].setRoot(container);
     }
 
     /**

@@ -81,6 +81,8 @@ public class MainMenu extends Parent{
         buttonPlan.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
+                primaryStage.setResizable(true);
+                primaryStage.sizeToScene();
                 primaryStage.setScene(sceneTab[1]);
             }
         });
@@ -90,6 +92,8 @@ public class MainMenu extends Parent{
         buttonStats.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
+                primaryStage.setResizable(true);
+                primaryStage.sizeToScene();
                 primaryStage.setScene(sceneTab[4]);
             }
         });
@@ -97,6 +101,8 @@ public class MainMenu extends Parent{
         buttonSql.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
+                primaryStage.setResizable(true);
+                primaryStage.sizeToScene();
                 primaryStage.setScene(sceneTab[5]);
             }
         });
