@@ -81,12 +81,17 @@ public class Plan extends Parent{
     private ArrayList<Node> path;
     
     /**
+     * Store the id of the current housePlan
+     */
+    private Integer currentHousePlan;
+    
+    /**
      * Plan constructor.
      * @param primaryStage
      * @param sceneTab 
      */
     public Plan(Stage primaryStage, Scene[] sceneTab) {
-                
+        this.currentHousePlan = null;        
         this.path = new ArrayList<Node>();
         
         Locale l = getLanguage();
@@ -407,23 +412,40 @@ public class Plan extends Parent{
         });
         
         //Save button
-        MenuItem saveButton = new MenuItem(messages.getString("SAVE"));
-        saveButton.setMnemonicParsing(true);
-        saveButton.setAccelerator(new KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN));
+        MenuItem saveButton = new MenuItem(messages.getString("SAVEAS"));
+        
         TextInputDialog savingPopup = new TextInputDialog("");
         savingPopup.setTitle(messages.getString("HOUSE PLAN SAVING"));
         savingPopup.setHeaderText(messages.getString("IN ORDER TO SAVE YOUR HOUSE PLAN, YOU NEED TO ENTER A NAME FOR YOUR HOUSE PLAN"));
         savingPopup.setContentText(messages.getString("PLEASE ENTER THE SAVING NAME:"));
         saveButton.setOnAction(new EventHandler<ActionEvent>() {
-           @Override
-           public void handle(ActionEvent event) {
-              Optional<String> result = savingPopup.showAndWait();
-              if (result.isPresent()) {
-                  savingProcess(result.get(),objetGrid.getListObjects(),sceneTab[1]);
+            @Override
+            public void handle(ActionEvent event) {
+                Optional<String> result = savingPopup.showAndWait();
+                if (result.isPresent()) {
+                    savingProcess(result.get(),objetGrid.getListObjects(),sceneTab[1]);
               }
            }
         });
         
+        //Update button
+        MenuItem updateButton = new MenuItem(messages.getString("SAVE"));
+        updateButton.setMnemonicParsing(true);
+        updateButton.setAccelerator(new KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN));
+        updateButton.setOnAction(new EventHandler<ActionEvent>() {
+           @Override
+            public void handle(ActionEvent event) {
+                //If either no plan is initialized or the current plan has never been saved : we launch a saving process
+                if (getCurrentHousePlan() == null) {
+                    Optional<String> result = savingPopup.showAndWait();
+                    if (result.isPresent()) {
+                        savingProcess(result.get(),objetGrid.getListObjects(),sceneTab[1]);
+                    }        
+                } else {
+                    updatingProcess(sceneTab, objetGrid.getListObjects());
+                }
+           }
+        });        
         //Load button
         MenuItem loadButton = new MenuItem(messages.getString("LOAD"));    
         loadButton.setMnemonicParsing(true);
@@ -458,6 +480,38 @@ public class Plan extends Parent{
             }
         });
         
+        //Delete Plan button
+        MenuItem deletePlanButton = new MenuItem(messages.getString("DELETE"));
+        
+        deletePlanButton.setOnAction(new EventHandler<ActionEvent>() {
+           @Override
+           public void handle(ActionEvent e) {
+               List<String> housePlans = new ArrayList<>();
+                //Set the possible choices
+                try {
+                    setCredentials();
+                    Connection connect = DriverManager.getConnection("jdbc:mysql://" + getAdresse() + "/iathinkers?"
+                    + "user="+ getUsername() + "&password=" + getMdp());
+                    Statement statement = connect.createStatement();
+                    String request = "SELECT name FROM houseplan";                    
+                    ResultSet rs = statement.executeQuery(request);
+                    while(rs.next()) {
+                        housePlans.add(rs.getString("name"));
+                    }
+                } catch (SQLException ex) {
+
+                }
+                ChoiceDialog<String> deletingPopup = new ChoiceDialog<String>("",housePlans);
+                deletingPopup.setTitle(messages.getString("HOUSEPLANDELETION"));
+                deletingPopup.setHeaderText(messages.getString("DELETIONHEADER"));
+                deletingPopup.setContentText(messages.getString("DELETIONSELECTION"));
+                Optional<String> result = deletingPopup.showAndWait();
+                if (result.isPresent()) {
+                    objectList.getItems().clear();
+                    deleting(sceneTab,result.get());
+                }
+           }
+        });
         
         //Back button
         MenuItem backButton = new MenuItem(messages.getString("BACK.."));
@@ -469,7 +523,8 @@ public class Plan extends Parent{
             }
         });
         
-        planMenu.getItems().addAll(newButton,saveButton,loadButton,new SeparatorMenuItem(), backButton);
+        
+        planMenu.getItems().addAll(newButton,new SeparatorMenuItem(),updateButton,saveButton,new SeparatorMenuItem(),loadButton,deletePlanButton,new SeparatorMenuItem(), backButton);
                 
         Menu optionMenu = new Menu(messages.getString("OPTIONS"));
         Menu sizingMenu = new Menu(messages.getString("SIZING"));/*
@@ -609,7 +664,7 @@ public class Plan extends Parent{
                 }
             } else {
                 Text infoSQL = (Text) scene.lookup("#infosql");
-                infoSQL.setText(messages.getString("THERE IS AN EXISTING\nPLAN WITH THE NAME \'")+houseplanName+messages.getString("\'. \nPLEASE SELECT ANOTHER NAME. "));
+                infoSQL.setText(messages.getString("EXISTINGPLAN")+houseplanName+messages.getString("ANOTHERNAME"));
                 return false;
             }
             rs = statement.executeQuery("SELECT * FROM HOUSEPLAN WHERE NAME=\'"+houseplanName+"\'");
@@ -617,6 +672,7 @@ public class Plan extends Parent{
             while (rs.next()) {
               idHousePlan = rs.getInt("idHousePlan");
             }
+            this.setCurrentHousePlan(idHousePlan);
             //Dealing with type Ids
             rs = statement.executeQuery("SELECT * FROM TYPE");
             while (rs.next()) {
@@ -753,7 +809,11 @@ public class Plan extends Parent{
             Rectangle r = (Rectangle) sceneTab[1].lookup("#"+(n.getX())+"-"+(n.getY()));
             r.setFill(Color.ALICEBLUE);
         }
+        this.getPath().clear();
         objetGrid.getListObjects().clear();
+        
+        Text infoSQL = (Text) sceneTab[1].lookup("#infosql");
+        infoSQL.setText("");
     }
     
     /**
@@ -775,12 +835,10 @@ public class Plan extends Parent{
             if (rs.next()) {
                 idHousePlan = rs.getInt("idHousePlan");
             }
+            this.setCurrentHousePlan(idHousePlan);
             rs = statement.executeQuery("SELECT object FROM composition WHERE plan="+idHousePlan);
             Statement statementBis = connect.createStatement();
             ResultSet rsbis;
-            
-            
-            objetGrid.getListObjects().clear();
             while(rs.next()) {
                 rsbis = statementBis.executeQuery("SELECT * FROM object WHERE idObject="+rs.getInt("object"));
                 if (rsbis.next()) {
@@ -815,6 +873,88 @@ public class Plan extends Parent{
         }
         return true;
     }
+    
+    public boolean deleting(Scene[] sceneTab, String houseplanName) {
+        try {
+            setCredentials();
+            Connection connect = DriverManager.getConnection("jdbc:mysql://"+this.getAdresse()+"/iathinkers?"
+                    + "user="+this.getUsername()+"&password="+this.getMdp());
+            Statement statement = connect.createStatement();
+             ResultSet rs = statement.executeQuery("SELECT idHousePlan FROM houseplan WHERE name=\'"+houseplanName+"\'");
+            Integer idHousePlan = 0;
+            if (rs.next()) {
+                idHousePlan = rs.getInt("idHousePlan");
+            }
+            if (idHousePlan != null) {
+                if (statement.executeUpdate("DELETE FROM composition WHERE plan="+idHousePlan.intValue()) != -1) {
+                    System.out.println("Compositions correctly deleted");
+                }
+                if (statement.executeUpdate("DELETE FROM object WHERE idObject NOT IN (SELECT object FROM Composition)") != -1) {
+                    System.out.println("Objects correctly deleted");
+                }
+                rs = statement.executeQuery("SELECT name FROM houseplan WHERE idHousePlan = "+idHousePlan.intValue());
+                String name = "undefined";
+                while (rs.next()) {
+                    name = rs.getString("name");
+                }
+                if (statement.executeUpdate("DELETE FROM houseplan WHERE idHousePlan = "+idHousePlan.intValue()) != -1) {
+                    System.out.println("Plan correctly deleted");
+                }
+            } else {
+                return false;
+            }
+            Text infoSQL = (Text) sceneTab[1].lookup("#infosql");
+            infoSQL.setText(messages.getString("DELETION"));
+        } catch (SQLException ex) {
+            Text infoSQL = (Text) sceneTab[1].lookup("#infosql");
+            infoSQL.setText("MYSQLERROR");
+            return false;
+        }
+        return true;
+    }
+    
+    /**
+     * This method will update the houseplan saved in the database
+     * @param sceneTab
+     * @param listObjects
+     * @return 
+     */
+    public boolean updatingProcess(Scene[] sceneTab, ArrayList<Object> listObjects) {
+        try {
+            setCredentials();
+            Connection connect = DriverManager.getConnection("jdbc:mysql://"+this.getAdresse()+"/iathinkers?"
+                    + "user="+this.getUsername()+"&password="+this.getMdp());
+            Statement statement = connect.createStatement();
+            Integer idHousePlan = this.getCurrentHousePlan();
+            if (idHousePlan != null) {
+                if (statement.executeUpdate("DELETE FROM composition WHERE plan="+idHousePlan.intValue()) != -1) {
+                    System.out.println("Compositions correctly removed");
+                }
+                if (statement.executeUpdate("DELETE FROM object WHERE idObject NOT IN (SELECT object FROM Composition)") != -1) {
+                    System.out.println("Objects correctly removed");
+                }
+                ResultSet rs = statement.executeQuery("SELECT name FROM houseplan WHERE idHousePlan = "+idHousePlan.intValue());
+                String name = "undefined";
+                while (rs.next()) {
+                    name = rs.getString("name");
+                }
+                if (statement.executeUpdate("DELETE FROM houseplan WHERE idHousePlan = "+idHousePlan.intValue()) != -1) {
+                    System.out.println("Plan correctly removed");
+                }
+                savingProcess(name, listObjects, sceneTab[1]);
+            } else {
+                return false;
+            }
+            Text infoSQL = (Text) sceneTab[1].lookup("#infosql");
+            infoSQL.setText(messages.getString("UPDATED"));
+        } catch (SQLException ex) {
+            Text infoSQL = (Text) sceneTab[1].lookup("#infosql");
+            infoSQL.setText("MYSQLERROR");
+            return false;
+        }
+        return true;
+    }
+    
     
     public ArrayList<Node> getPath() {
         return this.path;
@@ -854,6 +994,13 @@ public class Plan extends Parent{
         return mdp;
     }
     
+    public void setCurrentHousePlan(int id) {
+        this.currentHousePlan = id;
+    }
+    
+    public Integer getCurrentHousePlan() {
+        return this.currentHousePlan;
+    }
     
     
     
