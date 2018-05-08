@@ -87,6 +87,14 @@ public class MainMenu extends Parent{
             }
         });
         Button buttonTrace = new Button(messages.getString("FREEHAND PATH CREATION"));
+        buttonTrace.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                primaryStage.setResizable(true);
+                primaryStage.sizeToScene();
+                primaryStage.setScene(sceneTab[2]);
+            }
+        });
         Button buttonObjet = new Button(messages.getString("OBJECT CREATION"));
         Button buttonStats = new Button(messages.getString("STATISTICS"));
         buttonStats.setOnAction(new EventHandler<ActionEvent>() {

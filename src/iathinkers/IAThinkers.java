@@ -5,6 +5,7 @@
 package iathinkers;
 
 //Import the main classes of all the scenes
+import Freehand.Freehand;
 import Menu.MainMenu;
 import Parametres.SQLParameters;
 import Plan.Plan;
@@ -61,6 +62,11 @@ public class IAThinkers extends Application {
         Scene scene1 = new Scene(root1,850, 600);
         sceneTab[1] = scene1;
         
+        //Freehand scene
+        Group root2 = new Group();
+        Scene scene2 = new Scene(root2,850,600);
+        sceneTab[2] = scene2;
+        
         //Statistics scene
         Group root4 = new Group();
         Scene scene4 = new Scene(root4,850, 600);
@@ -80,6 +86,10 @@ public class IAThinkers extends Application {
         //Plan Object
         Plan monPlan = new Plan(primaryStage, sceneTab);
         root1.getChildren().add(monPlan);
+        
+        //Freehand object
+        Freehand monFreehand = new Freehand(primaryStage, sceneTab);
+        root2.getChildren().add(monFreehand);
         
         //Statistics Object
         Statistics mesStats = new Statistics(primaryStage, sceneTab);
