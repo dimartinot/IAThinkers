@@ -397,6 +397,15 @@ public class Plan extends Parent{
         
         Menu planMenu = new Menu(messages.getString("PLAN"));
         
+        //New button
+        MenuItem newButton = new MenuItem(messages.getString("NEW"));
+        newButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                emptying(sceneTab);
+            }
+        });
+        
         //Save button
         MenuItem saveButton = new MenuItem(messages.getString("SAVE"));
         saveButton.setMnemonicParsing(true);
@@ -460,7 +469,7 @@ public class Plan extends Parent{
             }
         });
         
-        planMenu.getItems().addAll(saveButton,loadButton,new SeparatorMenuItem(), backButton);
+        planMenu.getItems().addAll(newButton,saveButton,loadButton,new SeparatorMenuItem(), backButton);
                 
         Menu optionMenu = new Menu(messages.getString("OPTIONS"));
         Menu sizingMenu = new Menu(messages.getString("SIZING"));/*
@@ -696,13 +705,10 @@ public class Plan extends Parent{
     }
     
     /**
-     * Method used to load a saved house plan.
-     * @param sceneTab Array of scenes used to get the Plan Scene
-     * @param houseplanName name of the plan to load
-     * @return true if correctly loaded
+     * Method used to empty the current plan
+     * @param sceneTab 
      */
-    private boolean loading(Scene[] sceneTab, String houseplanName) {
-        //objetGrid.printListObjects();
+    public void emptying(Scene[] sceneTab) {
         for (Object o : objetGrid.getListObjects()) {
             if (o instanceof Objet.Wall) {
                 Objet.Wall w = (Objet.Wall) o;
@@ -746,7 +752,19 @@ public class Plan extends Parent{
         for (Node n : this.getPath()) {
             Rectangle r = (Rectangle) sceneTab[1].lookup("#"+(n.getX())+"-"+(n.getY()));
             r.setFill(Color.ALICEBLUE);
-        } 
+        }
+        objetGrid.getListObjects().clear();
+    }
+    
+    /**
+     * Method used to load a saved house plan.
+     * @param sceneTab Array of scenes used to get the Plan Scene
+     * @param houseplanName name of the plan to load
+     * @return true if correctly loaded
+     */
+    private boolean loading(Scene[] sceneTab, String houseplanName) {
+        //objetGrid.printListObjects();
+        emptying(sceneTab);
         try {
             setCredentials();
             Connection connect = DriverManager.getConnection("jdbc:mysql://"+this.getAdresse()+"/iathinkers?"
