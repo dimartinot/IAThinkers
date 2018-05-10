@@ -7,10 +7,14 @@ package Freehand;
 
 import Freehand.Algorithm.AStarFreehand;
 import static Menu.MainMenu.getLanguage;
+import static Plan.Algorithm.AStar.solved;
 import Plan.Algorithm.Node;
+import static java.lang.Thread.sleep;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -99,7 +103,7 @@ public class Freehand extends Parent {
     private Scene scene;
     
     /**
-     * 
+     * The list of the nodes of the solution
      */
     private ArrayList<Node> solutionPath;
     
@@ -178,6 +182,7 @@ public class Freehand extends Parent {
                 final Node startingNode = new Node(start.getX(),start.getY());
                 final Node endingNode = new Node(end.getX(),end.getY());
                 final WritableImage currentStateCopy = currentState;
+                //As the calculus of the path can take some time, we decided to set it in a new threads in order not to freeze the application for that time
                 Task task = new Task<Void>() {
                     @Override 
                     public Void call() {
@@ -186,25 +191,61 @@ public class Freehand extends Parent {
                         solutionPath.addAll(astar.getSolution());
                         Platform.runLater(new Runnable() {
                             @Override public void run() {
+                                
                                 drawnPath.getElements().add(new MoveTo(startingNode.getX(),startingNode.getY()));
                                 drawnPath.getElements().add(new LineTo(n.getX(),n.getY()));
-                                drawnPath.getElements().add(new MoveTo(n.getX(),n.getY()));
                             }
-                        });
+                        });                            
+                        updateMessage(messages.getString("CALCULATION"));
                         while (astar.getSolution().contains(endingNode) == false) {
-                            updateMessage(messages.getString("CALCULATION"));
                             astar = new AStarFreehand(astar, astar.getCurrent(), endingNode, currentStateCopy);
-                            final Node nBis = astar.getCurrent();
-                            solutionPath.addAll(astar.getSolution());
+                            final Node nBis;
+                            if (!solutionPath.containsAll(astar.getSolution())) {
+                                nBis = astar.getCurrent();
+                                solutionPath.addAll(astar.getSolution());
+                            } else {
+                                updateMessage(messages.getString("LOOP"));
+                                solutionPath.removeAll(astar.getSolution());
+                                astar.setSolution(solutionPath);
+                                nBis = solutionPath.get(solutionPath.size()-1);
+                                astar.setCurrent(nBis);
+                            }
+                            try {
+                                sleep(200);
+                            } catch (InterruptedException ex) {
+                                Logger.getLogger(Freehand.class.getName()).log(Level.SEVERE, null, ex);
+                            }
                             Platform.runLater(new Runnable() {
                                 @Override public void run() {
-                                    drawnPath.getElements().add(new LineTo(nBis.getX(),nBis.getY()));
-                                    drawnPath.getElements().add(new MoveTo(nBis.getX(),nBis.getY()));
+                                    System.out.println(nBis.toString());
+                                    LineTo l = new LineTo(nBis.getX(),nBis.getY());
+                                    MoveTo m = new MoveTo(nBis.getX(),nBis.getY());
+
+                                    if (!drawnPath.getElements().contains(l)) {
+                                        drawnPath.getElements().add(l);
+                                        drawnPath.getElements().add(m);
+                                    } else {
+                                        drawnPath.getElements().removeAll(drawnPath.getElements());
+                                        drawingBox.getChildren().remove(drawnPath);
+                                        drawingBox.getChildren().add(drawnPath);
+                                        updateMessage(messages.getString("LOOP"));
+                                    }    
                                 }
                             });
                         }
-                        System.out.println("hey");
-                        updateMessage("done");
+                        solutionPath.clear();
+                        solutionPath.addAll(solved(astar.getEfficientPredecessor(),endingNode,new ArrayList<Node>()));
+                        drawnPath.getElements().removeAll(drawnPath.getElements());
+                        Platform.runLater(new Runnable() {
+                           @Override public void run()  {
+                               drawnPath.getElements().add(new MoveTo(endingNode.getX(),endingNode.getY()));
+                                for (Node nIterator : solutionPath) {
+                                    drawnPath.getElements().add(new LineTo(nIterator.getX(),nIterator.getY()));
+                                    drawnPath.getElements().add(new MoveTo(nIterator.getX(),nIterator.getY()));
+                                }
+                           }
+                        });
+                        updateMessage(messages.getString("CALCULATIONOVER"));
                         return null;
                     }
                 };
@@ -212,14 +253,6 @@ public class Freehand extends Parent {
                 Thread th = new Thread(task);
                 th.setDaemon(true);
                 th.start();
-                if (th.isAlive() == false) {
-                        drawnPath.getElements().clear();
-                        drawnPath.getElements().add(new MoveTo(startingNode.getX(),startingNode.getY()));
-                        for (Node nIterator : solutionPath) {
-                            drawnPath.getElements().add(new LineTo(nIterator.getX(),nIterator.getY()));
-                            drawnPath.getElements().add(new MoveTo(nIterator.getX(),nIterator.getY()));
-                        }
-                }
                 //solutionPath = (ArrayList<Node>) task.getValue();
 
             }

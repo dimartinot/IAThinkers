@@ -60,7 +60,7 @@ public class AStarFreehand  {
      * @param startingNode The starting node
      * @param endingNode The ending node
      * @param g The WritableImage variable, useful to get the list of the neighbours of a given node
-     * @param precedent
+     * @param precedent The precedent AStarFreehand object initialised with all its Collections. In an early stage of development, we used to copy all this and pass them to the next AStarFreehand object
      */
     public AStarFreehand(AStarFreehand precedent, Node startingNode, Node endingNode, WritableImage g) {
 
@@ -68,33 +68,33 @@ public class AStarFreehand  {
         
         //It will contain all the Nodes we have already given an evaluation of the cost
         closedSet = new LinkedList<>();
-        //closedSet.addAll(precedent.getClosedSet());
+        closedSet.addAll(precedent.getClosedSet());
         
         //It will contain all know Nodes that are not evaluated yet.
         openSet = new LinkedList<>();
-        //openSet.addAll(precedent.getOpenSet());
-        //if (!openSet.contains(startingNode)) {
+        openSet.addAll(precedent.getOpenSet());
+        if (!openSet.contains(startingNode)) {
             openSet.add(startingNode);
-        //}
+        }
         //For a given Key node, it contains its neighbours of the lowest cost
         efficientPredecessor = new HashMap<>();
-        //efficientPredecessor.putAll(precedent.getEfficientPredecessor());
+        efficientPredecessor.putAll(precedent.getEfficientPredecessor());
         
         //For a given Key node, it contains the score of getting to that Node from the start
         nodeScore = new HashMap<>();
-        //nodeScore.putAll(precedent.getNodeScore());
-        //if (!nodeScore.containsKey(startingNode)) {
+        nodeScore.putAll(precedent.getNodeScore());
+        if (!nodeScore.containsKey(startingNode)) {
             nodeScore.put(startingNode,new Double(0));
-        //}
+        }
         //These two variables are used to use the generic functions that fixes the bug I encountered dealing with Map using Nodes as Keys (equals method not working??)
         FixedArrays<Node,Node> NodeNode = new FixedArrays<>();
         FixedArrays<Node,Double> NodeDouble = new FixedArrays<>();
                                 
         nodeTotalScore = new HashMap<>();
-        //nodeTotalScore.putAll(precedent.getNodeTotalScore());
-        //if (!nodeTotalScore.containsKey(startingNode)) {
+        nodeTotalScore.putAll(precedent.getNodeTotalScore());
+        if (!nodeTotalScore.containsKey(startingNode)) {
             nodeTotalScore.put(startingNode, heuristicEstimation(startingNode, endingNode));
-        //}
+        }
         Double theoricalNodeScore;
         
         int counter = 0;
@@ -119,15 +119,15 @@ public class AStarFreehand  {
            //After that, we pass it into the closed set as it has been treated
            openSet.remove(current);
            closedSet.add(current);
-           counter++;
            //Then, we look at all its neighbours to seek for a potential candidate
            for (Node n : getNeighboursFromImage(g, current)) {
-               if (!closedSet.contains(n)) {
+               if (!closedSet.contains(n) && !precedent.getSolution().contains(n)) {
                    if (!openSet.contains(n)) {
                        openSet.add(n);
                    }
+                    counter++;
                    //We calculate the cost of getting to this point from our current position
-                   theoricalNodeScore = NodeDouble.getValue(nodeScore, current) + Double.valueOf(1);
+                   theoricalNodeScore = NodeDouble.getValue(nodeScore, current);
                    if (nodeScore.containsKey(n)) {
                         if (theoricalNodeScore.compareTo( NodeDouble.getValue(nodeScore, n) ) == -1) {
                             //If the value we calculated is lower than the precedent one, we update our data on the n Node
@@ -137,7 +137,6 @@ public class AStarFreehand  {
                                 NodeNode.replaceValue(efficientPredecessor,n,current);
                             }
                             if (nodeScore.containsKey(n)) {
-                                System.out.println(theoricalNodeScore + heuristicEstimation(n,endingNode));
                                 NodeDouble.replaceValue(nodeScore, n, theoricalNodeScore);
                                 NodeDouble.replaceValue(nodeTotalScore, n, theoricalNodeScore + heuristicEstimation(n,endingNode));
                             } else {
@@ -152,7 +151,7 @@ public class AStarFreehand  {
                             NodeNode.replaceValue(efficientPredecessor,n,current);
                         }
                         nodeScore.put(n,theoricalNodeScore);
-                        nodeTotalScore.put(n, theoricalNodeScore + heuristicEstimation(n,endingNode));
+                        nodeTotalScore.put(n, theoricalNodeScore+heuristicEstimation(n,endingNode));
                    }
                }
            }
@@ -164,7 +163,7 @@ public class AStarFreehand  {
      * This method get from the g image variable all the accessible neighbours of the current node
      * @param g
      * @param current
-     * @return 
+     * @return A list of all neighbours
      */
     public ArrayList<Node> getNeighboursFromImage(WritableImage g, Node current) {
         ArrayList<Node> res = new ArrayList<Node>();
@@ -221,8 +220,19 @@ public class AStarFreehand  {
         return current;
     }
     
+    public void setCurrent(Node newCurrent) {
+        this.current = newCurrent;
+    }
     
+    public void setSolution(ArrayList<Node> newSolution) {
+        this.solution = newSolution;
+    }
     
+    /**
+     * This method returns the closest discovered node using the heuristic
+     * @param endingNode the objective node
+     * @return the closest node
+     */
     public Node getClosest(Node endingNode) {
         Node current = null;
         Double minScore = Double.MAX_VALUE;
