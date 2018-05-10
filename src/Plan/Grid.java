@@ -2,12 +2,12 @@
 package Plan;
 
 import static Menu.MainMenu.getLanguage;
+import Objet.Point;
 import Objet.PointType;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import javafx.animation.ScaleTransition;
 import javafx.scene.Parent;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -21,7 +21,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import javafx.util.Duration;
 /**
  * Grid Class. This class defines a grid as an <i> ArrayList </i> of Objects and an <i> HashMap </i> of cells {@link Cell}.
  * @author IAThinkers
@@ -44,6 +43,9 @@ public class Grid extends Parent{
      * ArrayList variable used to store all the objects (Wall, Door, Points,...) that had been put on the grid
      */
     private ArrayList<Object> listObjects;
+    
+    private Point start;
+    private Point end;
     
     /**
      * HashMap variable storing every cell of the grid using a key following this syntax : '#i-j' where i is the column of the cell and j its row.
@@ -506,6 +508,7 @@ public class Grid extends Parent{
                 return false;
             }
         }
+        this.start = p;
         return true;
 }
     
@@ -532,6 +535,7 @@ public class Grid extends Parent{
                 return false;
             }
         }
+        this.end = p;
         return true;
 }
     
@@ -634,6 +638,17 @@ public class Grid extends Parent{
         }
         return false;
     }
+
+    public Point getStart() {
+        return start;
+    }
+
+    public Point getEnd() {
+        return end;
+    }
+
+    
+    
     
     
 }

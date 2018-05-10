@@ -38,7 +38,6 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import Plan.Algorithm.*;
-import javafx.geometry.Pos;
 import javafx.scene.control.CustomMenuItem;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
@@ -49,7 +48,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.BorderPane;
-import javafx.stage.WindowEvent;
+import javafx.concurrent.Task;
 
 /**
  * Class of the House Plan <i> Scene </i>. It is composed of a grid of multiple {@link Cell} object.
@@ -572,44 +571,57 @@ public class Plan extends Parent{
             public void handle(ActionEvent event) {
                 if (objetGrid.isPointAIsSet() && objetGrid.isPointBIsSet()) {
                     long startTime = System.currentTimeMillis();
-                    Graph g = new Graph(objetGrid);
-                    //We check if the graph of all the reachable nodes contains the ending point in order to check if a path between the ending and starting point exists
-                    if (g.arrayContainsNode(g.getListOfNodes(), new Node(g.getEnd().getPosX(),g.getEnd().getPosY()))) {
-                        AStar solution = new AStar(new Node(g.getStart().getPosX(),g.getStart().getPosY()),new Node(g.getEnd().getPosX(),g.getEnd().getPosY()), g);
-                        for (Node n : path) {
-                            path.add(n);
-                            Rectangle r = (Rectangle) sceneTab[1].lookup("#"+(n.getX())+"-"+(n.getY()));
-                            r.setFill(Color.BLUE);
-                        }
-                        path.clear();
-                        for (Node n : solution.getSolution()) {
-                            path.add(n);
-                            Rectangle r = (Rectangle) sceneTab[1].lookup("#"+(n.getX())+"-"+(n.getY()));
-                            r.setFill(Color.BLUE);
-                        }    
-                        long stopTime = System.currentTimeMillis();
-                        long elapsedTime = stopTime - startTime;
-                        Text infoSQL = (Text) sceneTab[1].lookup("#infosql");
-                        infoSQL.setText(messages.getString("CALCULATION")+"= "+elapsedTime+" ms");
-                        //After the calculation, we will save path statistics to the database
-                        try {
-                            setCredentials();
-                            Connection connect = DriverManager.getConnection("jdbc:mysql://" + getAdresse() + "/iathinkers?"
-                            + "user="+ getUsername() + "&password=" + getMdp());
-                            Statement statement = connect.createStatement();
-                            String request = "INSERT INTO STATISTICS(TIME,LENGTHOFPATH,NUMBEROFBLOCK,NUMBEROFAVAILABLECELL) VALUES("+elapsedTime+", "+path.size()+", "+objetGrid.numberOfBlocks()+", "+g.getListOfNodes().size()+")";                    
-                            if (statement.executeUpdate(request) != -1) {
-                                System.out.println("Statistics saved !");
+                    final Grid objetGridCopy = objetGrid;
+                    //We create a task executing itself in order not to freeze the program while the A* algorithm is at work
+                    Task task = new Task<Graph> (){
+                       @Override public Graph call() {
+                           Graph g = new Graph(objetGrid);
+                           return g;
+                       } 
+                    };
+                    task.setOnSucceeded(e -> {
+                        Graph g = (Graph) task.getValue();
+                        //We check if the graph of all the reachable nodes contains the ending point in order to check if a path between the ending and starting point exists
+                        if (g.arrayContainsNode(g.getListOfNodes(), new Node(g.getEnd().getPosX(),g.getEnd().getPosY()))) {
+                            AStar solution = new AStar(new Node(objetGrid.getStart().getPosX(),objetGrid.getStart().getPosY()),new Node(objetGrid.getEnd().getPosX(),objetGrid.getEnd().getPosY()), g);
+                            for (Node n : path) {
+                                path.add(n);
+                                Rectangle r = (Rectangle) sceneTab[1].lookup("#"+(n.getX())+"-"+(n.getY()));
+                                r.setFill(Color.BLUE);
                             }
-                             
-                        } catch (SQLException e) {
-                            infoSQL = (Text) sceneTab[1].lookup("#infosql");
-                            infoSQL.setText(infoSQL.getText()+"\n"+messages.getString("MYSQLERROR"));
+                            path.clear();
+                            for (Node n : solution.getSolution()) {
+                                path.add(n);
+                                Rectangle r = (Rectangle) sceneTab[1].lookup("#"+(n.getX())+"-"+(n.getY()));
+                                r.setFill(Color.BLUE);
+                            }    
+                            long stopTime = System.currentTimeMillis();
+                            long elapsedTime = stopTime - startTime;
+                            Text infoSQL = (Text) sceneTab[1].lookup("#infosql");
+                            infoSQL.setText(messages.getString("CALCULATION")+"= "+elapsedTime+" ms");
+                            //After the calculation, we will save path statistics to the database
+                            try {
+                                setCredentials();
+                                Connection connect = DriverManager.getConnection("jdbc:mysql://" + getAdresse() + "/iathinkers?"
+                                + "user="+ getUsername() + "&password=" + getMdp());
+                                Statement statement = connect.createStatement();
+                                String request = "INSERT INTO STATISTICS(TIME,LENGTHOFPATH,NUMBEROFBLOCK,NUMBEROFAVAILABLECELL) VALUES("+elapsedTime+", "+path.size()+", "+objetGrid.numberOfBlocks()+", "+g.getListOfNodes().size()+")";                    
+                                if (statement.executeUpdate(request) != -1) {
+                                    System.out.println("Statistics saved !");
+                                }
+
+                            } catch (SQLException err) {
+                                infoSQL = (Text) sceneTab[1].lookup("#infosql");
+                                infoSQL.setText(infoSQL.getText()+"\n"+messages.getString("MYSQLERROR"));
+                            }
+                        } else {
+                            Text infoSQL = (Text) sceneTab[1].lookup("#infosql");
+                            infoSQL.setText(messages.getString("NOPATHERROR"));
                         }
-                    } else {
-                        Text infoSQL = (Text) sceneTab[1].lookup("#infosql");
-                        infoSQL.setText(messages.getString("NOPATHERROR"));
-                    }     
+                    });
+                    Thread th = new Thread(task);
+                    th.setDaemon(true);
+                    th.start();
                 } else {
                     Text infoSQL = (Text) sceneTab[1].lookup("#infosql");
                     infoSQL.setText(messages.getString("POINTERROR"));                
@@ -814,6 +826,8 @@ public class Plan extends Parent{
         
         Text infoSQL = (Text) sceneTab[1].lookup("#infosql");
         infoSQL.setText("");
+        ComboBox<String> cbx = (ComboBox) sceneTab[1].lookup("#objectlist");
+        cbx.getItems().clear();
     }
     
     /**
