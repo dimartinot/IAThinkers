@@ -128,5 +128,4 @@ public class Graph {
     public Point getEnd() {
         return end;
     }    
-    
 }

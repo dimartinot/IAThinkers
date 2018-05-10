@@ -124,7 +124,7 @@ public class AStar {
      * @param path The path we ara reconstructing, passed as a variable
      * @return The path from the start to the ending PointB
      */
-    public ArrayList<Node> solved(HashMap<Node,Node> efficientPredecessor, Node currentNode, ArrayList<Node> path) {
+    public static ArrayList<Node> solved(HashMap<Node,Node> efficientPredecessor, Node currentNode, ArrayList<Node> path) {
         if (currentNode == null) {
             return path;
         } else {

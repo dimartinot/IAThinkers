@@ -5,14 +5,20 @@
  */
 package Freehand;
 
+import Freehand.Algorithm.AStarFreehand;
 import static Menu.MainMenu.getLanguage;
+import Plan.Algorithm.Node;
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
@@ -91,6 +97,12 @@ public class Freehand extends Parent {
      * Current scene
      */
     private Scene scene;
+    
+    /**
+     * 
+     */
+    private ArrayList<Node> solutionPath;
+    
     /**
      * 
      * @param primaryStage
@@ -103,12 +115,14 @@ public class Freehand extends Parent {
         startingIsDone = false;
         endingIsDone = false;
         scene = sceneTab[2];
-        
+        solutionPath = new ArrayList<Node>();
+        Path drawnPath = new Path();
         Locale l = getLanguage();
-        ResourceBundle messages = ResourceBundle.getBundle("Freehand/Freehand",l);
+        final ResourceBundle messages = ResourceBundle.getBundle("Freehand/Freehand",l);
         
         //We initialize the menubar with its item
         MenuBar menuBar = new MenuBar();
+        menuBar.setId("menubar");
         menuBar.prefWidthProperty().bind(primaryStage.widthProperty());
         //Firstly, the file menu
         Menu menuFile = new Menu(messages.getString("FILEMENU"));
@@ -146,6 +160,8 @@ public class Freehand extends Parent {
            }
         });
         MenuItem menuPixels = new MenuItem(messages.getString("PIXELS"));
+        menuPixels.setId("menupixel");
+        menuPixels.setDisable(true);
         menuPixels.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e) {
@@ -154,7 +170,62 @@ public class Freehand extends Parent {
                 }
             }
         });
-        menuTools.getItems().addAll(menuEmpty,menuPixels);
+        MenuItem menuLaunch = new MenuItem(messages.getString("LAUNCH"));
+        Label progressInfo = new Label("Status");
+        menuLaunch.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                final Node startingNode = new Node(start.getX(),start.getY());
+                final Node endingNode = new Node(end.getX(),end.getY());
+                final WritableImage currentStateCopy = currentState;
+                Task task = new Task<Void>() {
+                    @Override 
+                    public Void call() {
+                        AStarFreehand astar = new AStarFreehand(new AStarFreehand(),startingNode, endingNode, currentStateCopy);
+                        final Node n = astar.getClosest(endingNode);
+                        solutionPath.addAll(astar.getSolution());
+                        Platform.runLater(new Runnable() {
+                            @Override public void run() {
+                                drawnPath.getElements().add(new MoveTo(startingNode.getX(),startingNode.getY()));
+                                drawnPath.getElements().add(new LineTo(n.getX(),n.getY()));
+                                drawnPath.getElements().add(new MoveTo(n.getX(),n.getY()));
+                            }
+                        });
+                        while (astar.getSolution().contains(endingNode) == false) {
+                            updateMessage(messages.getString("CALCULATION"));
+                            astar = new AStarFreehand(astar, astar.getCurrent(), endingNode, currentStateCopy);
+                            final Node nBis = astar.getCurrent();
+                            solutionPath.addAll(astar.getSolution());
+                            Platform.runLater(new Runnable() {
+                                @Override public void run() {
+                                    drawnPath.getElements().add(new LineTo(nBis.getX(),nBis.getY()));
+                                    drawnPath.getElements().add(new MoveTo(nBis.getX(),nBis.getY()));
+                                }
+                            });
+                        }
+                        System.out.println("hey");
+                        updateMessage("done");
+                        return null;
+                    }
+                };
+                progressInfo.textProperty().bind(task.messageProperty());
+                Thread th = new Thread(task);
+                th.setDaemon(true);
+                th.start();
+                if (th.isAlive() == false) {
+                        drawnPath.getElements().clear();
+                        drawnPath.getElements().add(new MoveTo(startingNode.getX(),startingNode.getY()));
+                        for (Node nIterator : solutionPath) {
+                            drawnPath.getElements().add(new LineTo(nIterator.getX(),nIterator.getY()));
+                            drawnPath.getElements().add(new MoveTo(nIterator.getX(),nIterator.getY()));
+                        }
+                }
+                //solutionPath = (ArrayList<Node>) task.getValue();
+
+            }
+        });
+        
+        menuTools.getItems().addAll(menuEmpty,menuPixels,menuLaunch);
         
         
         menuBar.getMenus().addAll(menuFile,menuTools);
@@ -174,7 +245,7 @@ public class Freehand extends Parent {
         Text endingInfo = new Text();
         endingInfo.setId("endinginfo");
         endingInfo.setText(messages.getString("ENDINGINFO"));
-        info.getChildren().addAll(startingInfo,endingInfo);
+        info.getChildren().addAll(startingInfo,endingInfo,progressInfo);
         
         mainContainer.setRight(info);
         
@@ -198,7 +269,9 @@ public class Freehand extends Parent {
 
         drawingBox.getChildren().add(firstPath);
         drawingBox.getChildren().add(secondPath);
+        drawingBox.getChildren().add(drawnPath);
         sceneTab[2].setRoot(mainContainer);
+
     }
     
     public void drawCross(Pane drawing, int x, int y) {
@@ -217,6 +290,9 @@ public class Freehand extends Parent {
                 path = getSecondPath();
             } else {
                 setCurrentState(drawingBox.snapshot(null, getCurrentState()));
+                MenuBar m = (MenuBar) scene.lookup("#menubar");
+                MenuItem i = m.getMenus().get(1).getItems().get(1);
+                i.setDisable(false);
                 drawingBox.setOnMouseClicked(null);
                 drawingBox.setOnMouseDragged(null);
                 drawingBox.setOnMouseEntered(null);
@@ -249,14 +325,12 @@ public class Freehand extends Parent {
             if (getStartingIsDone() == false) {
                 start = new StartingPixel((int)mouseEvent.getX(), (int)mouseEvent.getY());
                 setStartingIsDone(true);
-                System.out.println(start.toString());
                 Text startingInfo = (Text) scene.lookup("#startinginfo");
                 startingInfo.setText(startingInfo.getText()+start.toString());
                 drawCross(drawingBox,(int)mouseEvent.getX(),(int)mouseEvent.getY());
             } else if (getEndingIsDone() == false) {
                 end = new EndingPixel((int)mouseEvent.getX(), (int)mouseEvent.getY());
                 setEndingIsDone(true);
-                System.out.println(end.toString());
                 Text endingInfo = (Text) scene.lookup("#endinginfo");
                 endingInfo.setText(endingInfo.getText()+end.toString());
                 drawCross(drawingBox,(int)mouseEvent.getX(),(int)mouseEvent.getY());
