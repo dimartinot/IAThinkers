@@ -208,7 +208,7 @@ public class Cell extends StackPane {
                         try {
                             for (int i = 0; i < 3; i++) {
                                 Rectangle rectangle = (Rectangle) scene.lookup("#"+(this.getX())+"-"+(this.getY()-1+i));
-                                if (rectangle.getFill() == Color.THISTLE || rectangle.getFill() == Color.ANTIQUEWHITE && rectangle.getFill() != Color.TEAL &&rectangle.getFill() != Color.BROWN) {
+                                if ((rectangle.getFill() == Color.THISTLE || rectangle.getFill() == Color.ANTIQUEWHITE) && rectangle.getFill() != Color.TEAL &&rectangle.getFill() != Color.BROWN && rectangle.getFill() != Color.BLUE) {
                                     fits = false;
                                 }  
                             }
@@ -221,7 +221,7 @@ public class Cell extends StackPane {
                         try {
                             for (int i = 0; i < 3; i++) {
                                 Rectangle rectangle = (Rectangle) scene.lookup("#"+(this.getX())+"-"+(this.getY()));
-                                if (rectangle.getFill() == Color.THISTLE || rectangle.getFill() == Color.ANTIQUEWHITE && rectangle.getFill() != Color.TEAL &&rectangle.getFill() != Color.BROWN) {
+                                if ((rectangle.getFill() == Color.THISTLE || rectangle.getFill() == Color.ANTIQUEWHITE) && rectangle.getFill() != Color.TEAL &&rectangle.getFill() != Color.BROWN && rectangle.getFill() != Color.BLUE) {
                                     fits = false;
                                 }  
                             }
@@ -241,7 +241,7 @@ public class Cell extends StackPane {
             }    
         } else if (selected == messages.getString("STARTING POINT") || selected ==  messages.getString("ENDING POINT")) {
             Rectangle rectangle = (Rectangle) scene.lookup("#"+(this.getX())+"-"+(this.getY()));
-            if (rectangle.getFill() != Color.THISTLE && rectangle.getFill() != Color.ANTIQUEWHITE && rectangle.getFill() != Color.TEAL &&rectangle.getFill() != Color.BROWN) {
+            if (rectangle.getFill() != Color.THISTLE && rectangle.getFill() != Color.ANTIQUEWHITE && rectangle.getFill() != Color.TEAL &&rectangle.getFill() != Color.BROWN && rectangle.getFill() != Color.BLUE) {
                 rectangle.setFill(color);
             } 
         } else  {

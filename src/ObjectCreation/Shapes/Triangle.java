@@ -5,6 +5,7 @@
  */
 package ObjectCreation.Shapes;
 
+import java.util.ArrayList;
 import javafx.collections.ObservableList;
 import javafx.scene.shape.Polygon;
 
@@ -42,6 +43,38 @@ public class Triangle extends Polygon {
             originX+x, originY+y
         }
         );
+    }
+    
+    public void move(double x, double y, double maxWidth, double maxHeight) {
+        ObservableList<Double> points = this.getPoints();
+        double moveX = x-this.getPosX();
+        double moveY = y-this.getPosY();
+        this.setPosX(x);
+        this.setPosY(y);
+        boolean moveable = true;
+        //At first, we check if any componet of our Polygon will be out of the drawing box in order to determine its moveability
+        for (int i = 0; i < points.size();i++) {
+            if (i%2 == 0) {
+                if (points.get(i) + moveX <= 0 || points.get(i) + moveX > maxWidth) {
+                    moveable = false;
+                    break;
+                }
+            } else {
+                if (points.get(i) + moveY <= 0 || points.get(i) + moveY > maxHeight) {
+                    moveable = false;
+                    break;
+                }    
+            }    
+        }
+        if (moveable) {
+            for (int i = 0; i < points.size();i++) {
+                 if (i%2 == 0) {
+                        points.set(i, points.get(i) + moveX);
+                } else {
+                        points.set(i, points.get(i) + moveY);
+                }
+            }
+        }    
     }
 
     public double getPosX() {

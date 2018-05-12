@@ -10,21 +10,26 @@ import ObjectCreation.Shapes.Hexagon;
 import ObjectCreation.Shapes.Octagon;
 import ObjectCreation.Shapes.Pentagon;
 import ObjectCreation.Shapes.Triangle;
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.ColorPicker;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
@@ -52,9 +57,15 @@ public class ObjectCreation extends Parent {
     
     private Boolean[] shapeSelected;
     
+    //list of javafx nodes 
+    private ArrayList<Node> listOfShapes;
+    
     private Pane drawingBox; 
     
     private Scene currentScene;
+    
+    //We put it there to make it accessible to the eventhandler method
+    private ContextMenu objectOptions;
     
     public ObjectCreation(Stage primaryStage, Scene[] sceneTab) {
         Locale l = getLanguage();
@@ -67,6 +78,8 @@ public class ObjectCreation extends Parent {
         
         currentScene = sceneTab[3];
         
+        listOfShapes = new ArrayList<Node>();
+                
         BorderPane container = new BorderPane();
         VBox leftMenu = new VBox();
         leftMenu.setSpacing(10);
@@ -274,6 +287,7 @@ public class ObjectCreation extends Parent {
         drawingBox.setBackground(new Background(new BackgroundFill(Color.WHITESMOKE, CornerRadii.EMPTY, Insets.EMPTY)));
         drawingBox.setOnMousePressed(drawFigure);
         drawingBox.setOnMouseDragged(drawFigure);
+        drawingBox.setOnMouseReleased(drawFigure);
         //The menubar variable
         MenuBar menuBar = new MenuBar();
         menuBar.prefWidthProperty().bind(primaryStage.widthProperty());
@@ -326,93 +340,123 @@ public class ObjectCreation extends Parent {
                 switch (getSelected(shapeSelected)) {
                     //In case of a triangle
                     case 0:
-                        if (mouseEvent.getEventType() == MouseEvent.MOUSE_PRESSED) {
+                        if (mouseEvent.getEventType() == MouseEvent.MOUSE_PRESSED && mouseEvent.getButton() == MouseButton.PRIMARY) {
                             Triangle triangle = new Triangle();
                             triangle.setPosX(mouseEvent.getX());
                             triangle.setPosY(mouseEvent.getY());
                             triangle.setFill(((ColorPicker) currentScene.lookup("#colorpicker")).getValue());
                             drawingBox.getChildren().add(triangle);
-                        } else if (mouseEvent.getEventType() == MouseEvent.MOUSE_DRAGGED) {
+                        } else if (mouseEvent.getEventType() == MouseEvent.MOUSE_DRAGGED && mouseEvent.getButton() == MouseButton.PRIMARY) {
                             Triangle triangle = (Triangle) drawingBox.getChildren().get(drawingBox.getChildren().size()-1);
                             if (triangle.getPosX()+Math.abs(mouseEvent.getX()-triangle.getPosX()) <= drawingBox.getTranslateX()+drawingBox.getWidth() && triangle.getPosY()+Math.abs(mouseEvent.getY()-triangle.getPosY()) <= drawingBox.getTranslateY()+drawingBox.getHeight()) {
                                 triangle.setSizes(Math.abs(mouseEvent.getX()-triangle.getPosX()),Math.abs(mouseEvent.getY()-triangle.getPosY()));
-                            }    
+                            }
+                            triangle.setOnMouseClicked(onObjectClicked);
+                        } else if (mouseEvent.getButton() == MouseButton.PRIMARY && mouseEvent.getEventType() == MouseEvent.MOUSE_RELEASED ) {
+                            if (listOfShapes.contains(drawingBox.getChildren().get(drawingBox.getChildren().size()-1)) == false) {
+                                listOfShapes.add(drawingBox.getChildren().get(drawingBox.getChildren().size()-1));
+                            }
                         }
                         break;
                     //In case of a rectangle
                     case 1:
-                        if (mouseEvent.getEventType() == MouseEvent.MOUSE_PRESSED) {
+                        if (mouseEvent.getEventType() == MouseEvent.MOUSE_PRESSED && mouseEvent.getButton() == MouseButton.PRIMARY) {
                             Rectangle rectangle = new Rectangle();
                             rectangle.setX(mouseEvent.getX());
                             rectangle.setY(mouseEvent.getY());
                             rectangle.setFill(((ColorPicker) currentScene.lookup("#colorpicker")).getValue());
                             drawingBox.getChildren().add(rectangle);
-                        } else if (mouseEvent.getEventType() == MouseEvent.MOUSE_DRAGGED) {
+                        } else if (mouseEvent.getEventType() == MouseEvent.MOUSE_DRAGGED && mouseEvent.isPrimaryButtonDown()) {
                             Rectangle rectangle = (Rectangle) drawingBox.getChildren().get(drawingBox.getChildren().size()-1);
                             if (rectangle.getX()+Math.abs(mouseEvent.getX()-rectangle.getX()) <= drawingBox.getTranslateX()+drawingBox.getWidth() && rectangle.getY()+Math.abs(mouseEvent.getY()-rectangle.getY()) <= drawingBox.getTranslateY()+drawingBox.getHeight()) {
                                 rectangle.setHeight(Math.abs(rectangle.getY()-mouseEvent.getY()));
                                 rectangle.setWidth(Math.abs(rectangle.getX()-mouseEvent.getX()));
                             }
+                            rectangle.setOnMouseClicked(onObjectClicked);
+                        } else if (mouseEvent.getButton() == MouseButton.PRIMARY && mouseEvent.getEventType() == MouseEvent.MOUSE_RELEASED) {
+                            if (listOfShapes.contains(drawingBox.getChildren().get(drawingBox.getChildren().size()-1)) == false) {
+                                listOfShapes.add(drawingBox.getChildren().get(drawingBox.getChildren().size()-1));
+                            }
                         }
                         break;
                     //In case of a square
                     case 2:
-                        if (mouseEvent.getEventType() == MouseEvent.MOUSE_PRESSED) {
+                        if (mouseEvent.getEventType() == MouseEvent.MOUSE_PRESSED && mouseEvent.getButton() == MouseButton.PRIMARY) {
                             Rectangle rectangle = new Rectangle();
                             rectangle.setX(mouseEvent.getX());
                             rectangle.setY(mouseEvent.getY());
                             rectangle.setFill(((ColorPicker) currentScene.lookup("#colorpicker")).getValue());
                             drawingBox.getChildren().add(rectangle);
-                        } else if (mouseEvent.getEventType() == MouseEvent.MOUSE_DRAGGED) {
+                        } else if (mouseEvent.getEventType() == MouseEvent.MOUSE_DRAGGED && mouseEvent.isPrimaryButtonDown()) {
                             Rectangle rectangle = (Rectangle) drawingBox.getChildren().get(drawingBox.getChildren().size()-1);
                             if (rectangle.getX()+Math.abs(mouseEvent.getX()-rectangle.getX()) <= drawingBox.getTranslateX()+drawingBox.getWidth() && rectangle.getY()+Math.abs(mouseEvent.getY()-rectangle.getY()) <= drawingBox.getTranslateY()+drawingBox.getHeight()) {
                                 rectangle.setHeight((Math.abs(rectangle.getY()-mouseEvent.getY())+Math.abs(rectangle.getX()-mouseEvent.getX()))/2);
                                 rectangle.setWidth((Math.abs(rectangle.getY()-mouseEvent.getY())+Math.abs(rectangle.getX()-mouseEvent.getX()))/2);
                             }
+                            rectangle.setOnMouseClicked(onObjectClicked);
+                        } else if (mouseEvent.getButton() == MouseButton.PRIMARY && mouseEvent.getEventType() == MouseEvent.MOUSE_RELEASED && mouseEvent.isPrimaryButtonDown()) {
+                            if (listOfShapes.contains(drawingBox.getChildren().get(drawingBox.getChildren().size()-1)) == false) {
+                                listOfShapes.add(drawingBox.getChildren().get(drawingBox.getChildren().size()-1));
+                            }
                         }
                         break;
                     //In case of a pentagon
                     case 3:
-                        if (mouseEvent.getEventType() == MouseEvent.MOUSE_PRESSED) {
+                        if (mouseEvent.getEventType() == MouseEvent.MOUSE_PRESSED && mouseEvent.getButton() == MouseButton.PRIMARY) {
                             Pentagon pentagon = new Pentagon();
                             pentagon.setPosX(mouseEvent.getX());
                             pentagon.setPosY(mouseEvent.getY());
                             pentagon.setFill(((ColorPicker) currentScene.lookup("#colorpicker")).getValue());
                             drawingBox.getChildren().add(pentagon);
-                        } else if (mouseEvent.getEventType() == MouseEvent.MOUSE_DRAGGED) {
+                        } else if (mouseEvent.getEventType() == MouseEvent.MOUSE_DRAGGED && mouseEvent.isPrimaryButtonDown()) {
                             Pentagon pentagon = (Pentagon) drawingBox.getChildren().get(drawingBox.getChildren().size()-1);
                             if (pentagon.getPosX()+Math.abs(mouseEvent.getX()-pentagon.getPosX()) <= drawingBox.getTranslateX()+drawingBox.getWidth() && pentagon.getPosY()+Math.abs(mouseEvent.getY()-pentagon.getPosY()) <= drawingBox.getTranslateY()+drawingBox.getHeight()) {
                                 pentagon.setSizes(Math.abs(mouseEvent.getX()-pentagon.getPosX()),Math.abs(mouseEvent.getY()-pentagon.getPosY()));
+                            }
+                            pentagon.setOnMouseClicked(onObjectClicked);
+                        } else if (mouseEvent.getButton() == MouseButton.PRIMARY && mouseEvent.getEventType() == MouseEvent.MOUSE_RELEASED && mouseEvent.isPrimaryButtonDown()) {
+                            if (listOfShapes.contains(drawingBox.getChildren().get(drawingBox.getChildren().size()-1)) == false) {
+                                listOfShapes.add(drawingBox.getChildren().get(drawingBox.getChildren().size()-1));
                             }
                         }
                         break;
                     //In case of a hexagon
                     case 4:
-                        if (mouseEvent.getEventType() == MouseEvent.MOUSE_PRESSED) {
+                        if (mouseEvent.getEventType() == MouseEvent.MOUSE_PRESSED && mouseEvent.getButton() == MouseButton.PRIMARY) {
                             Hexagon hexagon = new Hexagon();
                             hexagon.setPosX(mouseEvent.getX());
                             hexagon.setPosY(mouseEvent.getY());
                             hexagon.setFill(((ColorPicker) currentScene.lookup("#colorpicker")).getValue());
                             drawingBox.getChildren().add(hexagon);
-                        } else if (mouseEvent.getEventType() == MouseEvent.MOUSE_DRAGGED) {
+                        } else if (mouseEvent.getEventType() == MouseEvent.MOUSE_DRAGGED && mouseEvent.isPrimaryButtonDown()) {
                             Hexagon hexagon = (Hexagon) drawingBox.getChildren().get(drawingBox.getChildren().size()-1);
                             if (hexagon.getPosX()+Math.abs(mouseEvent.getX()-hexagon.getPosX()) <= drawingBox.getTranslateX()+drawingBox.getWidth() && hexagon.getPosY()+Math.abs(mouseEvent.getY()-hexagon.getPosY()) <= drawingBox.getTranslateY()+drawingBox.getHeight()) {
                                 hexagon.setSizes(Math.abs(mouseEvent.getX()-hexagon.getPosX()),Math.abs(mouseEvent.getY()-hexagon.getPosY()));
+                            }
+                            hexagon.setOnMouseClicked(onObjectClicked);
+                        } else if (mouseEvent.getButton() == MouseButton.PRIMARY && mouseEvent.getEventType() == MouseEvent.MOUSE_RELEASED) {
+                            if (listOfShapes.contains(drawingBox.getChildren().get(drawingBox.getChildren().size()-1)) == false) {
+                                listOfShapes.add(drawingBox.getChildren().get(drawingBox.getChildren().size()-1));
                             }
                         }
                         break;
                     //In case of an octagon
                     case 5:
-                        if (mouseEvent.getEventType() == MouseEvent.MOUSE_PRESSED) {
+                        if (mouseEvent.getEventType() == MouseEvent.MOUSE_PRESSED && mouseEvent.getButton() == MouseButton.PRIMARY) {
                             Octagon octagon = new Octagon();
                             octagon.setPosX(mouseEvent.getX());
                             octagon.setPosY(mouseEvent.getY());
                             octagon.setFill(((ColorPicker) currentScene.lookup("#colorpicker")).getValue());
                             drawingBox.getChildren().add(octagon);
-                        } else if (mouseEvent.getEventType() == MouseEvent.MOUSE_DRAGGED) {
+                        } else if (mouseEvent.getEventType() == MouseEvent.MOUSE_DRAGGED && mouseEvent.isPrimaryButtonDown()) {
                             Octagon octagon = (Octagon) drawingBox.getChildren().get(drawingBox.getChildren().size()-1);
                             if (octagon.getPosX()+Math.abs(mouseEvent.getX()-octagon.getPosX()) <= drawingBox.getTranslateX()+drawingBox.getWidth() && octagon.getPosY()+Math.abs(mouseEvent.getY()-octagon.getPosY()) <= drawingBox.getTranslateY()+drawingBox.getHeight()) {
                                 octagon.setSizes(Math.abs(mouseEvent.getX()-octagon.getPosX()),Math.abs(mouseEvent.getY()-octagon.getPosY()));
+                            }
+                            octagon.setOnMouseClicked(onObjectClicked);
+                        } else if (mouseEvent.getButton() == MouseButton.PRIMARY && mouseEvent.getEventType() == MouseEvent.MOUSE_RELEASED) {
+                            if (listOfShapes.contains(drawingBox.getChildren().get(drawingBox.getChildren().size()-1)) == false) {
+                                listOfShapes.add(drawingBox.getChildren().get(drawingBox.getChildren().size()-1));
                             }
                         }
                         break;
@@ -421,6 +465,56 @@ public class ObjectCreation extends Parent {
         }
     };
     
+    EventHandler<MouseEvent> onObjectClicked = new EventHandler<MouseEvent>() {
+        @Override
+        public void handle(MouseEvent mouseEvent) {
+            if (mouseEvent.getButton() == MouseButton.SECONDARY) {
+                objectOptions = new ContextMenu();
+                MenuItem moveItem = new MenuItem(messages.getString("MOVE"));
+                moveItem.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent e) {
+                        drawingBox.setOnMouseMoved(new EventHandler<MouseEvent>() {
+                            @Override
+                            public void handle(MouseEvent event) {
+                                if (mouseEvent.getSource() instanceof Triangle) {
+                                    Triangle obj = (Triangle) mouseEvent.getSource();
+                                    obj.move(event.getX(), event.getY(),drawingBox.getTranslateX()+drawingBox.getWidth(),drawingBox.getTranslateY()+drawingBox.getHeight());
+                                } else if (mouseEvent.getSource() instanceof Rectangle) {
+                                    Rectangle obj = (Rectangle) mouseEvent.getSource();
+                                    obj.setX(event.getX());
+                                    obj.setY(event.getY());
+                                } else if (mouseEvent.getSource() instanceof Pentagon) {
+                                    Pentagon obj = (Pentagon) mouseEvent.getSource();
+                                    obj.move(event.getX(), event.getY(),drawingBox.getTranslateX()+drawingBox.getWidth(),drawingBox.getTranslateY()+drawingBox.getHeight());
+                                } else if (mouseEvent.getSource() instanceof Hexagon) {
+                                    Hexagon obj = (Hexagon) mouseEvent.getSource();
+                                    obj.move(event.getX(), event.getY(),drawingBox.getTranslateX()+drawingBox.getWidth(),drawingBox.getTranslateY()+drawingBox.getHeight());
+                                } else if (mouseEvent.getSource() instanceof Octagon) {
+                                    Octagon obj = (Octagon) mouseEvent.getSource();
+                                    obj.move(event.getX(), event.getY(),drawingBox.getTranslateX()+drawingBox.getWidth(),drawingBox.getTranslateY()+drawingBox.getHeight());
+                                }
+                            };
+                        });
+                        drawingBox.setOnMouseClicked((event) -> {
+                            drawingBox.setOnMouseMoved(null);
+                        });
+                    }    
+                });
+                MenuItem deleteItem = new MenuItem(messages.getString("DELETE"));
+                deleteItem.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent e) {
+                        listOfShapes.remove(mouseEvent.getSource());
+                        drawingBox.getChildren().remove(mouseEvent.getSource());
+                    }
+                });
+                objectOptions.getItems().addAll(moveItem,deleteItem);
+                objectOptions.show((Node) mouseEvent.getSource(),mouseEvent.getScreenX(),mouseEvent.getScreenY());
+            }    
+        }
+    };
+        
     public Boolean[] getShapeSelected() {
         return shapeSelected;
     }
