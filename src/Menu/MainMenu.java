@@ -96,6 +96,14 @@ public class MainMenu extends Parent{
             }
         });
         Button buttonObjet = new Button(messages.getString("OBJECT CREATION"));
+        buttonObjet.setOnAction(new EventHandler<ActionEvent>() {
+           @Override
+           public void handle(ActionEvent event) {
+               primaryStage.setResizable(true);
+               primaryStage.sizeToScene();
+               primaryStage.setScene(sceneTab[3]);
+           }
+        });
         Button buttonStats = new Button(messages.getString("STATISTICS"));
         buttonStats.setOnAction(new EventHandler<ActionEvent>() {
             @Override

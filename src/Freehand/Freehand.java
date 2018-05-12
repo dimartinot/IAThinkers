@@ -26,6 +26,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
@@ -163,6 +164,34 @@ public class Freehand extends Parent {
                }
            }
         });
+        
+        //We setup the menuitem for the initialisation of a new path
+        MenuItem menuNewPath = new MenuItem(messages.getString("NEWPATH"));
+        menuNewPath.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                firstPath.getElements().clear();
+                secondPath.getElements().clear();
+                drawnPath.getElements().clear();
+                solutionPath.clear();
+                start = null;
+                end = null;
+                startingIsDone = false;
+                endingIsDone = false;
+                firstIsDone = false;
+                secondIsDone = false;
+                drawingBox.getChildren().clear();
+                drawingBox.getChildren().addAll(drawnPath,firstPath,secondPath);
+                drawingBox.setOnMouseClicked(drawPath);
+                drawingBox.setOnMouseDragged(drawPath);
+                drawingBox.setOnMouseEntered(drawPath);
+                drawingBox.setOnMouseExited(drawPath);
+                drawingBox.setOnMouseMoved(drawPath);
+                drawingBox.setOnMousePressed(drawPath);
+                drawingBox.setOnMouseReleased(drawPath);
+            }
+        });
+        
         MenuItem menuPixels = new MenuItem(messages.getString("PIXELS"));
         menuPixels.setId("menupixel");
         menuPixels.setDisable(true);
@@ -179,6 +208,8 @@ public class Freehand extends Parent {
         menuLaunch.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e) {
+                menuEmpty.setDisable(true);
+                menuNewPath.setDisable(true);
                 final Node startingNode = new Node(start.getX(),start.getY());
                 final Node endingNode = new Node(end.getX(),end.getY());
                 final WritableImage currentStateCopy = currentState;
@@ -235,6 +266,8 @@ public class Freehand extends Parent {
                         }
                         solutionPath.clear();
                         solutionPath.addAll(solved(astar.getEfficientPredecessor(),endingNode,new ArrayList<Node>()));
+                        menuEmpty.setDisable(false);
+                        menuNewPath.setDisable(false);
                         drawnPath.getElements().removeAll(drawnPath.getElements());
                         Platform.runLater(new Runnable() {
                            @Override public void run()  {
@@ -257,8 +290,7 @@ public class Freehand extends Parent {
 
             }
         });
-        
-        menuTools.getItems().addAll(menuEmpty,menuPixels,menuLaunch);
+        menuTools.getItems().addAll(menuEmpty,menuNewPath,new SeparatorMenuItem(), menuPixels,menuLaunch);
         
         
         menuBar.getMenus().addAll(menuFile,menuTools);
@@ -324,7 +356,8 @@ public class Freehand extends Parent {
             } else {
                 setCurrentState(drawingBox.snapshot(null, getCurrentState()));
                 MenuBar m = (MenuBar) scene.lookup("#menubar");
-                MenuItem i = m.getMenus().get(1).getItems().get(1);
+                //We get th
+                MenuItem i = m.getMenus().get(1).getItems().get(3);
                 i.setDisable(false);
                 drawingBox.setOnMouseClicked(null);
                 drawingBox.setOnMouseDragged(null);

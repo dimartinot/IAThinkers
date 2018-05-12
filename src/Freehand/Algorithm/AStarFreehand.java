@@ -100,7 +100,7 @@ public class AStarFreehand  {
         int counter = 0;
         current = startingNode;
         //While there is still a Node to evaluate, the while is not over
-        while (!openSet.isEmpty() && current.equals(endingNode) == false && counter < 50) {
+        while (!openSet.isEmpty() && current.equals(endingNode) == false && counter < 100) {
             //We, firstly, will get the unevaluated node with the lowest score in the nodeTotalScore Map
             current = null;
             Double minScore = Double.MAX_VALUE;
