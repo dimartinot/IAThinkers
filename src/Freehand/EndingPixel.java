@@ -6,8 +6,8 @@
 package Freehand;
 
 /**
- *
- * @author Admin
+ * Defines an ending pixel : the objective searched by the A* algorithm in the {@link Freehand} scene.
+ * @author IAThinkers
  */
 public class EndingPixel {
      private int x;

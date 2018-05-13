@@ -47,8 +47,8 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 
 /**
- *
- * @author Admin
+ * The statistic class : it shows the data from the application of the {@link Plan.Algorithm.AStar} algorithm to the {@link Plan.Plan} scene in a JavaFX TableView object.
+ * @author IAThinkers
  */
 public class Statistics extends Parent{
     
@@ -58,9 +58,21 @@ public class Statistics extends Parent{
     private String username;
     private String adresse;
     private String mdp;
+    /**
+     * The ResourceBundle variable, useful to get the translated Strings
+     */
     private ResourceBundle messages;
+    
+    /**
+     * The data to be displayed in the TableView using the homemade {@link Input} class
+     */
     private ObservableList<Input> data;
     
+    /**
+     * The Statistics constructor calling, as usual the main stage and the array of all accessible scenes
+     * @param primaryStage
+     * @param sceneTab 
+     */
     public Statistics (Stage primaryStage, Scene[] sceneTab) {
         //we setup the datas variable
         ObservableList<Input> data = FXCollections.observableArrayList();        
@@ -175,7 +187,7 @@ public class Statistics extends Parent{
     }
     
     /**
-     * This functions takes a label of a ChoiceBox as an input and return its equivalent in the MySQL database field name. For instance, <i> idStatistics </i> will become <i> id </i>
+     * This method takes a label of a ChoiceBox as an input and return its equivalent in the MySQL database field name. For instance, <i> idStatistics </i> will become <i> id </i>
      * @param a the label taken as an input
      * @return the MySQL field name
      */
@@ -195,6 +207,10 @@ public class Statistics extends Parent{
         }
     }
     
+    /**
+     * This method will create all the needed {@link Input} variables by looking into the database and getting out all the data
+     * @param data the data variable to increment of all the {@link Input} variables
+     */
     public void setData(ObservableList<Input> data) {
         Connection connect;
         data.clear();
@@ -212,6 +228,10 @@ public class Statistics extends Parent{
         }
     }
     
+    /**
+     * This will empty the data variable
+     * @param data the data ObservableList variable to empty
+     */
     public void resetData(ObservableList<Input> data) {
         Connection connect;
         data.clear();
@@ -228,6 +248,12 @@ public class Statistics extends Parent{
         }
     }
     
+    /**
+     * This will achieve the same objective as the setData method but will, instead of creating {@link Input} objets, implement XYChart.Data variables
+     * @param x the x field name of the chart, set as a String
+     * @param y the y field name of the chart, set as a String
+     * @return an ArrayList of XYChart.Data to create an efficient chart
+     */
     public ArrayList<XYChart.Data<Integer,Integer>> getDataChart (String x, String y) {
         ArrayList<XYChart.Data<Integer,Integer>> res = new ArrayList<XYChart.Data<Integer,Integer>>();
         if (!x.equals(y)) {

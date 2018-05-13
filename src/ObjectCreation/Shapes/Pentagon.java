@@ -9,8 +9,8 @@ import javafx.collections.ObservableList;
 import javafx.scene.shape.Polygon;
 
 /**
- *
- * @author Admin
+ * The Pentagon class : it extends the already implemented Polygon class, adding to it a few useful method
+ * @author IAThinkers
  */
 public class Pentagon extends Polygon {
     
@@ -19,20 +19,31 @@ public class Pentagon extends Polygon {
     
     double posY;
     
-    public Pentagon() {
-        super();
-    }
+    double sizeX;
     
+    double sizeY;
+    /**
+     * The Pentagon constructor : defining its positioning.
+     * @param x
+     * @param y 
+     */
     public Pentagon(double x, double y) {
         super();
         this.posX = x;
         this.posY = y;
     }
     
+    /**
+     * This method will set up the array of points needed by the Polygon class to display it.
+     * @param x the total width of the objective
+     * @param y the total height of the object
+     */
     public void setSizes(double x, double y) {
         ObservableList<Double> points = this.getPoints();
         double originX = this.getPosX();
         double originY = this.getPosY();
+        this.setSizeX(x);
+        this.setSizeY(y);
         points.clear();
         points.addAll(new Double[]{
             //The top corner of a pentagon
@@ -49,6 +60,13 @@ public class Pentagon extends Polygon {
         );
     }
     
+    /**
+     * This method will move (if possible, depending on the maxWidth and maxHeight variables) the given object along the x and y coordinates
+     * @param x the x coordinate of the pixel of the scene to put the object to
+     * @param y the y coordinate of the pixel of the scene to put the object to
+     * @param maxWidth the width of the scene, not to be bypassed
+     * @param maxHeight the height of the scene, not to be bypassed
+     */
     public void move(double x, double y, double maxWidth, double maxHeight) {
         ObservableList<Double> points = this.getPoints();
         double moveX = x-this.getPosX();
@@ -95,6 +113,22 @@ public class Pentagon extends Polygon {
 
     public void setPosY(double posY) {
         this.posY = posY;
+    }
+
+    public double getSizeX() {
+        return sizeX;
+    }
+
+    public void setSizeX(double sizeX) {
+        this.sizeX = sizeX;
+    }
+
+    public double getSizeY() {
+        return sizeY;
+    }
+
+    public void setSizeY(double sizeY) {
+        this.sizeY = sizeY;
     }
     
     

@@ -6,8 +6,8 @@
 package Freehand;
 
 /**
- * Defines a starting pixel
- * @author Admin
+ * Defines a starting pixel : the pixel from where the A* algorithm will start in the {@link Freehand} scene
+ * @author IAThinkers
  */
 public class StartingPixel {
     private int x;

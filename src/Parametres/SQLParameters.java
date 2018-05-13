@@ -70,8 +70,8 @@ public class SQLParameters extends Parent{
     private ResourceBundle messages;
     /**
      * Constructor of the SQLParameters class {@link Parametres.SQLParameters}
-     * @param primaryStage Stage variable used to go back to the MainMenu <i> Scene </i> {@link Menu.MainMenu}
-     * @param sceneTab Scene Array used to get the MainMenu <i> Scene </i> {@link Menu.MainMenu}
+     * @param primaryStage Stage variable used to go back to the MainMenu <i> Scene </i>
+     * @param sceneTab Scene Array used to get the MainMenu <i> Scene </i>
      */
     
     public SQLParameters(Stage primaryStage, Scene[] sceneTab) {
@@ -139,12 +139,13 @@ public class SQLParameters extends Parent{
                         System.out.println("Database initialized");
                     }
                     if (statement.executeUpdate("CREATE TABLE IF NOT EXISTS `iathinkers`.`Type` (`idType` INT NOT NULL AUTO_INCREMENT,`typeName` VARCHAR(45) NOT NULL, PRIMARY KEY (`idType`), UNIQUE INDEX `typeName_UNIQUE` (`typeName` ASC)) ENGINE = InnoDB") != -1 ) {
-                         ResultSet rs = statement.executeQuery("SELECT * FROM Type");
-                         if (!rs.next()) {
+                        System.out.println("Type table initialized");
+                        ResultSet rs = statement.executeQuery("SELECT * FROM Type");
+                        if (!rs.next()) {
                             if (statement.executeUpdate("INSERT INTO Type (idType,typeName) VALUES (1,\'Wall\'), (2,\'Door\'), (3,\'PointA\'), (4,\'PointB\')") != -1) {
-                                System.out.println("Type table initialized");
+                                System.out.println("Type values inserted");
                             }
-                         }   
+                        }   
                     }
                     if (statement.executeUpdate("CREATE TABLE IF NOT EXISTS `iathinkers`.`Object` (  `idObject` INT NOT NULL AUTO_INCREMENT,`type` INT NOT NULL,`height` INT NULL,`width` INT NULL,`posX` INT NULL,`posY` INT NULL,`isVertical` TINYINT NULL,PRIMARY KEY (`idObject`),CONSTRAINT `type` FOREIGN KEY (`type`) REFERENCES `iathinkers`.`Type` (`idType`) ON DELETE NO ACTION ON UPDATE NO ACTION) ENGINE = InnoDB") != -1) {
                         System.out.println("Object table initialized");
@@ -185,6 +186,52 @@ public class SQLParameters extends Parent{
                         "  `numberOfAvailableCell` INT NOT NULL,\n" +
                         "  PRIMARY KEY (`idstatistics`));") != -1) {
                         System.out.println("Statistics table initialized");
+                    }
+                    if (statement.executeUpdate("CREATE TABLE IF NOT EXISTS `iathinkers`.`Shapes` (" +
+                            "  `idShapes` INT NOT NULL AUTO_INCREMENT," +
+                            "  `shapeName` VARCHAR(45) UNIQUE NOT NULL," +
+                            "  PRIMARY KEY (`idShapes`))" +
+                            "ENGINE = InnoDB;") != -1) {
+                        System.out.println("Shapes table initialized");
+                        ResultSet rs = statement.executeQuery("SELECT * FROM Shapes");
+                        if (!rs.next()) {
+                            if (statement.executeUpdate("INSERT INTO Shapes (shapeName) VALUES (\'Triangle\'), (\'Rectangle\'), (\'Square\'), (\'Pentagon\'), (\'Hexagon\'), (\'Octagon\'), (\'Circle\')") != -1) {
+                                System.out.println("Shapes values set");
+                            }
+                        }                          
+                    }
+                    if (statement.executeUpdate("CREATE TABLE IF NOT EXISTS `iathinkers`.`FreehandObject` (\n" +
+                            "  `idObject` INT NOT NULL AUTO_INCREMENT,\n" +
+                            "  `objetName` VARCHAR(45) NULL,\n" +
+                            "  PRIMARY KEY (`idObject`))\n" +
+                            "ENGINE = InnoDB;") != -1) {
+                        System.out.println("FreehandObject table initialized");
+                    }
+                    if (statement.executeUpdate("CREATE TABLE IF NOT EXISTS `iathinkers`.`ShapesInstances` (\n" +
+                                                "  `idShapesInstances` INT NOT NULL AUTO_INCREMENT,\n" +
+                                                "  `shapeType` INT NOT NULL,\n" +
+                                                "  `fillColor` VARCHAR(45) NOT NULL,\n" +
+                                                "  `borderColor` VARCHAR(45) NULL,\n" +
+                                                "  `posX` DOUBLE NOT NULL,\n" +
+                                                "  `posY` DOUBLE NOT NULL,\n" +
+                                                "  `sizeX` DOUBLE NOT NULL,\n" +
+                                                "  `sizeY` DOUBLE NOT NULL,\n" +
+                                                "  `object` INT NULL,\n" +
+                                                "  PRIMARY KEY (`idShapesInstances`),\n" +
+                                                "  INDEX `shapeType_idx` (`shapeType` ASC),\n" +
+                                                "  INDEX `object_idx` (`object` ASC),\n" +
+                                                "  CONSTRAINT `shapeType`\n" +
+                                                "    FOREIGN KEY (`shapeType`)\n" +
+                                                "    REFERENCES `iathinkers`.`Shapes` (`idShapes`)\n" +
+                                                "    ON DELETE NO ACTION\n" +
+                                                "    ON UPDATE NO ACTION,\n" +
+                                                "  CONSTRAINT `freehandobject`\n" +
+                                                "    FOREIGN KEY (`object`)\n" +
+                                                "    REFERENCES `iathinkers`.`FreehandObject` (`idObject`)\n" +
+                                                "    ON DELETE NO ACTION\n" +
+                                                "    ON UPDATE NO ACTION)\n" +
+                                                "ENGINE = InnoDB;") != -1) {
+                        System.out.println("ShapesInstances table initialized");
                     }
                     //writeResultSet(resultSet);
                     Text texte = (Text) mainScene.lookup("#infoConnexion");

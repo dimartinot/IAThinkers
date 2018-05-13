@@ -72,6 +72,9 @@ public class Plan extends Parent{
      */
     private Grid objetGrid;
     
+    /**
+     * ResourceBundle variable set to access the properties file and get the translated words
+     */
     private ResourceBundle messages;
     
     /**
@@ -423,8 +426,8 @@ public class Plan extends Parent{
                 Optional<String> result = savingPopup.showAndWait();
                 if (result.isPresent()) {
                     savingProcess(result.get(),objetGrid.getListObjects(),sceneTab[1]);
-              }
-           }
+                }
+            }
         });
         
         //Update button
@@ -888,6 +891,12 @@ public class Plan extends Parent{
         return true;
     }
     
+    /**
+     * This method will delete a saved houseplan from the database
+     * @param sceneTab array of all accessible scenes of this software
+     * @param houseplanName the name of the houseplan
+     * @return true if achieved, false if not
+     */
     public boolean deleting(Scene[] sceneTab, String houseplanName) {
         try {
             setCredentials();

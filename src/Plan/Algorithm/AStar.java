@@ -118,6 +118,14 @@ public class AStar {
         }
     }
     
+    /**
+     * This is a second a version of the AStar where there is no list of all the accessible cells. Instead, we check the available neighbours dynamically. 
+     * This method has proven itself to be more effective on low-range problem but whenever the number of cells tend to rise, its computation time follows.
+     * This is why it is not the Astar used but we still kept it implemented
+     * @param startingNode The starting node
+     * @param endingNode The ending node
+     * @param g The grid object, used to dynamically determine the neighbours of the cells we check
+     */
     public AStar(Node startingNode, Node endingNode, Grid g) {
         //We intiate all the useful set
         
@@ -223,6 +231,12 @@ public class AStar {
         return this.solution;
     }
     
+    /**
+     * This method check if a given cell has neighbours with the help of the HashMap of all cells coming from the {@link Grid} object.
+     * @param listCells HashMap of all cells where the key is "#x-y# with x as the {@link Cell} X property and the y the {@link Cell} Y property
+     * @param current The current node we are looking the neighbours at
+     * @return An ArrayList of all the available neighbours of the given node, everything set as a Node
+     */
     public ArrayList<Node> getNeighboursFromGrid(HashMap<String,Cell> listCells, Node current) {
         ArrayList<Node> res = new ArrayList<Node>();
         //top

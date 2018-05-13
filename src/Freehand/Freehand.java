@@ -109,7 +109,8 @@ public class Freehand extends Parent {
     private ArrayList<Node> solutionPath;
     
     /**
-     * 
+     * The constructor of the Freehand class : it is composed of a drawing surface, a menubar and a vbox with infos. 
+     * All of these Nodes are stored in a BorderPane, used as the root of the scene.
      * @param primaryStage
      * @param sceneTab 
      */
@@ -217,17 +218,19 @@ public class Freehand extends Parent {
                 Task task = new Task<Void>() {
                     @Override 
                     public Void call() {
+                        
                         AStarFreehand astar = new AStarFreehand(new AStarFreehand(),startingNode, endingNode, currentStateCopy);
-                        final Node n = astar.getClosest(endingNode);
+                        Node n = astar.getClosest(endingNode);
+                        
                         solutionPath.addAll(astar.getSolution());
                         Platform.runLater(new Runnable() {
                             @Override public void run() {
-                                
                                 drawnPath.getElements().add(new MoveTo(startingNode.getX(),startingNode.getY()));
                                 drawnPath.getElements().add(new LineTo(n.getX(),n.getY()));
                             }
-                        });                            
+                        });                          
                         updateMessage(messages.getString("CALCULATION"));
+                        
                         while (astar.getSolution().contains(endingNode) == false) {
                             astar = new AStarFreehand(astar, astar.getCurrent(), endingNode, currentStateCopy);
                             final Node nBis;
@@ -248,7 +251,6 @@ public class Freehand extends Parent {
                             }
                             Platform.runLater(new Runnable() {
                                 @Override public void run() {
-                                    System.out.println(nBis.toString());
                                     LineTo l = new LineTo(nBis.getX(),nBis.getY());
                                     MoveTo m = new MoveTo(nBis.getX(),nBis.getY());
 
