@@ -529,9 +529,7 @@ public class Plan extends Parent{
         planMenu.getItems().addAll(newButton,new SeparatorMenuItem(),updateButton,saveButton,new SeparatorMenuItem(),loadButton,deletePlanButton,new SeparatorMenuItem(), backButton);
                 
         Menu optionMenu = new Menu(messages.getString("OPTIONS"));
-        Menu sizingMenu = new Menu(messages.getString("SIZING"));/*
-        Double min = (Double) sceneTab[1].getHeight()*50/100;
-        Double max = (Double) sceneTab[1].getHeight()*80/100;*/
+        Menu sizingMenu = new Menu(messages.getString("SIZING"));
         Slider sizing = new Slider(50,75,1);
         sizing.valueProperty().addListener(new ChangeListener<Number>() {
             public void changed(ObservableValue<? extends Number> ov,
@@ -587,11 +585,11 @@ public class Plan extends Parent{
                         //We check if the graph of all the reachable nodes contains the ending point in order to check if a path between the ending and starting point exists
                         if (g.arrayContainsNode(g.getListOfNodes(), new Node(g.getEnd().getPosX(),g.getEnd().getPosY()))) {
                             AStar solution = new AStar(new Node(objetGrid.getStart().getPosX(),objetGrid.getStart().getPosY()),new Node(objetGrid.getEnd().getPosX(),objetGrid.getEnd().getPosY()), g);
-                            for (Node n : path) {
+                            /*for (Node n : path) {
                                 path.add(n);
                                 Rectangle r = (Rectangle) sceneTab[1].lookup("#"+(n.getX())+"-"+(n.getY()));
                                 r.setFill(Color.BLUE);
-                            }
+                            }*/
                             path.clear();
                             for (Node n : solution.getSolution()) {
                                 path.add(n);

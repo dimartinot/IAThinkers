@@ -6,12 +6,26 @@
 package Freehand;
 
 import Freehand.Algorithm.AStarFreehand;
+import Freehand.ShapesHandler.MoveObject;
+import Freehand.ShapesHandler.ResizeObject;
 import static Menu.MainMenu.getLanguage;
+import ObjectCreation.Shapes.Hexagon;
+import ObjectCreation.Shapes.Octagon;
+import ObjectCreation.Shapes.Pentagon;
+import ObjectCreation.Shapes.Triangle;
 import static Plan.Algorithm.AStar.solved;
 import Plan.Algorithm.Node;
 import static java.lang.Thread.sleep;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,6 +36,7 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
@@ -29,6 +44,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.BorderPane;
@@ -36,18 +52,29 @@ import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
+import javafx.scene.shape.Polygon;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 /**
- *
- * @author Admin
+ * The Freehand class : it shows the interface used to draw the path in which the {@link Freehand.Algorithm.AStarFreehand} algorithm is applied.
+ * @author IAThinkers
  */
 public class Freehand extends Parent {
+    /**
+     * Connection variables
+     */
+    private String username;
+    private String adresse;
+    private String mdp;
+    
+    
     /**
      * The variable of the first path
      */
@@ -109,6 +136,16 @@ public class Freehand extends Parent {
     private ArrayList<Node> solutionPath;
     
     /**
+     * The list of Shapes to put 
+     */
+    private ArrayList<Object> shapesToPut;
+    
+    /**
+     * Map of all the shapes using the object's name as a key
+     */
+    private HashMap<String,ArrayList<Object>> listOfObjects;
+    
+    /**
      * The constructor of the Freehand class : it is composed of a drawing surface, a menubar and a vbox with infos. 
      * All of these Nodes are stored in a BorderPane, used as the root of the scene.
      * @param primaryStage
@@ -122,6 +159,8 @@ public class Freehand extends Parent {
         endingIsDone = false;
         scene = sceneTab[2];
         solutionPath = new ArrayList<Node>();
+        shapesToPut = new ArrayList<Object>();
+        listOfObjects = new HashMap<String,ArrayList<Object>>();
         Path drawnPath = new Path();
         Locale l = getLanguage();
         final ResourceBundle messages = ResourceBundle.getBundle("Freehand/Freehand",l);
@@ -209,93 +248,125 @@ public class Freehand extends Parent {
         menuLaunch.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e) {
-                menuEmpty.setDisable(true);
-                menuNewPath.setDisable(true);
-                final Node startingNode = new Node(start.getX(),start.getY());
-                final Node endingNode = new Node(end.getX(),end.getY());
-                final WritableImage currentStateCopy = currentState;
-                //As the calculus of the path can take some time, we decided to set it in a new threads in order not to freeze the application for that time
-                Task task = new Task<Void>() {
-                    @Override 
-                    public Void call() {
-                        
-                        AStarFreehand astar = new AStarFreehand(new AStarFreehand(),startingNode, endingNode, currentStateCopy);
-                        Node n = astar.getClosest(endingNode);
-                        
-                        solutionPath.addAll(astar.getSolution());
-                        Platform.runLater(new Runnable() {
-                            @Override public void run() {
-                                drawnPath.getElements().add(new MoveTo(startingNode.getX(),startingNode.getY()));
-                                drawnPath.getElements().add(new LineTo(n.getX(),n.getY()));
-                            }
-                        });                          
-                        updateMessage(messages.getString("CALCULATION"));
-                        
-                        while (astar.getSolution().contains(endingNode) == false) {
-                            astar = new AStarFreehand(astar, astar.getCurrent(), endingNode, currentStateCopy);
-                            final Node nBis;
-                            if (!solutionPath.containsAll(astar.getSolution())) {
-                                nBis = astar.getCurrent();
-                                solutionPath.addAll(astar.getSolution());
-                            } else {
-                                updateMessage(messages.getString("LOOP"));
-                                solutionPath.removeAll(astar.getSolution());
-                                astar.setSolution(solutionPath);
-                                nBis = solutionPath.get(solutionPath.size()-1);
-                                astar.setCurrent(nBis);
-                            }
-                            try {
-                                sleep(200);
-                            } catch (InterruptedException ex) {
-                                Logger.getLogger(Freehand.class.getName()).log(Level.SEVERE, null, ex);
-                            }
+                if (firstIsDone && secondIsDone) {
+                    setCurrentState(drawingBox.snapshot(null, getCurrentState()));
+                    menuEmpty.setDisable(true);
+                    menuNewPath.setDisable(true);
+                    final Node startingNode = new Node(start.getX(),start.getY());
+                    final Node endingNode = new Node(end.getX(),end.getY());
+                    final WritableImage currentStateCopy = currentState;
+                    //As the calculus of the path can take some time, we decided to set it in a new threads in order not to freeze the application for that time
+                    Task task = new Task<Void>() {
+                        @Override 
+                        public Void call() {
+
+                            AStarFreehand astar = new AStarFreehand(new AStarFreehand(),startingNode, endingNode, currentStateCopy);
+                            Node n = astar.getClosest(endingNode);
+
+                            solutionPath.addAll(astar.getSolution());
                             Platform.runLater(new Runnable() {
                                 @Override public void run() {
-                                    LineTo l = new LineTo(nBis.getX(),nBis.getY());
-                                    MoveTo m = new MoveTo(nBis.getX(),nBis.getY());
-
-                                    if (!drawnPath.getElements().contains(l)) {
-                                        drawnPath.getElements().add(l);
-                                        drawnPath.getElements().add(m);
-                                    } else {
-                                        drawnPath.getElements().removeAll(drawnPath.getElements());
-                                        drawingBox.getChildren().remove(drawnPath);
-                                        drawingBox.getChildren().add(drawnPath);
-                                        updateMessage(messages.getString("LOOP"));
-                                    }    
+                                    drawnPath.getElements().add(new MoveTo(startingNode.getX(),startingNode.getY()));
+                                    drawnPath.getElements().add(new LineTo(n.getX(),n.getY()));
                                 }
+                            });                          
+                            updateMessage(messages.getString("CALCULATION"));
+
+                            while (astar.getSolution().contains(endingNode) == false) {
+                                astar = new AStarFreehand(astar, astar.getCurrent(), endingNode, currentStateCopy);
+                                final Node nBis;
+                                if (!solutionPath.containsAll(astar.getSolution())) {
+                                    nBis = astar.getCurrent();
+                                    solutionPath.addAll(astar.getSolution());
+                                } else {
+                                    updateMessage(messages.getString("LOOP"));
+                                    solutionPath.removeAll(astar.getSolution());
+                                    astar.setSolution(solutionPath);
+                                    nBis = solutionPath.get(solutionPath.size()-1);
+                                    astar.setCurrent(nBis);
+                                }
+                                try {
+                                    sleep(200);
+                                } catch (InterruptedException ex) {
+                                    Logger.getLogger(Freehand.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                                Platform.runLater(new Runnable() {
+                                    @Override public void run() {
+                                        LineTo l = new LineTo(nBis.getX(),nBis.getY());
+                                        MoveTo m = new MoveTo(nBis.getX(),nBis.getY());
+
+                                        if (!drawnPath.getElements().contains(l)) {
+                                            drawnPath.getElements().add(l);
+                                            drawnPath.getElements().add(m);
+                                        } else {
+                                            drawnPath.getElements().removeAll(drawnPath.getElements());
+                                            drawingBox.getChildren().remove(drawnPath);
+                                            drawingBox.getChildren().add(drawnPath);
+                                            updateMessage(messages.getString("LOOP"));
+                                        }    
+                                    }
+                                });
+                            }
+                            solutionPath.clear();
+                            solutionPath.addAll(solved(astar.getEfficientPredecessor(),endingNode,new ArrayList<Node>()));
+                            menuEmpty.setDisable(false);
+                            menuNewPath.setDisable(false);
+                            drawnPath.getElements().removeAll(drawnPath.getElements());
+                            Platform.runLater(new Runnable() {
+                               @Override public void run()  {
+                                   drawnPath.getElements().add(new MoveTo(endingNode.getX(),endingNode.getY()));
+                                    for (Node nIterator : solutionPath) {
+                                        drawnPath.getElements().add(new LineTo(nIterator.getX(),nIterator.getY()));
+                                        drawnPath.getElements().add(new MoveTo(nIterator.getX(),nIterator.getY()));
+                                    }
+                               }
                             });
+                            updateMessage(messages.getString("CALCULATIONOVER"));
+                            return null;
                         }
-                        solutionPath.clear();
-                        solutionPath.addAll(solved(astar.getEfficientPredecessor(),endingNode,new ArrayList<Node>()));
-                        menuEmpty.setDisable(false);
-                        menuNewPath.setDisable(false);
-                        drawnPath.getElements().removeAll(drawnPath.getElements());
-                        Platform.runLater(new Runnable() {
-                           @Override public void run()  {
-                               drawnPath.getElements().add(new MoveTo(endingNode.getX(),endingNode.getY()));
-                                for (Node nIterator : solutionPath) {
-                                    drawnPath.getElements().add(new LineTo(nIterator.getX(),nIterator.getY()));
-                                    drawnPath.getElements().add(new MoveTo(nIterator.getX(),nIterator.getY()));
-                                }
-                           }
-                        });
-                        updateMessage(messages.getString("CALCULATIONOVER"));
-                        return null;
-                    }
-                };
-                progressInfo.textProperty().bind(task.messageProperty());
-                Thread th = new Thread(task);
-                th.setDaemon(true);
-                th.start();
-                //solutionPath = (ArrayList<Node>) task.getValue();
-
+                    };
+                    progressInfo.textProperty().bind(task.messageProperty());
+                    Thread th = new Thread(task);
+                    th.setDaemon(true);
+                    th.start();
+                }
             }
         });
         menuTools.getItems().addAll(menuEmpty,menuNewPath,new SeparatorMenuItem(), menuPixels,menuLaunch);
         
+        Menu menuObject = new Menu(messages.getString("MENUOBJECT"));
+        MenuItem loadObject = new MenuItem(messages.getString("LOADOBJECT"));
+        loadObject.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                List<String> objects = new ArrayList<>();
+                //Set the possible choices
+                try {
+                    setCredentials();
+                    Connection connect = DriverManager.getConnection("jdbc:mysql://" + getAdresse() + "/iathinkers?"
+                    + "user="+ getUsername() + "&password=" + getMdp());
+                    Statement statement = connect.createStatement();
+                    String request = "SELECT objetName FROM freehandobject";                    
+                    ResultSet rs = statement.executeQuery(request);
+                    while(rs.next()) {
+                        objects.add(rs.getString("objetName"));
+                    }
+                } catch (SQLException e) {
+
+                }
+                ChoiceDialog<String> loadingPopup = new ChoiceDialog<>("",objects);
+                loadingPopup.setTitle(messages.getString("OBJECTLOADING"));
+                loadingPopup.setHeaderText(messages.getString("SELECTLOADING"));
+                Optional<String> result = loadingPopup.showAndWait();
+                if (result.isPresent()) {
+                    loadingObject(result.get());
+                }
+            }
+        });
         
-        menuBar.getMenus().addAll(menuFile,menuTools);
+        menuObject.getItems().addAll(loadObject);
+        
+        menuBar.getMenus().addAll(menuFile,menuTools,menuObject);
         
         BorderPane mainContainer = new BorderPane();
         drawingBox = new Pane();
@@ -464,7 +535,194 @@ public class Freehand extends Parent {
         this.endingIsDone = endingIsDone;
     }
 
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getAdresse() {
+        return adresse;
+    }
+
+    public void setAdresse(String adresse) {
+        this.adresse = adresse;
+    }
+
+    public String getMdp() {
+        return mdp;
+    }
+
+    public void setMdp(String mdp) {
+        this.mdp = mdp;
+    }
+ 
+    /**
+     * Method used to load an object saved in the database. It puts all of them on the drawingBox variable and it initiates the {@link Freehand.ShapesHandler} handlers.
+     * @param objectName
+     * @return 
+     */
+    public boolean loadingObject(String objectName) {
+        try {
+            setCredentials();
+            ArrayList<Object> shapes = new ArrayList<Object>();
+            //drawingBox.setOnMouseDragged(putObject);
+            //drawingBox.setOnMousePressed(putObject);
+            //drawingBox.setOnScroll(resizeObject);
+            Connection connect = DriverManager.getConnection("jdbc:mysql://" + this.getAdresse() + "/iathinkers?" + "user=" + this.getUsername() + "&password=" + this.getMdp());
+            //We load the id of the object
+            Statement statement = connect.createStatement();
+            String request = "SELECT * FROM FREEHANDOBJECT WHERE OBJETNAME=\'" + objectName + "\'";
+            ResultSet rs = statement.executeQuery(request);
+            int idObject;
+            int idTriangle = 0;
+            int idRectangle = 1;
+            int idSquare = 2;
+            int idPentagon = 3;
+            int idHexagon = 4;
+            int idOctagon = 5;
+            int idCircle = 6;
+            if (rs.next()) {
+                idObject = rs.getInt("idObject");
+                System.out.println("Object selected");
+            } else {
+                return false;
+            }
+            //We load the ids of all the shapes to recognize the type of the shape's instances
+            rs = statement.executeQuery("SELECT * FROM SHAPES");
+            while (rs.next()) {
+                switch (rs.getString("shapeName")) {
+                    case "Triangle":
+                        idTriangle = rs.getInt("idShapes");
+                        break;
+                    case "Rectangle":
+                        idRectangle = rs.getInt("idShapes");
+                        break;
+                    case "Square":
+                        idSquare = rs.getInt("idShapes");
+                        break;
+                    case "Pentagon":
+                        idPentagon = rs.getInt("idShapes");
+                        break;
+                    case "Hexagon":
+                        idHexagon = rs.getInt("idShapes");
+                        break;
+                    case "Octagon":
+                        idOctagon = rs.getInt("idShapes");
+                        break;
+                    case "Circle":
+                        idCircle = rs.getInt("idShapes");
+                        break;
+                    default:
+                        break;
+              }
+            }
+            rs = statement.executeQuery("SELECT * FROM SHAPESINSTANCES WHERE OBJECT = "+idObject);
+            while (rs.next()) {
+                if (rs.getInt("shapeType") == idTriangle) {
+                    Triangle obj = new Triangle(rs.getDouble("posX")*drawingBox.getWidth(),rs.getDouble("posY")*drawingBox.getHeight());
+                    obj.setSizes(rs.getDouble("sizeX")*drawingBox.getWidth(),rs.getDouble("sizeY")*drawingBox.getHeight());
+                    System.out.println(rs.getString("fillColor"));
+                    obj.setFill(Color.valueOf(rs.getString("fillColor")));
+                    if (rs.getString("borderColor") != null) {
+                        obj.setStroke(Color.valueOf(rs.getString("borderColor")));
+                    }
+                    drawingBox.getChildren().add(obj);
+                    shapes.add(obj);
+                } else if (rs.getInt("shapeType") == idRectangle) {
+                    Rectangle obj = new Rectangle(rs.getDouble("sizeX")*drawingBox.getWidth(),rs.getDouble("sizeY")*drawingBox.getHeight());
+                    obj.setX(rs.getDouble("posX")*drawingBox.getWidth());
+                    obj.setY(rs.getDouble("posY")*drawingBox.getHeight());
+                    obj.setFill(Color.valueOf(rs.getString("fillColor")));
+                    if (rs.getString("borderColor") != null) {
+                        obj.setStroke(Color.valueOf(rs.getString("borderColor")));
+                    }
+                    drawingBox.getChildren().add(obj);
+                    shapes.add(obj);
+                } else if (rs.getInt("shapeType") == idSquare) {
+                    Rectangle obj = new Rectangle(rs.getDouble("sizeX")*drawingBox.getWidth(),rs.getDouble("sizeY")*drawingBox.getHeight());
+                    obj.setX(rs.getDouble("posX")*drawingBox.getWidth());
+                    obj.setY(rs.getDouble("posY")*drawingBox.getHeight());
+                    obj.setFill(Color.valueOf(rs.getString("fillColor")));
+                    if (rs.getString("borderColor") != null) {
+                        obj.setStroke(Color.valueOf(rs.getString("borderColor")));
+                    }
+                     drawingBox.getChildren().add(obj);
+                    shapes.add(obj);
+                } else if (rs.getInt("shapeType") == idPentagon) {
+                    Pentagon obj = new Pentagon(rs.getDouble("posX")*drawingBox.getWidth(),rs.getDouble("posY")*drawingBox.getHeight());
+                    obj.setSizes(rs.getDouble("sizeX")*drawingBox.getWidth(),rs.getDouble("sizeY")*drawingBox.getHeight());
+                    obj.setFill(Color.valueOf(rs.getString("fillColor")));
+                    if (rs.getString("borderColor") != null) {
+                        obj.setStroke(Color.valueOf(rs.getString("borderColor")));
+                    }
+                    drawingBox.getChildren().add(obj);
+                    shapes.add(obj);
+                } else if (rs.getInt("shapeType") == idHexagon) {
+                    Hexagon obj = new Hexagon(rs.getDouble("posX")*drawingBox.getWidth(),rs.getDouble("posY")*drawingBox.getHeight());
+                    obj.setSizes(rs.getDouble("sizeX")*drawingBox.getWidth(),rs.getDouble("sizeY")*drawingBox.getHeight());
+                    obj.setFill(Color.valueOf(rs.getString("fillColor")));
+                    if (rs.getString("borderColor") != null) {
+                        obj.setStroke(Color.valueOf(rs.getString("borderColor")));
+                    }
+                    drawingBox.getChildren().add(obj);
+                    shapes.add(obj);
+                } else if (rs.getInt("shapeType") == idOctagon) {
+                    Octagon obj = new Octagon(rs.getDouble("posX")*drawingBox.getWidth(),rs.getDouble("posY")*drawingBox.getHeight());
+                    obj.setSizes(rs.getDouble("sizeX")*drawingBox.getWidth(),rs.getDouble("sizeY")*drawingBox.getHeight());
+                    obj.setFill(Color.valueOf(rs.getString("fillColor")));
+                    if (rs.getString("borderColor") != null) {
+                        obj.setStroke(Color.valueOf(rs.getString("borderColor")));
+                    }
+                    drawingBox.getChildren().add(obj);
+                    shapes.add(obj);
+                } else if (rs.getInt("shapeType") == idCircle) {
+                    Circle obj = new Circle();
+                    obj.setCenterX(rs.getDouble("posX")*drawingBox.getWidth());
+                    obj.setCenterY(rs.getDouble("posY")*drawingBox.getHeight());
+                    obj.setRadius(rs.getDouble("sizeX")*drawingBox.getWidth());
+                    obj.setFill(Color.valueOf(rs.getString("fillColor")));
+                    if (rs.getString("borderColor") != null) {
+                        obj.setStroke(Color.valueOf(rs.getString("borderColor")));
+                    }
+                    drawingBox.getChildren().add(obj);
+                    shapes.add(obj);
+                }
+            }
+            listOfObjects.put(objectName, shapes);
+            MoveObject moveEvent  = new MoveObject(shapes);
+            ResizeObject resizeEvent = new ResizeObject(shapes,drawingBox.getWidth(),drawingBox.getHeight());
+            for (Object o : shapes) {
+                if (o instanceof Rectangle) {
+                    ((Rectangle) o).setOnMouseDragged(moveEvent);
+                    ((Rectangle) o).setOnScroll(resizeEvent);
+                } else if (o instanceof Polygon) {
+                    ((Polygon) o).setOnMouseDragged(moveEvent);
+                    ((Polygon) o).setOnScroll(resizeEvent);
+                } else if (o instanceof Circle) {
+                    ((Circle) o).setOnMouseDragged(moveEvent);
+                    ((Circle) o).setOnScroll(resizeEvent);
+                }
+            }
+            System.out.println("Every object correctly loaded ! \n");
+        } catch (SQLException e) {
+            System.err.println(e.toString());
+            return false;
+        }
+        return true;
+    }
     
+    /**
+     * Method used to set the MySQL credentials
+     */
+    private void setCredentials() {
+        String[] credentials = Parametres.SQLParameters.getSQLInfos();
+        this.setUsername(credentials[0]);
+        this.setMdp(credentials[1]);
+        this.setAdresse(credentials[2]);
+    }
     
         
         

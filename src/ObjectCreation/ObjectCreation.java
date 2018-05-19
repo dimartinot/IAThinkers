@@ -41,6 +41,9 @@ import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
@@ -104,6 +107,11 @@ public class ObjectCreation extends Parent {
      */
     private ContextMenu objectOptions;
     
+    /**
+     * The name of the current modified object
+     */
+    private String currentObject;
+    
     public ObjectCreation(Stage primaryStage, Scene[] sceneTab) {
         
         //Firstly, we initialise all the object's variables
@@ -118,6 +126,8 @@ public class ObjectCreation extends Parent {
         currentScene = sceneTab[3];
         
         listOfShapes = new ArrayList<Node>();
+        
+        currentObject = null;
                 
         //Then, we setup the main container : a BorderPane
         BorderPane container = new BorderPane();
@@ -409,9 +419,11 @@ public class ObjectCreation extends Parent {
                 Optional<String> result = loadingPopup.showAndWait();
                 if (result.isPresent()) {
                     loadingObject(result.get());
+                    currentObject = result.get();
                 }
             }
         });
+        //SaveAs button
         MenuItem saveAsMenu = new MenuItem(messages.getString("SAVEAS"));
         
         TextInputDialog savingPopup = new TextInputDialog("");
@@ -424,10 +436,55 @@ public class ObjectCreation extends Parent {
                 Optional<String> result = savingPopup.showAndWait();
                 if (result.isPresent()) {
                     savingObject(result.get());
+                    currentObject = result.get();
                 }
             }
         });
+        
+        //Save button
         MenuItem saveMenu = new MenuItem(messages.getString("SAVE"));
+        
+        saveMenu.setMnemonicParsing(true);
+        saveMenu.setAccelerator(new KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN));
+        saveMenu.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                if (currentObject != null) {
+                    deletingObject(currentObject);
+                    savingObject(currentObject);
+                }
+            }
+        });
+        
+        MenuItem deleteMenu = new MenuItem(messages.getString("DELETE"));
+        deleteMenu.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                List<String> objects = new ArrayList<>();
+                //Set the possible choices
+                try {
+                    setCredentials();
+                    Connection connect = DriverManager.getConnection("jdbc:mysql://" + getAdresse() + "/iathinkers?"
+                    + "user="+ getUsername() + "&password=" + getMdp());
+                    Statement statement = connect.createStatement();
+                    String request = "SELECT objetName FROM freehandobject";                    
+                    ResultSet rs = statement.executeQuery(request);
+                    while(rs.next()) {
+                        objects.add(rs.getString("objetName"));
+                    }
+                } catch (SQLException e) {
+
+                }
+                ChoiceDialog<String> loadingPopup = new ChoiceDialog<>("",objects);
+                loadingPopup.setTitle(messages.getString("OBJECTDELETING"));
+                loadingPopup.setHeaderText(messages.getString("WARNINGDELETING"));
+                loadingPopup.setContentText(messages.getString("SELECTDELETING"));
+                Optional<String> result = loadingPopup.showAndWait();
+                if (result.isPresent()) {
+                    deletingObject(result.get());
+                }
+            }
+        });
                 
         //Exit button
         MenuItem exitButton = new MenuItem(messages.getString("EXIT"));
@@ -440,7 +497,7 @@ public class ObjectCreation extends Parent {
         });
         
         
-        fileMenu.getItems().addAll(newMenu,loadMenu, new SeparatorMenuItem(),saveAsMenu,saveMenu, new SeparatorMenuItem(), exitButton);
+        fileMenu.getItems().addAll(newMenu, loadMenu, deleteMenu, new SeparatorMenuItem(),saveAsMenu,saveMenu, new SeparatorMenuItem(), exitButton);
         menuBar.getMenus().addAll(fileMenu);
         container.setTop(menuBar);
         container.setLeft(leftMenu);
@@ -699,7 +756,12 @@ public class ObjectCreation extends Parent {
             }    
         }
     };
-        
+    
+/**
+ * Method used to save an object in the MySQL database 
+ * @param objectName
+ * @return 
+ */    
     public boolean savingObject(String objectName) {
         //We make sure the credentials of the database are set
         try {
@@ -898,7 +960,11 @@ public class ObjectCreation extends Parent {
             return false;
         }
     } 
-    
+    /**
+     * Method used to load an object saved in the database
+     * @param objectName
+     * @return 
+     */
     public boolean loadingObject(String objectName) {
         try {
             //We empty the drawing surface and the list of shapes
@@ -1039,6 +1105,37 @@ public class ObjectCreation extends Parent {
         }
         return true;
     }
+    
+    /**
+     * Method used to delete a saved object using its name
+     * @param objectName
+     * @return 
+     */
+    public boolean deletingObject(String objectName) {
+        try {
+            setCredentials();
+            Connection connect = DriverManager.getConnection("jdbc:mysql://" + this.getAdresse() + "/iathinkers?" + "user=" + this.getUsername() + "&password=" + this.getMdp());
+            //We load the id of the object
+            Statement statement = connect.createStatement();
+            String request = "SELECT * FROM FREEHANDOBJECT WHERE OBJETNAME=\'" + objectName + "\'";
+            ResultSet rs = statement.executeQuery(request);
+            int idObject;
+            if (rs.next()) {
+                idObject = rs.getInt("idObject");
+                System.out.println("Object selected");
+            } else {
+                return false;
+            }
+            System.out.println("DELETE FROM SHAPESINSTANCES WHERE OBJECT = "+idObject);
+            statement.executeUpdate("DELETE FROM SHAPESINSTANCES WHERE OBJECT = "+idObject);
+            statement.executeUpdate("DELETE FROM FREEHANDOBJECT WHERE OBJETNAME=\'" + objectName + "\'");
+            System.out.println("Deletion of " + objectName + " done");
+        } catch (SQLException ex) {
+            Logger.getLogger(ObjectCreation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return true;
+    }
+    
     /**
      * Method used to set the MySQL credentials
      */
