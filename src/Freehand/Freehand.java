@@ -15,6 +15,7 @@ import ObjectCreation.Shapes.Pentagon;
 import ObjectCreation.Shapes.Triangle;
 import static Plan.Algorithm.AStar.solved;
 import Plan.Algorithm.Node;
+import java.io.File;
 import static java.lang.Thread.sleep;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -31,6 +32,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -44,7 +46,6 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.BorderPane;
@@ -61,9 +62,10 @@ import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javax.imageio.ImageIO;
 
 /**
- * The Freehand class : it shows the interface used to draw the path in which the {@link Freehand.Algorithm.AStarFreehand} algorithm is applied.
+ * The Freehand class : it shows the interface used to draw the path in which the {@link AStarFreehand} algorithm is applied.
  * @author IAThinkers
  */
 public class Freehand extends Parent {
@@ -152,7 +154,6 @@ public class Freehand extends Parent {
      * @param sceneTab 
      */
     public Freehand(Stage primaryStage, Scene[] sceneTab) {
-        currentState = null;
         firstIsDone = false;
         secondIsDone = false;
         startingIsDone = false;
@@ -248,21 +249,21 @@ public class Freehand extends Parent {
         menuLaunch.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e) {
+                setCurrentState(drawingBox.snapshot(null, getCurrentState()));
                 if (firstIsDone && secondIsDone) {
-                    setCurrentState(drawingBox.snapshot(null, getCurrentState()));
                     menuEmpty.setDisable(true);
                     menuNewPath.setDisable(true);
                     final Node startingNode = new Node(start.getX(),start.getY());
                     final Node endingNode = new Node(end.getX(),end.getY());
-                    final WritableImage currentStateCopy = currentState;
+                    final WritableImage currentStateCopy = getCurrentState();
                     //As the calculus of the path can take some time, we decided to set it in a new threads in order not to freeze the application for that time
                     Task task = new Task<Void>() {
                         @Override 
                         public Void call() {
 
                             AStarFreehand astar = new AStarFreehand(new AStarFreehand(),startingNode, endingNode, currentStateCopy);
+                            System.out.println(astar.getClosedSet().toString());
                             Node n = astar.getClosest(endingNode);
-
                             solutionPath.addAll(astar.getSolution());
                             Platform.runLater(new Runnable() {
                                 @Override public void run() {
@@ -412,12 +413,23 @@ public class Freehand extends Parent {
 
     }
     
+    /**
+     * This method is used to draw a cross on the Pane, centered at (x,y) coordinates
+     * @param drawing
+     * @param x
+     * @param y 
+     */
     public void drawCross(Pane drawing, int x, int y) {
         Line line1 = new Line(x-10, y-10, x+10, y+10);
+        line1.setFill(Color.BLACK);
         Line line2 = new Line(x-10, y+10, x+10, y-10);
+        line2.setFill(Color.BLACK);
         drawing.getChildren().addAll(line1,line2);
     }
     
+    /**
+     * This handler is responsible for the drawing of the path
+     */
     EventHandler<MouseEvent> drawPath = new EventHandler<MouseEvent>() {
         @Override
         public void handle(MouseEvent mouseEvent) {
@@ -427,11 +439,11 @@ public class Freehand extends Parent {
             } else if (getSecondIsDone() == false) {
                 path = getSecondPath();
             } else {
-                setCurrentState(drawingBox.snapshot(null, getCurrentState()));
                 MenuBar m = (MenuBar) scene.lookup("#menubar");
                 //We get th
                 MenuItem i = m.getMenus().get(1).getItems().get(3);
                 i.setDisable(false);
+
                 drawingBox.setOnMouseClicked(null);
                 drawingBox.setOnMouseDragged(null);
                 drawingBox.setOnMouseEntered(null);
@@ -458,6 +470,9 @@ public class Freehand extends Parent {
         }
     };
 
+    /**
+     * The handler responsible for setting both starting and ending points
+     */
     EventHandler<MouseEvent> setPoints = new EventHandler<MouseEvent>() {
         @Override
         public void handle(MouseEvent mouseEvent) {
@@ -516,6 +531,12 @@ public class Freehand extends Parent {
     }
 
     public void setCurrentState(WritableImage currentState) {
+        File fileA = new File("test.png");
+        try {
+             ImageIO.write(SwingFXUtils.fromFXImage(currentState, null), "png", fileA);
+        }
+        catch (Exception s) {
+        }
         this.currentState = currentState;
     }
 

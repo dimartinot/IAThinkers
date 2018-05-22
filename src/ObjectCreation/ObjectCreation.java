@@ -39,6 +39,7 @@ import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TextInputDialog;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
@@ -501,6 +502,14 @@ public class ObjectCreation extends Parent {
         menuBar.getMenus().addAll(fileMenu);
         container.setTop(menuBar);
         container.setLeft(leftMenu);
+        
+        DropShadow dropShadow = new DropShadow();
+        dropShadow.setRadius(5.0);
+        dropShadow.setOffsetX(3.0);
+        dropShadow.setOffsetY(3.0);
+        dropShadow.setColor(Color.color(0.4, 0.5, 0.5)); 
+        drawingBox.setEffect(dropShadow);
+        
         container.setCenter(drawingBox);
         container.setBackground(new Background(new BackgroundFill(Color.SKYBLUE, CornerRadii.EMPTY, Insets.EMPTY)));
         BorderPane.setMargin(drawingBox, new Insets(25));
@@ -764,6 +773,7 @@ public class ObjectCreation extends Parent {
  */    
     public boolean savingObject(String objectName) {
         //We make sure the credentials of the database are set
+        System.out.println(objectName);
         try {
             setCredentials();
             Connection connect = DriverManager.getConnection("jdbc:mysql://"+this.getAdresse()+"/iathinkers?"+ "user="+this.getUsername()+"&password="+this.getMdp());

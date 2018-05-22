@@ -38,10 +38,10 @@ public class Graph {
     }
     /**
      * This recursive function will search for every accessible cell starting from the PointA object.
-     * It will look recursively at the four neighbours of the given current cell and will reach them if they are reachable. Then it starts this process again with this neighbours.
-     * @param current Cell variable giving the current cell the algorithm is studying
-     * @param listCells list all existing cells with their properties (here, the important thing to know is if the cell is occupied or not)
-     * @param res the accumulating variable : it consists in an array of nodes
+     * It will look recursively at the four neighbours of the given current cell and will reach them if they are reachable. Then it starts this process again with its neighbours.
+     * @param current Cell variable giving the current cell the algorithm is studying.
+     * @param listCells list all existing cells with their properties. The important thing to know is if the cell is occupied or not.
+     * @param res the accumulating variable : it consists in an array of nodes.
      * @return 
      */
     public ArrayList<Node> initNodeList(Cell current, HashMap<String,Cell> listCells, ArrayList<Node> res) {

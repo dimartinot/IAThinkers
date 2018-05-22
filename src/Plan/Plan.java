@@ -49,6 +49,7 @@ import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.BorderPane;
 import javafx.concurrent.Task;
+import javafx.scene.effect.DropShadow;
 
 /**
  * Class of the House Plan <i> Scene </i>. It is composed of a grid of multiple {@link Cell} object.
@@ -644,6 +645,15 @@ public class Plan extends Parent{
         container.setTop(menuBar);
         container.setMinSize(BASELINE_OFFSET_SAME_AS_HEIGHT, BASELINE_OFFSET_SAME_AS_HEIGHT);
         container.setCenter(objetGrid);
+        
+        DropShadow dropShadow = new DropShadow();
+        dropShadow.setRadius(5.0);
+        dropShadow.setOffsetX(3.0);
+        dropShadow.setOffsetY(3.0);
+        dropShadow.setColor(Color.color(0.4, 0.5, 0.5)); 
+        objetGrid.setEffect(dropShadow);
+        
+        
         menuVertical.setPadding(new Insets(10,10,10,10));
         container.setRight(menuVertical);
         //Add the main hbox to the scene

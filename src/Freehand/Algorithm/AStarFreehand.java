@@ -56,7 +56,7 @@ public class AStarFreehand  {
     }
     
     /**
-     * A* algorithm implementation : I use the {@link Plan.Algorithm.Graph} variable as a data set.
+     * A* algorithm implementation : The data set used here is a WritableImage variable.
      * @param startingNode The starting node
      * @param endingNode The ending node
      * @param g The WritableImage variable, useful to get the list of the neighbours of a given node
@@ -168,20 +168,19 @@ public class AStarFreehand  {
     public ArrayList<Node> getNeighboursFromImage(WritableImage g, Node current) {
         ArrayList<Node> res = new ArrayList<Node>();
         PixelReader p = g.getPixelReader();
-        //left neighbour
-        if (p.getColor(current.getX()-1, current.getY()).equals(Color.ALICEBLUE)) {
+        if (p.getColor(current.getX()-1, current.getY()).equals(Color.ALICEBLUE) || (p.getColor(current.getX()-1, current.getY()).equals(Color.BLACK)) || (p.getColor(current.getX()-1, current.getY()).equals(Color.valueOf("aaafb4ff")))) {
             res.add(new Node(current.getX()-1, current.getY()));
         }
         //right neighbour
-        if (p.getColor(current.getX()+1, current.getY()).equals(Color.ALICEBLUE)) {
+        if (p.getColor(current.getX()+1, current.getY()).equals(Color.ALICEBLUE) || (p.getColor(current.getX()+1, current.getY()).equals(Color.BLACK)) || (p.getColor(current.getX()+1, current.getY()).equals(Color.valueOf("aaafb4ff")))) {
             res.add(new Node(current.getX()+1, current.getY()));
         }
         //top neighbour
-        if (p.getColor(current.getX(), current.getY()-1).equals(Color.ALICEBLUE)) {
+        if (p.getColor(current.getX(), current.getY()-1).equals(Color.ALICEBLUE) || (p.getColor(current.getX(), current.getY()-1).equals(Color.BLACK)) || (p.getColor(current.getX(), current.getY()-1).equals(Color.valueOf("aaafb4ff")))) {
             res.add(new Node(current.getX(), current.getY()-1));
         }
         //bottom neighbour
-        if (p.getColor(current.getX(), current.getY()+1).equals(Color.ALICEBLUE)) {
+        if (p.getColor(current.getX(), current.getY()+1).equals(Color.ALICEBLUE) || (p.getColor(current.getX(), current.getY()+1).equals(Color.BLACK)) || (p.getColor(current.getX(), current.getY()+1).equals(Color.valueOf("aaafb4ff")))) {
             res.add(new Node(current.getX(), current.getY()+1));
         }
         return res;
