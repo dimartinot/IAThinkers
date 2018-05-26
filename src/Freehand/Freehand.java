@@ -262,7 +262,6 @@ public class Freehand extends Parent {
                         public Void call() {
 
                             AStarFreehand astar = new AStarFreehand(new AStarFreehand(),startingNode, endingNode, currentStateCopy);
-                            System.out.println(astar.getClosedSet().toString());
                             Node n = astar.getClosest(endingNode);
                             solutionPath.addAll(astar.getSolution());
                             Platform.runLater(new Runnable() {
@@ -531,12 +530,6 @@ public class Freehand extends Parent {
     }
 
     public void setCurrentState(WritableImage currentState) {
-        File fileA = new File("test.png");
-        try {
-             ImageIO.write(SwingFXUtils.fromFXImage(currentState, null), "png", fileA);
-        }
-        catch (Exception s) {
-        }
         this.currentState = currentState;
     }
 

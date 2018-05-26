@@ -41,6 +41,8 @@ public class AStarFreehand  {
     
     private Node current;
     
+    private Node endingNode;
+    
     public double heuristicEstimation(Node n, Node objective) {
         return Math.abs(n.getX() - objective.getX()) + Math.abs(n.getY() - objective.getY());
     }
@@ -64,6 +66,8 @@ public class AStarFreehand  {
      */
     public AStarFreehand(AStarFreehand precedent, Node startingNode, Node endingNode, WritableImage g) {
 
+        this.endingNode = endingNode;
+        
         //We initiate all the useful sets
         
         //It will contain all the Nodes we have already given an evaluation of the cost
@@ -168,21 +172,30 @@ public class AStarFreehand  {
     public ArrayList<Node> getNeighboursFromImage(WritableImage g, Node current) {
         ArrayList<Node> res = new ArrayList<Node>();
         PixelReader p = g.getPixelReader();
-        if (p.getColor(current.getX()-1, current.getY()).equals(Color.ALICEBLUE) || (p.getColor(current.getX()-1, current.getY()).equals(Color.BLACK)) || (p.getColor(current.getX()-1, current.getY()).equals(Color.valueOf("aaafb4ff")))) {
-            res.add(new Node(current.getX()-1, current.getY()));
-        }
+        //left
+        //if ( current.getX()-1-this.getEndingNode().getX() > 0  ) {
+            if (p.getColor(current.getX()-1, current.getY()).equals(Color.ALICEBLUE) || (p.getColor(current.getX()-1, current.getY()).equals(Color.BLACK)) || (p.getColor(current.getX()-1, current.getY()).equals(Color.valueOf("aaafb4ff")))) {
+               res.add(new Node(current.getX()-1, current.getY()));
+            }
+        //}
         //right neighbour
-        if (p.getColor(current.getX()+1, current.getY()).equals(Color.ALICEBLUE) || (p.getColor(current.getX()+1, current.getY()).equals(Color.BLACK)) || (p.getColor(current.getX()+1, current.getY()).equals(Color.valueOf("aaafb4ff")))) {
-            res.add(new Node(current.getX()+1, current.getY()));
-        }
+        //if ( current.getX()+1-this.getEndingNode().getX() < 0 ) {
+            if (p.getColor(current.getX()+1, current.getY()).equals(Color.ALICEBLUE) || (p.getColor(current.getX()+1, current.getY()).equals(Color.BLACK)) || (p.getColor(current.getX()+1, current.getY()).equals(Color.valueOf("aaafb4ff")))) {
+                res.add(new Node(current.getX()+1, current.getY()));
+            }
+        //}
         //top neighbour
-        if (p.getColor(current.getX(), current.getY()-1).equals(Color.ALICEBLUE) || (p.getColor(current.getX(), current.getY()-1).equals(Color.BLACK)) || (p.getColor(current.getX(), current.getY()-1).equals(Color.valueOf("aaafb4ff")))) {
-            res.add(new Node(current.getX(), current.getY()-1));
-        }
+        //if ( current.getY()-1-this.getEndingNode().getY() > 0 ) {
+            if (p.getColor(current.getX(), current.getY()-1).equals(Color.ALICEBLUE) || (p.getColor(current.getX(), current.getY()-1).equals(Color.BLACK)) || (p.getColor(current.getX(), current.getY()-1).equals(Color.valueOf("aaafb4ff")))) {
+                res.add(new Node(current.getX(), current.getY()-1));
+            }
+        //}
         //bottom neighbour
-        if (p.getColor(current.getX(), current.getY()+1).equals(Color.ALICEBLUE) || (p.getColor(current.getX(), current.getY()+1).equals(Color.BLACK)) || (p.getColor(current.getX(), current.getY()+1).equals(Color.valueOf("aaafb4ff")))) {
-            res.add(new Node(current.getX(), current.getY()+1));
-        }
+        //if ( current.getY()+1-this.getEndingNode().getY() < 0 ) {
+            if (p.getColor(current.getX(), current.getY()+1).equals(Color.ALICEBLUE) || (p.getColor(current.getX(), current.getY()+1).equals(Color.BLACK)) || (p.getColor(current.getX(), current.getY()+1).equals(Color.valueOf("aaafb4ff")))) {
+                res.add(new Node(current.getX(), current.getY()+1));
+            }
+        //}
         return res;
     }
     
@@ -226,6 +239,16 @@ public class AStarFreehand  {
     public void setSolution(ArrayList<Node> newSolution) {
         this.solution = newSolution;
     }
+
+    public Node getEndingNode() {
+        return endingNode;
+    }
+
+    public void setEndingNode(Node endingNode) {
+        this.endingNode = endingNode;
+    }
+    
+    
     
     /**
      * This method returns the closest discovered node using the heuristic

@@ -23,6 +23,11 @@ public class Graph {
     private Objet.Point start;
     private Objet.Point end;
     
+    /**
+     * The constructor of a Graph object. A Graph consists of 3 things : an ArrayList of {@link Node}, a starting point and an ending point.
+     * Its ArrayList will contain every single {@link Plan.Cell} (transformed into a {@link Node}) reachable from the starting point.
+     * @param g A Grid object used to get both the starting and ending cells and also get every single {@link Plan.Cell} reachable.
+     */
     public Graph(Grid g) {
         this.start = g.getStartingPoint();
         this.end = g.getEndingPoint();
@@ -90,13 +95,13 @@ public class Graph {
     }
     
     /**
-     * This function will list all existing neighbours of a given Node
-     * @param l the list of all the Nodes
+     * This method will list all existing neighbours of a given Node
      * @param current the Node we are searching the neighbours of
-     * @return 
+     * @return An ArrayList of all the neighbours 
      */
-    public ArrayList<Node> getNeighbours(ArrayList<Node> l, Node current) {
+    public ArrayList<Node> getNeighbours(Node current) {
         ArrayList<Node> neighbours = new ArrayList<Node>();
+        ArrayList<Node> l = this.getListOfNodes();
         Node top = new Node(current.getX()-1,current.getY());
         Node bottom = new Node(current.getX()+1,current.getY());
         Node left = new Node(current.getX(),current.getY()-1);

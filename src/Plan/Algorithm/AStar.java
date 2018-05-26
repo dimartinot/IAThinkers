@@ -94,7 +94,7 @@ public class AStar {
            openSet.remove(current);
            closedSet.add(current);
            //Then, we look at all its neighbours to seek for a potential candidate
-           for (Node n : g.getNeighbours(g.getListOfNodes(), current)) {
+           for (Node n : g.getNeighbours(current)) {
                if (!closedSet.contains(n)) {
                    if (!openSet.contains(n)) {
                        openSet.add(n);

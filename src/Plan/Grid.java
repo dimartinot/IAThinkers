@@ -20,6 +20,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 /**
  * Grid Class. This class defines a grid as an <i> ArrayList </i> of Objects and an <i> HashMap </i> of cells {@link Cell}.
@@ -52,7 +53,9 @@ public class Grid extends Parent{
      */
     private HashMap<String,Cell> listCells;
     
-    //Defines if both the starting and ending point are defined
+    /**
+     * Defines if both the starting and ending point are defined
+    */
     private boolean pointAIsSet = false;
     private boolean pointBIsSet = false;
     /**
@@ -61,10 +64,13 @@ public class Grid extends Parent{
     int gridWidth;
     int gridHeight;
     
+    /**
+     * Used to access the language variable in an easier way throughout the methods of this class
+     */
     private ResourceBundle messages;
     
     /**
-     * Constructor of a grid : initialises every cells of the grid, giving it its <i> hover </i> and <i> onClick </i> properties
+     * Constructor of a grid : initiates every cell of the grid, giving it its <i> hover </i> and <i> onClick </i> properties
      * @param scene Scene variable describing the Plan scene.
      */
     public Grid(Scene scene, int height, int width) {
@@ -272,9 +278,14 @@ public class Grid extends Parent{
         for (Node n : gp.getChildren()) {
             if (n instanceof Cell) {
                 for (Node nbis : ((Cell) n).getChildren()) {
-                    Rectangle rect = (Rectangle) nbis;
-                    rect.setHeight(this.getGridHeight());
-                    rect.setWidth(this.getGridWidth());
+                    if (nbis instanceof Rectangle) {
+                        Rectangle rect = (Rectangle) nbis;
+                        rect.setHeight(this.getGridHeight());
+                        rect.setWidth(this.getGridWidth());
+                    } else if (nbis instanceof Circle) {
+                        Circle circle = (Circle) nbis;
+                        circle.setRadius(this.getGridHeight()/3);
+                    }
                 }
             }
         }

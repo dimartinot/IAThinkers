@@ -50,6 +50,7 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.BorderPane;
 import javafx.concurrent.Task;
 import javafx.scene.effect.DropShadow;
+import javafx.scene.shape.Circle;
 
 /**
  * Class of the House Plan <i> Scene </i>. It is composed of a grid of multiple {@link Cell} object.
@@ -57,7 +58,7 @@ import javafx.scene.effect.DropShadow;
  */
 public class Plan extends Parent{
     /**
-     * Constructor of the Plan class. Initialises every JavaFX components we can see and interact with in the Plan scene
+     * Constructor of the Plan class. Initiates every JavaFX components we can see and interact with in the Plan scene
      * @param primaryStage Stage variable used to go back to the MainMenu <i> Scene </i> {@link Menu.MainMenu}
      * @param sceneTab Scene Array used in the {@link Plan.Grid} class and to get the MainMenu <i> Scene </i> {@link Menu.MainMenu}
      */
@@ -572,6 +573,7 @@ public class Plan extends Parent{
             @Override
             public void handle(ActionEvent event) {
                 if (objetGrid.isPointAIsSet() && objetGrid.isPointBIsSet()) {
+                    emptyPath(sceneTab);
                     long startTime = System.currentTimeMillis();
                     final Grid objetGridCopy = objetGrid;
                     //We create a task executing itself in order not to freeze the program while the A* algorithm is at work
@@ -595,7 +597,14 @@ public class Plan extends Parent{
                             for (Node n : solution.getSolution()) {
                                 path.add(n);
                                 Rectangle r = (Rectangle) sceneTab[1].lookup("#"+(n.getX())+"-"+(n.getY()));
-                                r.setFill(Color.BLUE);
+                                if (r.getParent() instanceof Cell) {
+                                    Cell c = (Cell) r.getParent();
+                                    Circle circle = new Circle(c.getWidth()/3);
+                                    circle.setStroke(Color.DARKSLATEGREY);
+                                    circle.setFill(Color.TRANSPARENT);
+                                    c.getChildren().add(circle);
+                                }
+                                //r.setFill(Color.BLUE);
                             }    
                             long stopTime = System.currentTimeMillis();
                             long elapsedTime = stopTime - startTime;
@@ -784,8 +793,26 @@ public class Plan extends Parent{
     }
     
     /**
+     * Method used to empty the scene from the path drawing
+     * @param sceneTab The array of scene from which we take the current one
+     */
+    public void emptyPath(Scene[] sceneTab) {
+        //We empty the path of its circle
+        for (Node n : this.getPath()) {
+                Cell cellule = objetGrid.getListCells().get("#"+(n.getX())+"-"+(n.getY()));
+                for (int i = 0; i < cellule.getChildren().size(); i++) {
+                    javafx.scene.Node child = cellule.getChildren().get(i);
+                    if (child instanceof Circle) {
+                       cellule.getChildren().remove(child);
+                    }
+                }
+        }
+        this.getPath().clear();
+    }
+    
+    /**
      * Method used to empty the current plan
-     * @param sceneTab 
+     * @param sceneTab The array of scene from which we take the current one
      */
     public void emptying(Scene[] sceneTab) {
         for (Object o : objetGrid.getListObjects()) {
@@ -827,12 +854,7 @@ public class Plan extends Parent{
                 objetGrid.setPointBIsSet(false);
             }
         }
-        //On vide le chemin affiché
-        for (Node n : this.getPath()) {
-            Rectangle r = (Rectangle) sceneTab[1].lookup("#"+(n.getX())+"-"+(n.getY()));
-            r.setFill(Color.ALICEBLUE);
-        }
-        this.getPath().clear();
+        emptyPath(sceneTab);
         objetGrid.getListObjects().clear();
         
         Text infoSQL = (Text) sceneTab[1].lookup("#infosql");

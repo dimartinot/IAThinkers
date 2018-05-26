@@ -42,6 +42,9 @@ public class Cell extends StackPane {
      */
     private final int gridHeight;
     
+    /**
+     * Variable used to set the toString method of a Cell
+     */
     private ResourceBundle messages;
         
     /**
