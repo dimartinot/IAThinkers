@@ -13,10 +13,10 @@ import ObjectCreation.Shapes.Hexagon;
 import ObjectCreation.Shapes.Octagon;
 import ObjectCreation.Shapes.Pentagon;
 import ObjectCreation.Shapes.Triangle;
-import static Plan.Algorithm.AStar.solved;
 import Plan.Algorithm.Node;
+import java.awt.image.BufferedImage;
 import java.io.File;
-import static java.lang.Thread.sleep;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -28,8 +28,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import javafx.animation.PathTransition;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.embed.swing.SwingFXUtils;
@@ -44,6 +44,8 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.image.PixelReader;
+import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
@@ -62,6 +64,7 @@ import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import javax.imageio.ImageIO;
 
 /**
@@ -148,6 +151,11 @@ public class Freehand extends Parent {
     private HashMap<String,ArrayList<Object>> listOfObjects;
     
     /**
+     * ResourceBundle variable set as an instance one to be accessible from every method of this class
+     */
+    private ResourceBundle messages;
+    
+    /**
      * The constructor of the Freehand class : it is composed of a drawing surface, a menubar and a vbox with infos. 
      * All of these Nodes are stored in a BorderPane, used as the root of the scene.
      * @param primaryStage
@@ -164,7 +172,7 @@ public class Freehand extends Parent {
         listOfObjects = new HashMap<String,ArrayList<Object>>();
         Path drawnPath = new Path();
         Locale l = getLanguage();
-        final ResourceBundle messages = ResourceBundle.getBundle("Freehand/Freehand",l);
+        messages = ResourceBundle.getBundle("Freehand/Freehand",l);
         
         //We initialize the menubar with its item
         MenuBar menuBar = new MenuBar();
@@ -183,7 +191,39 @@ public class Freehand extends Parent {
         
         menuFile.getItems().addAll(menuExit);
         
-        //Then, the tools menu
+        //The object loading menu : put here for proper disabling in others handler
+        MenuItem loadObject = new MenuItem(messages.getString("LOADOBJECT"));
+        loadObject.setDisable(true);
+        loadObject.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                List<String> objects = new ArrayList<>();
+                //Set the possible choices
+                try {
+                    setCredentials();
+                    Connection connect = DriverManager.getConnection("jdbc:mysql://" + getAdresse() + "/iathinkers?"
+                    + "user="+ getUsername() + "&password=" + getMdp());
+                    Statement statement = connect.createStatement();
+                    String request = "SELECT objetName FROM freehandobject";                    
+                    ResultSet rs = statement.executeQuery(request);
+                    while(rs.next()) {
+                        objects.add(rs.getString("objetName"));
+                    }
+                } catch (SQLException e) {
+
+                }
+                ChoiceDialog<String> loadingPopup = new ChoiceDialog<>("",objects);
+                loadingPopup.setTitle(messages.getString("OBJECTLOADING"));
+                loadingPopup.setHeaderText(messages.getString("SELECTLOADING"));
+                Optional<String> result = loadingPopup.showAndWait();
+                if (result.isPresent()) {
+                    loadingObject(result.get());
+                }
+            }
+        });
+        
+        
+        //The tools menu
         Menu menuTools = new Menu(messages.getString("TOOLS"));
         MenuItem menuEmpty = new MenuItem(messages.getString("EMPTY"));
         menuEmpty.setOnAction(new EventHandler<ActionEvent>(){
@@ -221,8 +261,9 @@ public class Freehand extends Parent {
                 endingIsDone = false;
                 firstIsDone = false;
                 secondIsDone = false;
+                loadObject.setDisable(true);
                 drawingBox.getChildren().clear();
-                drawingBox.getChildren().addAll(drawnPath,firstPath,secondPath);
+                drawingBox.getChildren().addAll(firstPath,secondPath);
                 drawingBox.setOnMouseClicked(drawPath);
                 drawingBox.setOnMouseDragged(drawPath);
                 drawingBox.setOnMouseEntered(drawPath);
@@ -246,85 +287,74 @@ public class Freehand extends Parent {
         });
         MenuItem menuLaunch = new MenuItem(messages.getString("LAUNCH"));
         Label progressInfo = new Label("Status");
+        menuLaunch.setDisable(true);
         menuLaunch.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e) {
+                //currentState = new WritableImage((int)drawingBox.getHeight(), (int)drawingBox.getWidth());
                 setCurrentState(drawingBox.snapshot(null, getCurrentState()));
                 if (firstIsDone && secondIsDone) {
                     menuEmpty.setDisable(true);
                     menuNewPath.setDisable(true);
-                    final Node startingNode = new Node(start.getX(),start.getY());
-                    final Node endingNode = new Node(end.getX(),end.getY());
+                    final Node startingNode = new Node(start.getX()/10,start.getY()/10);
+                    final Node endingNode = new Node(end.getX()/10,end.getY()/10);
                     final WritableImage currentStateCopy = getCurrentState();
+                    final ArrayList<ArrayList<Boolean>> boolArray = fromWritableToArray(currentStateCopy, endingNode);
                     //As the calculus of the path can take some time, we decided to set it in a new threads in order not to freeze the application for that time
                     Task task = new Task<Void>() {
                         @Override 
                         public Void call() {
-
-                            AStarFreehand astar = new AStarFreehand(new AStarFreehand(),startingNode, endingNode, currentStateCopy);
-                            Node n = astar.getClosest(endingNode);
-                            solutionPath.addAll(astar.getSolution());
-                            Platform.runLater(new Runnable() {
-                                @Override public void run() {
-                                    drawnPath.getElements().add(new MoveTo(startingNode.getX(),startingNode.getY()));
-                                    drawnPath.getElements().add(new LineTo(n.getX(),n.getY()));
-                                }
-                            });                          
                             updateMessage(messages.getString("CALCULATION"));
-
-                            while (astar.getSolution().contains(endingNode) == false) {
-                                astar = new AStarFreehand(astar, astar.getCurrent(), endingNode, currentStateCopy);
-                                final Node nBis;
-                                if (!solutionPath.containsAll(astar.getSolution())) {
-                                    nBis = astar.getCurrent();
-                                    solutionPath.addAll(astar.getSolution());
-                                } else {
-                                    updateMessage(messages.getString("LOOP"));
-                                    solutionPath.removeAll(astar.getSolution());
-                                    astar.setSolution(solutionPath);
-                                    nBis = solutionPath.get(solutionPath.size()-1);
-                                    astar.setCurrent(nBis);
-                                }
-                                try {
-                                    sleep(200);
-                                } catch (InterruptedException ex) {
-                                    Logger.getLogger(Freehand.class.getName()).log(Level.SEVERE, null, ex);
-                                }
-                                Platform.runLater(new Runnable() {
-                                    @Override public void run() {
-                                        LineTo l = new LineTo(nBis.getX(),nBis.getY());
-                                        MoveTo m = new MoveTo(nBis.getX(),nBis.getY());
-
-                                        if (!drawnPath.getElements().contains(l)) {
-                                            drawnPath.getElements().add(l);
-                                            drawnPath.getElements().add(m);
-                                        } else {
-                                            drawnPath.getElements().removeAll(drawnPath.getElements());
-                                            drawingBox.getChildren().remove(drawnPath);
-                                            drawingBox.getChildren().add(drawnPath);
-                                            updateMessage(messages.getString("LOOP"));
-                                        }    
-                                    }
-                                });
+                            AStarFreehand astar = new AStarFreehand(new AStarFreehand(),startingNode, endingNode, boolArray, currentStateCopy);
+                            solutionPath.addAll(astar.solved(astar.getEfficientPredecessor(),endingNode,new ArrayList<Node>()));
+                            //uncomment this part if you want to see how the A* algorithm has visited the cells of your interface : saved as a png file at the root of the project called "path.png"
+                            File outputFile = new File("path.png");
+                            BufferedImage bImage = SwingFXUtils.fromFXImage(currentStateCopy, null);
+                            try {
+                              ImageIO.write(bImage, "png", outputFile);
+                            } catch (IOException e) {
+                              throw new RuntimeException(e);
                             }
-                            solutionPath.clear();
-                            solutionPath.addAll(solved(astar.getEfficientPredecessor(),endingNode,new ArrayList<Node>()));
                             menuEmpty.setDisable(false);
                             menuNewPath.setDisable(false);
-                            drawnPath.getElements().removeAll(drawnPath.getElements());
-                            Platform.runLater(new Runnable() {
-                               @Override public void run()  {
-                                   drawnPath.getElements().add(new MoveTo(endingNode.getX(),endingNode.getY()));
-                                    for (Node nIterator : solutionPath) {
-                                        drawnPath.getElements().add(new LineTo(nIterator.getX(),nIterator.getY()));
-                                        drawnPath.getElements().add(new MoveTo(nIterator.getX(),nIterator.getY()));
-                                    }
-                               }
-                            });
                             updateMessage(messages.getString("CALCULATIONOVER"));
+                            Platform.runLater(new Runnable() {
+
+                            public void run() {
+                                drawnPath.getElements().add(new MoveTo(solutionPath.get(0).getX()*10,solutionPath.get(0).getY()*10));
+                                int i = 0;
+                                //for (int i = 1; i < solutionPath.size()-2; i++) {
+                                    while (i < solutionPath.size()) {
+                                            //double beforeX = solutionPath.get(i-1).getX()*10;
+                                            //double beforeY = solutionPath.get(i-1).getY()*10;
+                                            double curveX = solutionPath.get(i).getX()*10;
+                                            double curveY = solutionPath.get(i).getY()*10;
+                                            //double thenX = solutionPath.get(i+1).getX()*10;
+                                            //double thenY = solutionPath.get(i+1).getY()*10;
+                                            drawnPath.getElements().add(new LineTo(curveX,curveY));
+                                            drawnPath.getElements().add(new MoveTo(curveX,curveY));   
+                                            i = i+1;
+                                        }
+                                Rectangle rectPath = new Rectangle(solutionPath.get(0).getX()*10,solutionPath.get(0).getY()*10,10, 10);
+                                rectPath.setArcHeight(5);
+                                rectPath.setArcWidth(5);
+                                rectPath.setFill(Color.DARKBLUE);
+                                PathTransition pathTransition = new PathTransition();
+                                pathTransition.setDuration(Duration.millis(4000));
+                                pathTransition.setPath(drawnPath);
+                                pathTransition.setNode(rectPath);
+                                pathTransition.setOrientation(PathTransition.OrientationType.ORTHOGONAL_TO_TANGENT);
+                                pathTransition.setCycleCount(Timeline.INDEFINITE);
+                                pathTransition.play();
+                                drawnPath.setStroke(Color.ALICEBLUE);
+                                drawingBox.getChildren().addAll(drawnPath,rectPath);
+                            }
+                        });
                             return null;
                         }
                     };
+                    
+                            
                     progressInfo.textProperty().bind(task.messageProperty());
                     Thread th = new Thread(task);
                     th.setDaemon(true);
@@ -335,35 +365,6 @@ public class Freehand extends Parent {
         menuTools.getItems().addAll(menuEmpty,menuNewPath,new SeparatorMenuItem(), menuPixels,menuLaunch);
         
         Menu menuObject = new Menu(messages.getString("MENUOBJECT"));
-        MenuItem loadObject = new MenuItem(messages.getString("LOADOBJECT"));
-        loadObject.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                List<String> objects = new ArrayList<>();
-                //Set the possible choices
-                try {
-                    setCredentials();
-                    Connection connect = DriverManager.getConnection("jdbc:mysql://" + getAdresse() + "/iathinkers?"
-                    + "user="+ getUsername() + "&password=" + getMdp());
-                    Statement statement = connect.createStatement();
-                    String request = "SELECT objetName FROM freehandobject";                    
-                    ResultSet rs = statement.executeQuery(request);
-                    while(rs.next()) {
-                        objects.add(rs.getString("objetName"));
-                    }
-                } catch (SQLException e) {
-
-                }
-                ChoiceDialog<String> loadingPopup = new ChoiceDialog<>("",objects);
-                loadingPopup.setTitle(messages.getString("OBJECTLOADING"));
-                loadingPopup.setHeaderText(messages.getString("SELECTLOADING"));
-                Optional<String> result = loadingPopup.showAndWait();
-                if (result.isPresent()) {
-                    loadingObject(result.get());
-                }
-            }
-        });
-        
         menuObject.getItems().addAll(loadObject);
         
         menuBar.getMenus().addAll(menuFile,menuTools,menuObject);
@@ -407,7 +408,6 @@ public class Freehand extends Parent {
 
         drawingBox.getChildren().add(firstPath);
         drawingBox.getChildren().add(secondPath);
-        drawingBox.getChildren().add(drawnPath);
         sceneTab[2].setRoot(mainContainer);
 
     }
@@ -419,9 +419,11 @@ public class Freehand extends Parent {
      * @param y 
      */
     public void drawCross(Pane drawing, int x, int y) {
-        Line line1 = new Line(x-10, y-10, x+10, y+10);
+        /*Rectangle rect = new Rectangle(x,y,10,10);
+        rect.setStroke(Color.BLACK);*/
+        Line line1 = new Line(x-5, y-5, x+5, y+5);
         line1.setFill(Color.BLACK);
-        Line line2 = new Line(x-10, y+10, x+10, y-10);
+        Line line2 = new Line(x-5, y+5, x+5, y-5);
         line2.setFill(Color.BLACK);
         drawing.getChildren().addAll(line1,line2);
     }
@@ -437,12 +439,15 @@ public class Freehand extends Parent {
                 path = getFirstPath();
             } else if (getSecondIsDone() == false) {
                 path = getSecondPath();
+                
             } else {
                 MenuBar m = (MenuBar) scene.lookup("#menubar");
-                //We get th
+                //We get the "set launching points" menu and enable it
                 MenuItem i = m.getMenus().get(1).getItems().get(3);
                 i.setDisable(false);
-
+                //We get the object disposition and enable it
+                MenuItem ibis = m.getMenus().get(2).getItems().get(0);
+                ibis.setDisable(false);
                 drawingBox.setOnMouseClicked(null);
                 drawingBox.setOnMouseDragged(null);
                 drawingBox.setOnMouseEntered(null);
@@ -479,14 +484,20 @@ public class Freehand extends Parent {
                 start = new StartingPixel((int)mouseEvent.getX(), (int)mouseEvent.getY());
                 setStartingIsDone(true);
                 Text startingInfo = (Text) scene.lookup("#startinginfo");
-                startingInfo.setText(startingInfo.getText()+start.toString());
+                startingInfo.setText(messages.getString("STARTINGINFO")+"\n"+start.toString());
                 drawCross(drawingBox,(int)mouseEvent.getX(),(int)mouseEvent.getY());
             } else if (getEndingIsDone() == false) {
                 end = new EndingPixel((int)mouseEvent.getX(), (int)mouseEvent.getY());
                 setEndingIsDone(true);
                 Text endingInfo = (Text) scene.lookup("#endinginfo");
-                endingInfo.setText(endingInfo.getText()+end.toString());
+                endingInfo.setText(messages.getString("ENDINGINFO")+"\n"+end.toString());
                 drawCross(drawingBox,(int)mouseEvent.getX(),(int)mouseEvent.getY());
+                
+                MenuBar m = (MenuBar) scene.lookup("#menubar");
+                //We get the launching menu and enable it
+                MenuItem i = m.getMenus().get(1).getItems().get(4);
+                i.setDisable(false);
+                System.out.println("enabled");
             } else {
                 drawingBox.setOnMouseClicked(null);
             }
@@ -738,6 +749,38 @@ public class Freehand extends Parent {
         this.setAdresse(credentials[2]);
     }
     
+    
+    private ArrayList<ArrayList<Boolean>> fromWritableToArray (WritableImage g, Node endingNode) {
+        ArrayList<ArrayList<Boolean>> res = new ArrayList<ArrayList<Boolean>>();
+        PixelReader pr = g.getPixelReader();
+        PixelWriter pw = g.getPixelWriter();
+        for (int i = 0; i < (int)(g.getHeight()/10); i++) {
+            ArrayList<Boolean> line = new ArrayList<Boolean>();
+            for (int j = 0; j < (int)(g.getWidth()/10); j++) {
+                boolean available = true;
+                for (int x = 0; x < 10; x++) {
+                    for (int y = 0; y < 10; y++) {
+                        //System.out.println((10*i+x) +" "+ (10*j+y));
+                        if (pr.getColor(10*j+x, 10*i+y).equals(Color.ALICEBLUE) == false && pr.getColor(10*j+x, 10*i+y).equals(Color.BLACK) == false && (i != endingNode.getY() || j != endingNode.getX())) {
+                            available = false;
+                                           // System.out.println(i+" "+j);
+
+                        }
+                    }
+                }
+                if (!available) {
+                    for (int x = 0; x < 10; x++) {
+                    for (int y = 0; y < 10; y++) {
+                            pw.setColor(10*j+x, 10*i+y, Color.BLACK);
+                    }
+                }
+                }
+                line.add(available);
+            }
+            res.add(line);
+        }
+        return res;
+    }
         
         
 }

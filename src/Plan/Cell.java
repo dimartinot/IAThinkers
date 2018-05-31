@@ -218,6 +218,8 @@ public class Cell extends StackPane {
                             } catch (NullPointerException e) {
                                 
                             }
+                    } else {
+                        fits = false;
                     }
                 } else if (orientation.getSelectionModel().getSelectedItem() == messages.getString("HORIZONTAL")) {
                    if ((this.getX()-1)>0 && (this.getX()+1)<this.getGridWidth()-1) {
@@ -231,10 +233,13 @@ public class Cell extends StackPane {
                         } catch (NullPointerException e) {
                                 
                         }
-                    } 
+                    } else {
+                       fits = false;
+                   }
                 } else {
                     fits = false;
                 }
+                //if the door "fits" our layout, then we change the color of it. Otherwise, there is no coloring.
                 if (fits) {
                     Rectangle rectangle = (Rectangle) scene.lookup("#"+(this.getX())+"-"+(this.getY()));
                     rectangle.setFill(color);
