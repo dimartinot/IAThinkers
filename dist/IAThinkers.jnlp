@@ -2,15 +2,20 @@
 <jnlp spec="1.0" xmlns:jfx="http://javafx.com" href="IAThinkers.jnlp">
   <information>
     <title>IAThinkers</title>
-    <vendor>Admin</vendor>
-    <description>null</description>
+    <vendor>IAThinkers</vendor>
+    <description>This project developed by a team of EISTI student is the completion of dozens of hard-worked hours.
+
+Di MArtino Thomas, Combadière Kamyar, Lambin Jérémy, Dupuch Cédric</description>
     <offline-allowed/>
   </information>
   <resources>
     <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
-    <jar href="IAThinkers.jar" size="188395" download="eager" />
-    <jar href="lib\mysql-connector-java-5.1.46.jar" size="1004838" download="eager" />
+    <jar href="IAThinkers.jar" size="273553" download="eager" />
+    <jar href="lib\mysql-connector-java-5.1.46.jar" size="1044770" download="eager" />
   </resources>
+<security>
+  <all-permissions/>
+</security>
   <applet-desc  width="800" height="600" main-class="com.javafx.main.NoJavaFXFallback"  name="IAThinkers" >
     <param name="requiredFXVersion" value="8.0+"/>
   </applet-desc>
